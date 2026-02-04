@@ -1,0 +1,30 @@
+Horizontal scroll
+.horizontalScroll(rememberScrollState())
+
+
+Синхронизация scroll + line numbers
+
+
+Кастомная title bar
+undecorated = true + своя панель
+
+
+Caret-aware scrolling
+прокрутка к курсору
+
+
+перейти к подсветке NASM
+
+
+Multiple tabs
+Map<File, EditorState>
+
+
+
+File watcher
+реакция на внешние изменения
+
+
+
+Undo / Redo
+через TextFieldValue
