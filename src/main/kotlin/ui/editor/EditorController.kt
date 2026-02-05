@@ -3,122 +3,125 @@ package non.era.aisdme.ui.editor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import java.io.File
 
-data class EditorState(
-    val file: File?,
-    val savedText: String,
-    val text: String,
-    val error: String? = null,
-) {
-    val isModified: Boolean
-        get() = text != savedText
-}
-
 class EditorController(
-    initialFile: File?,
     private val autosaveDelayMs: Long = 2000
 ) {
-    private val saveMutex = Mutex()
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var autosaveJob: Job? = null
+    private var nextTabId = 0
+    private val nextTabIdMutex = Mutex()
+    private val updateTabMutex = Mutex()
 
-    var state by mutableStateOf(
-        runCatching {
-            val text = initialFile?.takeIf { it.exists() }?.readText() ?: ""
-            EditorState(
-                file = initialFile,
-                text = text,
-                savedText = text
-            )
-        }.getOrElse {
-            EditorState(
-                file = initialFile,
-                text = "",
-                savedText = "",
-                error = it.message
-            )
-        }
-    )
+    var tabs by mutableStateOf<List<ObservableEditorTab>>(emptyList())
         private set
 
-    fun openFile(file: File) {
-        state = runCatching {
-            val t = if (file.exists()) file.readText() else ""
-            EditorState(
+    var activeTabId by mutableStateOf<Int?>(null)
+        private set
+
+    val activeTab: ObservableEditorTab?
+        get() = tabs.find { it.id == activeTabId }
+
+    fun activateTab(tabId: Int) {
+        activeTabId = tabId
+    }
+
+    suspend fun openFile(file: File) = withContext(Dispatchers.Swing) {
+        // если файл уже открыт — просто активируем
+        tabs.find { it.file == file }?.let {
+            activeTabId = it.id
+            return@withContext
+        }
+
+        val newId = nextTabIdMutex.withLock {
+            nextTabId++
+        }
+
+        val tab = runCatching {
+            val text = if (file.exists()) file.readText() else ""
+            ObservableEditorTab(
+                id = newId,
                 file = file,
-                text = t,
-                savedText = t
+                textIn = text,
+                savedTextIn = text
             )
         }.getOrElse {
-            state.copy(error = it.message)
+            ObservableEditorTab(
+                id = newId,
+                file = file,
+                textIn = "",
+                savedTextIn = "",
+                errorIn = it.message
+            )
         }
+
+        tabs = tabs + tab
+        activeTabId = tab.id
     }
 
     fun updateText(newText: String) {
-        state = state.copy(text = newText)
-
-        scheduleAutosave()
+        activeTab?.setTextWithUpTitle(newText, scope)
+        scheduleAutosaveActive()
     }
 
-    private fun scheduleAutosave() {
-        autosaveJob?.cancel()
+    fun saveActive() {
+        val tab = activeTab ?: return
+        scope.launch {
+            saveTabFile(tab)
+        }
+    }
 
-        autosaveJob = scope.launch {
-            delay(autosaveDelayMs)
+    fun closeTab(id: Int) {
+        tabs = tabs.filterNot { it.id == id }
 
-            if (!state.isModified) return@launch
+        if (activeTabId == id) {
+            activeTabId = tabs.lastOrNull()?.id
+        }
+    }
 
-            val result = saveMutex.withLock {
-                runCatching {
-                    val file = state.file ?: return@runCatching null
-                    val text = state.text
-                    file.writeText(text)
-                    return@runCatching text
-                }
+    private fun scheduleAutosaveActive() =
+        activeTab?.let{ tab->
+            tab.autosaveJob?.cancel()
+
+            tab.autosaveJob = scope.launch {
+                delay(autosaveDelayMs)
+                if (!tab.isModified) return@launch
+                saveTabFile(tab)
             }
+        }
 
-            withContext(Dispatchers.Main) {
-                state = result.fold(
-                    onSuccess = { savedText ->
-                        if (savedText == null) state
-                        else state.copy(savedText = savedText, error = null)
-                    },
-                    onFailure = {
-                        state.copy(error = it.message)
-                    }
-                )
+    fun saveNowAllFiles() {
+        tabs.forEach { tab->
+            scope.launch {
+                tab.autosaveJob?.cancel()
+                saveTabFile(tab)
             }
         }
     }
 
-    fun saveNow() {
-        autosaveJob?.cancel()
-        CoroutineScope(Dispatchers.IO).launch {
-            saveMutex.withLock {
-                val file = state.file ?: return@withLock
+    private suspend fun saveTabFile(tab: ObservableEditorTab) {
+        val file = tab.file ?: return
+        if (!file.canWrite()) return
 
-                state = runCatching {
-                    file.writeText(state.text)
-                    state.copy(savedText = state.text, error = null)
-                }.getOrElse {
-                    state.copy(error = it.message)
-                }
+        runCatching {
+            tab.saveMutex.withLock {
+                file.writeText(tab.text)
+            }
+            withContext(Dispatchers.Swing){
+                tab.error = null
+                tab.setSavedTextWithUpTitle(tab.text, scope)
+            }
+
+        }.getOrElse {
+            withContext(Dispatchers.Swing){
+                tab.error = it.message
             }
         }
     }
-
 
     fun dispose() {
         scope.cancel()
