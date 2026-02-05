@@ -1,10 +1,11 @@
 package non.era.aisdme.ui.components.custom
 
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Divider
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -60,12 +61,7 @@ fun ResizableColumn(
                             .coerceIn(minBottomPx, (heightColumn-minTopPx))
                     }
                 }
-        ) {
-            Divider(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .align(Alignment.Center))
-        }
+        )
 
         Box(modifier = Modifier.fillMaxWidth().height(with(density) { bottomHeightPx.toDp() }),
             content = { bottomContent() })

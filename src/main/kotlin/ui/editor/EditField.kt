@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Editor(editorController: EditorController){
-    Column {
+fun Editor(editorController: EditorController, modifier: Modifier = Modifier) {
+    Column (modifier) {
         TabsBar(
             tabs = editorController.tabs,
             activeId = editorController.activeTabId,
@@ -61,7 +63,6 @@ fun EditField(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colors.background)
                 .padding(16.dp)
         ) {
             val scrollState = rememberScrollState()
@@ -69,7 +70,7 @@ fun EditField(
             if (text.isEmpty()) {
                 Text(
                     text = ";; source\n;; Type your code here",
-                    color = MaterialTheme.colors.onBackground,
+                    color = colors.onBackground,
                     fontSize = 14.sp
                 )
             }
@@ -78,7 +79,7 @@ fun EditField(
                 value = text,
                 onValueChange = onTextChange,
                 textStyle = TextStyle(
-                    color = MaterialTheme.colors.onSurface,
+                    color = colors.onSurface,
                     fontSize = 14.sp
                 ),
                 modifier = Modifier

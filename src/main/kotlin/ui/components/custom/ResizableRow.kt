@@ -2,9 +2,7 @@ package non.era.aisdme.ui.components.custom
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Divider
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -66,14 +64,7 @@ fun ResizableRow(
                             .coerceIn(minLeftPx, (widthRow - minRightPx))
                     }
                 }
-        ) {
-            Divider(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(1.dp)
-                    .align(Alignment.Center)
-            )
-        }
+        )
 
         Box(modifier = Modifier.fillMaxSize()) {
             rightContent()
