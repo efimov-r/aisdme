@@ -1,23 +1,33 @@
 package non.era.aisdme
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.Divider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
 import non.era.aisdme.theme.AisDmeTheme
 import non.era.aisdme.ui.AisDmeWindow
 import non.era.aisdme.ui.editor.Editor
 import non.era.aisdme.ui.editor.EditorController
-import non.era.aisdme.ui.editor.TabsBar
+import non.era.aisdme.ui.project.ProjectController
+import non.era.aisdme.ui.project.ProjectTreeView
 import java.io.File
 
 fun main() = application {
     val editorController = remember {
         EditorController()
+    }
+
+    val projectController = remember {
+        ProjectController(File("/home/era/proj/os/aisdme/")).apply { load() }
     }
 
     DisposableEffect(Unit) {
@@ -29,31 +39,22 @@ fun main() = application {
 
     AisDmeWindow(onCloseRequest = ::exitApplication) {
         AisDmeTheme {
-            Column {
-                TabsBar(
-                    tabs = editorController.tabs,
-                    activeId = editorController.activeTabId,
-                    onSelect = { editorController.activateTab(it) },
-                    onClose = editorController::closeTab
+            Row(Modifier.fillMaxSize()) {
+                ProjectTreeView(
+                    controller = projectController,
+                    onFileOpen = { file ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            editorController.openFile(file)
+                        }
+                    },
+                    modifier = Modifier.width(250.dp)
                 )
 
-                editorController.activeTab?.let { tab ->
-                    Editor(
-                        text = tab.text,
-                        error = tab.error,
-                        onTextChange = editorController::updateText
-                    )
-                }
-            }
-        }
-    }
+                Divider(Modifier.fillMaxHeight().width(1.dp))
 
-    remember {
-        CoroutineScope(Dispatchers.Swing).launch {
-            editorController.openFile(File("test.asm"))
-            editorController.openFile(File("test2.asm"))
-            editorController.openFile(File("test3.asm"))
-            println("opened file")
+                Editor(editorController)
+            }
+
         }
     }
 

@@ -22,7 +22,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Editor(
+fun Editor(editorController: EditorController){
+    Column {
+        TabsBar(
+            tabs = editorController.tabs,
+            activeId = editorController.activeTabId,
+            onSelect = { editorController.activateTab(it) },
+            onClose = editorController::closeTab
+        )
+
+        editorController.activeTab?.let { tab ->
+            EditField(
+                text = tab.text,
+                error = tab.error,
+                onTextChange = editorController::updateText
+            )
+        }
+    }
+}
+
+@Composable
+fun EditField(
     text: String,
     error: String?,
     onTextChange: (String) -> Unit
