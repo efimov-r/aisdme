@@ -23,62 +23,52 @@ fun ResizableColumn(
     bottomContent: @Composable () -> Unit
 ) {
     val density = LocalDensity.current
-    var topHeightPx by remember { mutableStateOf(250f) }
-    var heightRow by remember { mutableStateOf(0f) }
+    var bottomHeightPx by remember { mutableStateOf(250f) }
+    var heightColumn by remember { mutableStateOf(0f) }
 
     val minTopPx = with(density) { 10.dp.toPx() }
     val minBottomPx = with(density) { 10.dp.toPx() }
 
     // Эффект для корректировки leftWidthPx при изменении widthRow
-    LaunchedEffect(heightRow) {
-        if (heightRow > 0) {
-            // Проверяем, что leftWidthPx не выходит за новые границы
-            val maxTopPx = heightRow - minBottomPx
-            if (topHeightPx > maxTopPx) {
-                topHeightPx = maxTopPx.coerceAtLeast(minTopPx)
+    LaunchedEffect(heightColumn) {
+        if (heightColumn > 0) {  // Проверяем, что leftWidthPx не выходит за новые границы
+            val maxTopPx = heightColumn - minBottomPx
+            if (bottomHeightPx > maxTopPx) {
+                bottomHeightPx = maxTopPx.coerceAtLeast(minTopPx)
             }
         }
     }
 
-    Column(
-        modifier
+    Column(modifier
             .onGloballyPositioned { layoutCoordinates ->
-                heightRow = layoutCoordinates.size.height.toFloat()
+                heightColumn = layoutCoordinates.size.height.toFloat()
             })
     {
-        Box(
-            modifier = Modifier
-                .height(with(density) { topHeightPx.toDp() })
-                .fillMaxHeight()
-        ) {
-            topContent()
-        }
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f),
+            content = { topContent() })
 
-        Box(
-            modifier = Modifier
+        Box(modifier = Modifier
                 .fillMaxWidth()
                 .height(6.dp) // делаем шире для удобства
                 .cursorForVerticalResize()
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
-
-                        topHeightPx = (topHeightPx + dragAmount.y)
-                            .coerceIn(minTopPx, (heightRow - minBottomPx))
+                        bottomHeightPx = (bottomHeightPx - dragAmount.y)
+                            .coerceIn(minBottomPx, (heightColumn-minTopPx))
                     }
                 }
         ) {
-            Divider(
-                modifier = Modifier
+            Divider(modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .align(Alignment.Center)
-            )
+                    .align(Alignment.Center))
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            bottomContent()
-        }
+        Box(modifier = Modifier.fillMaxWidth().height(with(density) { bottomHeightPx.toDp() }),
+            content = { bottomContent() })
     }
 }
 
