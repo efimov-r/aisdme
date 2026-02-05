@@ -1,8 +1,9 @@
-package non.era.aisdme.ui
+package non.era.aisdme.ui.win
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
+import java.awt.Frame
 
 @Composable
 fun AisDmeWindow(onCloseRequest: () -> Unit,
@@ -13,6 +14,6 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
         undecorated = false,
         resizable = true
     ) {
-        window.extendedState = java.awt.Frame.MAXIMIZED_BOTH
+        window.extendedState = Frame.MAXIMIZED_BOTH
         content()
     }
