@@ -29,6 +29,7 @@ import non.era.aisdme.ui.project.ProjectTreeView
 import non.era.aisdme.ui.win.AisDmeWindow
 import java.io.File
 
+//todo CoroutineScope(Dispatchers.IO)
 fun main() = application {
     val editorController = remember {
         EditorController()
@@ -40,8 +41,10 @@ fun main() = application {
 
     DisposableEffect(Unit) {
         onDispose {
-            editorController.saveNowAllFiles()
-            editorController.dispose()
+            println("DisposableEffect do")
+            CoroutineScope(Dispatchers.IO).launch {
+                editorController.saveAllAndDispose()
+            }
         }
     }
 

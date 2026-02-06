@@ -5,17 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.io.File
 
 class EditorController(
     private val autosaveDelayMs: Long = 2000
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var nextTabId = 0
-    private val nextTabIdMutex = Mutex()
-    private val updateTabMutex = Mutex()
 
     var tabs by mutableStateOf<List<ObservableEditorTab>>(emptyList())
         private set
@@ -37,26 +32,11 @@ class EditorController(
             return@withContext
         }
 
-        val newId = nextTabIdMutex.withLock {
-            nextTabId++
-        }
-
         val tab = runCatching {
             val text = if (file.exists()) file.readText() else ""
-            ObservableEditorTab(
-                id = newId,
-                file = file,
-                textIn = text,
-                savedTextIn = text
-            )
+            ObservableEditorTab.createNew(file, text, null)
         }.getOrElse {
-            ObservableEditorTab(
-                id = newId,
-                file = file,
-                textIn = "",
-                savedTextIn = "",
-                errorIn = it.message
-            )
+            ObservableEditorTab.createNew(file, "", it.message)
         }
 
         tabs = tabs + tab
@@ -64,7 +44,7 @@ class EditorController(
     }
 
     fun updateText(newText: String) {
-        activeTab?.setTextWithUpTitle(newText, scope)
+        activeTab?.setText(newText, scope)
         scheduleAutosaveActive()
     }
 
@@ -94,26 +74,24 @@ class EditorController(
             }
         }
 
-    fun saveNowAllFiles() {
-        tabs.forEach { tab->
+    suspend fun saveAllAndDispose() {
+        tabs.map { tab->
             scope.launch {
                 tab.autosaveJob?.cancel()
                 saveTabFile(tab)
             }
-        }
+        }.joinAll()
+        scope.cancel()
     }
 
     private suspend fun saveTabFile(tab: ObservableEditorTab) {
-        val file = tab.file ?: return
-        if (!file.canWrite()) return
+        if (tab.fileNotCanWrite()) return
 
         runCatching {
-            tab.saveMutex.withLock {
-                file.writeText(tab.text)
-            }
+            tab.writeTextToFile()
             withContext(Dispatchers.Swing){
                 tab.error = null
-                tab.setSavedTextWithUpTitle(tab.text, scope)
+                tab.setSavedText(tab.getText(), scope)
             }
 
         }.getOrElse {
@@ -121,9 +99,5 @@ class EditorController(
                 tab.error = it.message
             }
         }
-    }
-
-    fun dispose() {
-        scope.cancel()
     }
 }
