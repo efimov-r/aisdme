@@ -30,7 +30,7 @@ class ObservableEditorTab private constructor(
     val isModified: Boolean
         get() = text_ != savedText_
 
-    private fun recomputeTitle() = (file?.name ?: "Untitled") + if (isModified) "*" else ""
+    private fun recomputeTitle() = (file.name ?: "Untitled") + if (isModified) "*" else ""
 
     fun setSavedText(savedTextIn: String, scope: CoroutineScope) {
         this.savedText_ = savedTextIn
@@ -42,13 +42,14 @@ class ObservableEditorTab private constructor(
         }
     }
 
-    fun setText(textIn: String, scope: CoroutineScope) {
+    fun setText(textIn: String) {
         this.text_ = textIn
-        scope.launch(Dispatchers.Default) {
-            val newTitle = recomputeTitle()
-            withContext(Dispatchers.Swing) {
-                title = newTitle
-            }
+    }
+
+    suspend fun updateTitle() {
+        val newTitle = recomputeTitle()
+        withContext(Dispatchers.Swing) {
+            title = newTitle
         }
     }
 

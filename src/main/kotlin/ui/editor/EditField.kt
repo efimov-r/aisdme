@@ -24,13 +24,13 @@ import androidx.compose.ui.unit.sp
 fun Editor(editorController: EditorController, modifier: Modifier = Modifier) {
     Column (modifier) {
         TabsBar(
-            tabs = editorController.tabs,
-            activeId = editorController.activeTabId,
+            tabs = editorController.leftTabs.getTabs(),
+            activeId = editorController.leftTabs.getActiveTabId(),
             onSelect = { editorController.activateTab(it) },
             onClose = editorController::closeTab
         )
 
-        editorController.activeTab?.let { tab ->
+        editorController.leftTabs.getActiveTab()?.let { tab ->
             EditField(
                 text = tab.getText(),
                 error = tab.error,
