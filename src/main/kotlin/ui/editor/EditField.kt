@@ -22,19 +22,24 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun Editor(editorController: EditorController, modifier: Modifier = Modifier) {
+    EditorHalf(editorController.leftTabs, modifier)
+}
+
+@Composable
+fun EditorHalf(listTab: ListEditorTab, modifier: Modifier = Modifier){
     Column (modifier) {
         TabsBar(
-            tabs = editorController.leftTabs.getTabs(),
-            activeId = editorController.leftTabs.getActiveTabId(),
-            onSelect = { editorController.activateTab(it) },
-            onClose = editorController::closeTab
+            tabs = listTab.getTabs(),
+            activeId = listTab.getActiveTabId(),
+            onSelect = { listTab.activateTab(it) },
+            onClose = { listTab.closeTab(it) }
         )
 
-        editorController.leftTabs.getActiveTab()?.let { tab ->
+        listTab.getActiveTab()?.let { tab ->
             EditField(
                 text = tab.getText(),
                 error = tab.error,
-                onTextChange = editorController::updateText
+                onTextChange = { listTab.updateText(it) }
             )
         }
     }
