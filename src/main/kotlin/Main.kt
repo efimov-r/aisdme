@@ -68,9 +68,7 @@ fun AisDmeContent(editorController: EditorController,
                         ProjectTreeView(
                             controller = projectController,
                             onFileOpen = { file ->
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    editorController.openFile(file)
-                                }
+                                editorController.openFile(file)
                             },
                             modifier = Modifier.fillMaxSize().background(colors.surface, shape = AisDmeShapes.large)
                         )

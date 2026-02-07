@@ -26,7 +26,7 @@ fun Editor(editorController: EditorController, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun EditorHalf(listTab: ListEditorTab, modifier: Modifier = Modifier){
+fun EditorHalf(listTab: EditorHalfController, modifier: Modifier = Modifier){
     Column (modifier) {
         TabsBar(
             tabs = listTab.getTabs(),
@@ -39,6 +39,7 @@ fun EditorHalf(listTab: ListEditorTab, modifier: Modifier = Modifier){
             EditField(
                 text = tab.getText(),
                 error = tab.error,
+                readOnly = tab.readOnly,
                 onTextChange = { listTab.updateText(it) }
             )
         }
@@ -49,6 +50,7 @@ fun EditorHalf(listTab: ListEditorTab, modifier: Modifier = Modifier){
 fun EditField(
     text: String,
     error: String?,
+    readOnly: Boolean,
     onTextChange: (String) -> Unit
 ) {
     Column(
@@ -60,41 +62,44 @@ fun EditField(
                 color = Color.Red,
                 modifier = Modifier.padding(8.dp)
             )
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            val scrollState = rememberScrollState()
-
-            if (text.isEmpty()) {
-                Text(
-                    text = ";; source\n;; Type your code here",
-                    color = colors.onBackground,
-                    fontSize = 14.sp
-                )
-            }
-
-            BasicTextField(
-                value = text,
-                onValueChange = onTextChange,
-                textStyle = TextStyle(
-                    color = colors.onSurface,
-                    fontSize = 14.sp
-                ),
+        } else {
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState)
-            )
+                    .padding(16.dp)
+            ) {
+                if (text.isEmpty()) {
+                    Text(
+                        text = ";; source\\n;; Type your code here",
+                        color = colors.onBackground,
+                        fontSize = 14.sp
+                    )
+                } else {
+                    val scrollState = rememberScrollState()
 
-            VerticalScrollbar(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight(),
-                adapter = rememberScrollbarAdapter(scrollState)
-            )
+                    BasicTextField(
+                        value = text,
+                        readOnly = readOnly,
+                        onValueChange = onTextChange,
+                        textStyle = TextStyle(
+                            color = colors.onSurface,
+                            fontSize = 14.sp
+                        ),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                    )
+
+                    VerticalScrollbar(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .fillMaxHeight(),
+                        adapter = rememberScrollbarAdapter(scrollState)
+                    )
+                }
+
+
+            }
         }
     }
 }

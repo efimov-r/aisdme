@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun TabsBar(
-    tabs: List<ObservableEditorTab>,
+    tabs: List<ObservableOpenedFile>,
     activeId: Int?,
     onSelect: (Int) -> Unit,
     onClose: (Int) -> Unit

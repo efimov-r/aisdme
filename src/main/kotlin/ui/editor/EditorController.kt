@@ -6,9 +6,11 @@ import java.io.File
 class EditorController(
     autosaveDelayMs: Long = 2000
 ) {
-    val leftTabs = ListEditorTab(autosaveDelayMs)
+    private var files: MutableMap<Int, ObservableOpenedFile> = mutableMapOf()
 
-    suspend fun openFile(file: File) =
+    val leftTabs = HalfEditorTabs(files, autosaveDelayMs)
+
+    fun openFile(file: File) =
         leftTabs.openFile(file)
 
     suspend fun saveAllAndDispose() {
