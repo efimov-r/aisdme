@@ -19,14 +19,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import non.era.aisdme.LocalAppController
 
 @Composable
-fun Editor(editorController: EditorController, modifier: Modifier = Modifier) {
-    EditorHalf(editorController.leftTabs, modifier)
+fun Editor(modifier: Modifier = Modifier) {
+    val app = LocalAppController.current
+    EditorHalf(app.getEditorHalfLeftController(), modifier)
 }
 
 @Composable
-fun EditorHalf(listTab: EditorHalfController, modifier: Modifier = Modifier){
+fun EditorHalf(listTab: EditorHalfState, modifier: Modifier = Modifier){
     Column (modifier) {
         TabsBar(
             tabs = listTab.getTabs(),

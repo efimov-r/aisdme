@@ -1,0 +1,24 @@
+package non.era.aisdme
+
+import androidx.compose.runtime.staticCompositionLocalOf
+import non.era.aisdme.ui.editor.EditorController
+import non.era.aisdme.ui.editor.EditorHalfState
+import non.era.aisdme.ui.project.ProjectController
+import non.era.aisdme.ui.project.ProjectState
+import java.io.File
+
+val LocalAppController = staticCompositionLocalOf<AppController> {
+    error("AppController not provided")
+}
+
+class AppController(
+    val editor: EditorController,
+    val project: ProjectController
+) {
+    fun openFile(file: File) {
+        editor.openFile(file)
+    }
+
+    fun getEditorHalfLeftController() : EditorHalfState = editor.leftTabs
+    fun getProjectState() : ProjectState = project
+}

@@ -8,13 +8,15 @@ import java.io.File
 
 class ProjectController(
     projectRoot: File
-) {
+) : ProjectState {
+    
     val root = projectRoot
 
-    var nodes by mutableStateOf<List<ProjectNode>>(emptyList())
-        private set
+    private var nodes_ by mutableStateOf<List<ProjectNode>>(emptyList())
 
     fun load() {
-        nodes = buildProjectTree(root)
+        nodes_ = buildProjectTree(root)
     }
+
+    override fun getNodes() = nodes_
 }

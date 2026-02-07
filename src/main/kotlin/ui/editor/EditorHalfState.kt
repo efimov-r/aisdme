@@ -1,6 +1,6 @@
 package non.era.aisdme.ui.editor
 
-interface EditorHalfController {
+interface EditorHalfState {
     fun getTabs() : List<ObservableOpenedFile>
     fun getActiveTabId(): Int?
     fun getActiveTab(): ObservableOpenedFile?

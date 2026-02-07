@@ -1,6 +1,5 @@
 package non.era.aisdme.ui.editor
 
-import kotlinx.coroutines.*
 import java.io.File
 
 class EditorController(
@@ -13,8 +12,7 @@ class EditorController(
     fun openFile(file: File) =
         leftTabs.openFile(file)
 
-    suspend fun saveAllAndDispose() {
-        leftTabs.saveAll().joinAll()
-        leftTabs.dispose()
+    fun saveAllAndDispose() {
+        leftTabs.saveAllAndDispose()
     }
 }

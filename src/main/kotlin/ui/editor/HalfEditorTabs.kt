@@ -13,7 +13,7 @@ import java.io.File
 class HalfEditorTabs(
     private var files: MutableMap<Int, ObservableOpenedFile>,
     private val autosaveDelayMs: Long
-) : EditorHalfController {
+) : EditorHalfState {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val listMutex: Mutex = Mutex()
 
@@ -106,22 +106,22 @@ class HalfEditorTabs(
         }
     }
 
-    fun saveAll() =
-        files.values.map { ta->
-            scope.launch {
-                ta.autosaveJob?.cancel()
-                if (ta.fileNotCanWrite()) return@launch
-                runCatching {
-                    ta.writeTextToFile()
+    fun saveAllAndDispose() {
+        runBlocking {
+            files.values.map { ta ->
+                scope.launch {
+                    ta.autosaveJob?.cancel()
+                    if (ta.fileNotCanWrite()) return@launch
+                    runCatching {
+                        ta.writeTextToFile()
+                    }
+                    listMutex.withLock {
+                        files.remove(ta.id)
+                        listTabs.remove(ta.id)
+                    }
                 }
-                listMutex.withLock {
-                    files.remove(ta.id)
-                    listTabs.remove(ta.id)
-                }
-            }
+            }.joinAll()
+            scope.cancel()
         }
-
-    fun dispose() {
-        scope.cancel()
     }
 }

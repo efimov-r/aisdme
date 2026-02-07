@@ -14,12 +14,12 @@ import java.io.File
 
 @Composable
 fun ProjectTreeView(
-    controller: ProjectController,
+    state: ProjectState,
     onFileOpen: (File) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier.fillMaxHeight()) {
-        items(controller.nodes) { node ->
+        items(state.getNodes()) { node ->
             ProjectNodeView(node, onFileOpen)
         }
     }
