@@ -12,38 +12,35 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import non.era.aisdme.FileFMOpener
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.ui.editor.Panels
-import java.io.File
 
 @Composable
 fun ProjectTreeView(
-    state: ProjectState,
-    onFileOpen: (File) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val app = LocalAppController.current
     LazyColumn(modifier = modifier.fillMaxHeight()) {
-        items(state.getNodes()) { node ->
-            ProjectNodeView(node, onFileOpen)
+        items(app.getProjectState().getNodes()) { node ->
+            ProjectNodeView(node)
         }
     }
 }
 
 @Composable
 fun ProjectNodeView(
-    node: ProjectNode,
-    onFileOpen: (File) -> Unit
+    node: ProjectNode
 ) {
     when (node) {
-        is DirNode -> DirNodeView(node, onFileOpen)
-        is FileNode -> FileNodeView(node, onFileOpen)
+        is DirNode -> DirNodeView(node)
+        is FileNode -> FileNodeView(node)
     }
 }
 
 @Composable
 fun DirNodeView(
-    node: DirNode,
-    onFileOpen: (File) -> Unit
+    node: DirNode
 ) {
     Column {
         Row(
@@ -63,7 +60,7 @@ fun DirNodeView(
 
         if (node.expanded.value) {
             node.children.forEach { ch->
-                ProjectNodeView(ch, onFileOpen)
+                ProjectNodeView(ch)
             }
         }
     }
@@ -71,8 +68,7 @@ fun DirNodeView(
 
 @Composable
 fun FileNodeView(
-    node: FileNode,
-    onFileOpen: (File) -> Unit
+    node: FileNode
 ) {
     var lastClickTime by remember { mutableStateOf(0L) }
     val app = LocalAppController.current
@@ -82,6 +78,7 @@ fun FileNodeView(
             listOf(
                 ContextMenuItem("Open in Left", onClick = {app.openFile(node.file, Panels.LEFT) }),
                 ContextMenuItem("Open in Right", onClick = {app.openFile(node.file, Panels.RIGHT)}),
+                ContextMenuItem("Open in Dolphin", onClick = { FileFMOpener.openFileInFileManager(node.file)}),
             )
         }
     ) {
@@ -94,7 +91,7 @@ fun FileNodeView(
                         onTap = {
                             val now = System.currentTimeMillis()
                             if (now - lastClickTime < 350) {
-                                onFileOpen(node.file)
+                                app.openFile(node.file, Panels.LEFT)
                             }
                             lastClickTime = now
                         }

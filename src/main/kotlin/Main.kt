@@ -17,7 +17,6 @@ import non.era.aisdme.ui.components.custom.ResizableColumn
 import non.era.aisdme.ui.components.custom.ResizableRow
 import non.era.aisdme.ui.editor.Editor
 import non.era.aisdme.ui.editor.EditorController
-import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectTreeView
 import non.era.aisdme.ui.win.AisDmeWindow
@@ -58,19 +57,12 @@ fun main() = application {
 
 @Composable
 fun AisDmeContent() {
-    val app = LocalAppController.current
     Row(Modifier.fillMaxSize().background(colors.background).padding(AisDmeSpacing.s)) {
         ResizableColumn(Modifier.fillMaxHeight().weight(1f),
             {
                 ResizableRow(Modifier.fillMaxSize(),
                     {
-                        ProjectTreeView(
-                            state = app.getProjectState(),
-                            onFileOpen = { file ->
-                                app.openFile(file, Panels.LEFT)
-                            },
-                            modifier = Modifier.fillMaxSize().panel()
-                        )
+                        ProjectTreeView(Modifier.fillMaxSize().panel())
                     },
                     {
                         Editor(Modifier.panel())
