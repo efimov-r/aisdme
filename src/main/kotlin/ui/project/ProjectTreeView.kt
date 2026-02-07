@@ -1,5 +1,7 @@
 package non.era.aisdme.ui.project
 
+import androidx.compose.foundation.ContextMenuArea
+import androidx.compose.foundation.ContextMenuItem
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -10,6 +12,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import non.era.aisdme.LocalAppController
+import non.era.aisdme.ui.editor.Panels
 import java.io.File
 
 @Composable
@@ -56,9 +60,10 @@ fun DirNodeView(
             )
         }
 
+
         if (node.expanded.value) {
-            node.children.forEach {
-                ProjectNodeView(it, onFileOpen)
+            node.children.forEach { ch->
+                ProjectNodeView(ch, onFileOpen)
             }
         }
     }
@@ -70,23 +75,33 @@ fun FileNodeView(
     onFileOpen: (File) -> Unit
 ) {
     var lastClickTime by remember { mutableStateOf(0L) }
+    val app = LocalAppController.current
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = (node.depth * 16).dp)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = {
-                        val now = System.currentTimeMillis()
-                        if (now - lastClickTime < 350) {
-                            onFileOpen(node.file)
-                        }
-                        lastClickTime = now
-                    }
-                )
-            }
+    ContextMenuArea(
+        items = {
+            listOf(
+                ContextMenuItem("Open in Left", onClick = {app.openFile(node.file, Panels.LEFT) }),
+                ContextMenuItem("Open in Right", onClick = {app.openFile(node.file, Panels.RIGHT)}),
+            )
+        }
     ) {
-        Text("📄 ${node.file.name}")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = (node.depth * 16).dp)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            val now = System.currentTimeMillis()
+                            if (now - lastClickTime < 350) {
+                                onFileOpen(node.file)
+                            }
+                            lastClickTime = now
+                        }
+                    )
+                }
+        ) {
+            Text("📄 ${node.file.name}")
+        }
     }
 }

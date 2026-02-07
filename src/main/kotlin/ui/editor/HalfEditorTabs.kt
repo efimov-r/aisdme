@@ -38,6 +38,8 @@ class HalfEditorTabs(
         activeTabId_ = tabId
     }
 
+    override fun countTabs(): Int = listTabs.size
+
     fun openFile(file: File) {
         files.values.find { it.file == file }?.id?.let { tabMapId ->
             if (!listTabs.contains(tabMapId)) listTabs.add(tabMapId)

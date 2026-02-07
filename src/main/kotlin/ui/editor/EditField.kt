@@ -3,6 +3,7 @@ package non.era.aisdme.ui.editor
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,7 +25,19 @@ import non.era.aisdme.LocalAppController
 @Composable
 fun Editor(modifier: Modifier = Modifier) {
     val app = LocalAppController.current
-    EditorHalf(app.getEditorHalfLeftController(), modifier)
+    val leftHalf = app.getEditorHalfLeftController()
+    val rightHalf = app.getEditorHalfRightController()
+    if(leftHalf.countTabs() == 0 && rightHalf.countTabs() > 0){
+        EditorHalf(rightHalf, modifier)
+    } else if(leftHalf.countTabs() > 0 && rightHalf.countTabs() == 0){
+        EditorHalf(leftHalf, modifier)
+    } else if(leftHalf.countTabs() > 0 && rightHalf.countTabs() > 0) {
+        Row(modifier){
+            EditorHalf(leftHalf, Modifier.fillMaxHeight().weight(1f))
+            EditorHalf(rightHalf, Modifier.fillMaxHeight().weight(1f))
+        }
+    }
+
 }
 
 @Composable

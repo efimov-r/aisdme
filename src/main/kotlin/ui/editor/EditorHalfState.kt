@@ -7,4 +7,5 @@ interface EditorHalfState {
     fun activateTab(tabId: Int)
     fun updateText(newText: String)
     fun closeTab(id: Int)
+    fun countTabs(): Int
 }
