@@ -73,7 +73,7 @@ fun AisDmeContent() {
                         )
                     },
                     {
-                        Editor(Modifier.panel().fillMaxSize())
+                        Editor(Modifier.panel())
                     })
             },
             {

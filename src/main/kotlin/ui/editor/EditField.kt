@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.text.BasicTextField
@@ -21,23 +22,29 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
+import non.era.aisdme.theme.AisDmeSpacing
 
 @Composable
 fun Editor(modifier: Modifier = Modifier) {
     val app = LocalAppController.current
-    val leftHalf = app.getEditorHalfLeftController()
-    val rightHalf = app.getEditorHalfRightController()
-    if(leftHalf.countTabs() == 0 && rightHalf.countTabs() > 0){
-        EditorHalf(rightHalf, modifier)
-    } else if(leftHalf.countTabs() > 0 && rightHalf.countTabs() == 0){
-        EditorHalf(leftHalf, modifier)
-    } else if(leftHalf.countTabs() > 0 && rightHalf.countTabs() > 0) {
-        Row(modifier){
-            EditorHalf(leftHalf, Modifier.fillMaxHeight().weight(1f))
-            EditorHalf(rightHalf, Modifier.fillMaxHeight().weight(1f))
-        }
+
+    if(app.getEditorHalfLeftController().countTabs() == 0 && app.getEditorHalfRightController().countTabs() > 0){
+        app.rightToLeftHalf()
     }
 
+    if(app.getEditorHalfLeftController().countTabs() > 0 && app.getEditorHalfRightController().countTabs() == 0){
+        EditorHalf(app.getEditorHalfLeftController(), modifier.fillMaxSize())
+    } else if(app.getEditorHalfLeftController().countTabs() > 0 && app.getEditorHalfRightController().countTabs() > 0) {
+        Row(Modifier.fillMaxSize()) {
+            EditorHalf(app.getEditorHalfLeftController(),
+                modifier.fillMaxHeight().weight(1f))
+            Box(Modifier.fillMaxHeight().width(AisDmeSpacing.s))
+            EditorHalf(app.getEditorHalfRightController(),
+                modifier.fillMaxHeight().weight(1f))
+        }
+    } else { //пусто
+        Box(modifier.fillMaxSize())
+    }
 }
 
 @Composable
@@ -112,8 +119,6 @@ fun EditField(
                         adapter = rememberScrollbarAdapter(scrollState)
                     )
                 }
-
-
             }
         }
     }

@@ -20,6 +20,8 @@ class AppController(
         editor.openFile(file, panel)
     }
 
+    fun rightToLeftHalf() = editor.rightToLeftHalf()
+
     fun getEditorHalfLeftController() : EditorHalfState = editor.leftTabs
     fun getEditorHalfRightController() : EditorHalfState = editor.rightTabs
     fun getProjectState() : ProjectState = project

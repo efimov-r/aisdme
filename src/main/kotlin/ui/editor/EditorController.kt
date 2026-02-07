@@ -1,5 +1,9 @@
 package non.era.aisdme.ui.editor
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import java.io.File
 
 enum class Panels{
@@ -7,12 +11,13 @@ enum class Panels{
 }
 
 class EditorController(
-    autosaveDelayMs: Long = 2000
+    val autosaveDelayMs: Long = 2000
 ) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var files: MutableMap<Int, ObservableOpenedFile> = mutableMapOf()
 
-    val leftTabs = HalfEditorTabs(files, autosaveDelayMs)
-    val rightTabs = HalfEditorTabs(files, autosaveDelayMs)
+    var leftTabs = HalfEditorTabs(files, autosaveDelayMs, scope)
+    var rightTabs = HalfEditorTabs(files, autosaveDelayMs, scope)
 
     fun openFile(file: File, pane: Panels = Panels.LEFT) {
         when(pane){
@@ -21,8 +26,15 @@ class EditorController(
         }
     }
 
+    fun rightToLeftHalf() {
+        leftTabs.closeAllTabs()
+        leftTabs = rightTabs
+        rightTabs = HalfEditorTabs(files, autosaveDelayMs, scope)
+    }
+
     fun saveAllAndDispose() {
-        leftTabs.saveAllAndDispose()
-        rightTabs.saveAllAndDispose()
+        leftTabs.saveAll()
+        rightTabs.saveAll()
+        scope.cancel()
     }
 }

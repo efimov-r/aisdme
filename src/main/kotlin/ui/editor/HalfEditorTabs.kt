@@ -12,9 +12,9 @@ import java.io.File
 
 class HalfEditorTabs(
     private var files: MutableMap<Int, ObservableOpenedFile>,
-    private val autosaveDelayMs: Long
+    private val autosaveDelayMs: Long,
+    private val scope: CoroutineScope
 ) : EditorHalfState {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val listMutex: Mutex = Mutex()
 
     private var listTabs = mutableStateListOf<Int>()
@@ -108,7 +108,17 @@ class HalfEditorTabs(
         }
     }
 
-    fun saveAllAndDispose() {
+    fun closeAllTabs() {
+        listTabs.forEach { id->
+            listTabs.remove(id)
+
+            if (activeTabId_ == id) {
+                activeTabId_ = listTabs.lastOrNull()
+            }
+        }
+    }
+
+    fun saveAll() {
         runBlocking {
             files.values.map { ta ->
                 scope.launch {
@@ -123,7 +133,6 @@ class HalfEditorTabs(
                     }
                 }
             }.joinAll()
-            scope.cancel()
         }
     }
 }
