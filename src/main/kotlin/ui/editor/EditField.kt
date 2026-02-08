@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.AisDmeSpacing
+import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 
 @Composable
 fun Editor(modifier: Modifier = Modifier) {
@@ -35,13 +36,15 @@ fun Editor(modifier: Modifier = Modifier) {
     if(app.getEditorHalfLeftController().countTabs() > 0 && app.getEditorHalfRightController().countTabs() == 0){
         EditorHalf(app.getEditorHalfLeftController(), modifier.fillMaxSize())
     } else if(app.getEditorHalfLeftController().countTabs() > 0 && app.getEditorHalfRightController().countTabs() > 0) {
-        Row(Modifier.fillMaxSize()) {
-            EditorHalf(app.getEditorHalfLeftController(),
-                modifier.fillMaxHeight().weight(1f))
-            Box(Modifier.fillMaxHeight().width(AisDmeSpacing.s))
-            EditorHalf(app.getEditorHalfRightController(),
-                modifier.fillMaxHeight().weight(1f))
-        }
+        ResizableProporcialRow(Modifier.fillMaxSize(),
+            {
+                EditorHalf(app.getEditorHalfLeftController(),
+                    modifier.fillMaxSize())
+            },
+            {
+                EditorHalf(app.getEditorHalfRightController(),
+                    modifier.fillMaxSize())
+            })
     } else { //пусто
         Box(modifier.fillMaxSize())
     }
