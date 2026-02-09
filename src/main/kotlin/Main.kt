@@ -33,7 +33,7 @@ fun main() = application {
         }
 
         val projectController = remember {
-            ProjectController(File("/home/era/proj/os/aisdme/")).apply { load() }
+            ProjectController(File("/home/era/proj/os/aisdme/"))
         }
 
         val filesController = remember {
@@ -46,7 +46,7 @@ fun main() = application {
 
         DisposableEffect(Unit) {
             onDispose {
-                println("DisposableEffect do")
+                Log.d("DisposableEffect do")
                 appController.dispose()
             }
         }
@@ -60,7 +60,7 @@ fun main() = application {
         }
     }
 
-    println("the end of main")
+    Log.d("the end of main")
 }
 
 @Composable

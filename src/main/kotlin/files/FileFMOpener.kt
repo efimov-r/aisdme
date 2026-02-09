@@ -1,5 +1,6 @@
 package non.era.aisdme.files
 
+import non.era.aisdme.Log
 import java.awt.Desktop
 import java.io.File
 import java.io.IOException
@@ -9,7 +10,7 @@ object FileFMOpener {
 
         // Проверяем, существует ли файл/папка
         if (!file.exists()) {
-            println("Файл не существует: $file")
+            Log.e("Файл не существует: $file")
             return
         }
 
@@ -25,7 +26,7 @@ object FileFMOpener {
                         desktop.open(file.parentFile)
                     }
                 } catch (e: IOException) {
-                    println("Не удалось открыть через Desktop API: ${e.message}")
+                    Log.e("Не удалось открыть через Desktop API: ${e.message}")
                     openWithSystemCommand(file)
                 }
             }
@@ -55,12 +56,12 @@ object FileFMOpener {
         try {
             ProcessBuilder(*commands).start()
         } catch (e: IOException) {
-            println("Не удалось открыть в $manager: ${e.message}")
+            Log.e("Не удалось открыть в $manager: ${e.message}")
             // Пробуем xdg-open как запасной вариант
             try {
                 ProcessBuilder("xdg-open", file.parent ?: file.absolutePath).start()
             } catch (e2: IOException) {
-                println("Не удалось открыть через xdg-open: ${e2.message}")
+                Log.e("Не удалось открыть через xdg-open: ${e2.message}")
             }
         }
     }
@@ -100,7 +101,7 @@ object FileFMOpener {
         try {
             ProcessBuilder(*command).start()
         } catch (e: IOException) {
-            println("Не удалось выполнить команду ${command.joinToString(" ")}: ${e.message}")
+            Log.e("Не удалось выполнить команду ${command.joinToString(" ")}: ${e.message}")
         }
     }
 
@@ -111,7 +112,7 @@ object FileFMOpener {
         val file = File(filePath)
 
         if (!file.exists()) {
-            println("Файл не существует: $filePath")
+            Log.e("Файл не существует: $filePath")
             return
         }
 
