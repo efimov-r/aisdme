@@ -31,15 +31,35 @@ class ProjectTreeController: IControler, TreeState {
             }
 
             dn?.let { dirNode->
-                val newChildren = buildProjectTree(dirNode.file, dirNode.depth + 1)
                 Log.i("rebuild child: ${dirNode.file}")
-                dirNode.children.clear()
-                dirNode.children.addAll(newChildren)
+                rebuildDirDiff(dirNode)
                 return@withContext true
             }
             Log.e("findDirNode is null, reload all")
             return@withContext false
         }
+
+    private fun rebuildDirDiff(node: DirNode) {
+        val old = node.children.associateBy { it.file.path }
+        val fresh = buildProjectTree(node.file, node.depth + 1)
+
+        val result = mutableListOf<ProjectNode>()
+
+        for (newNode in fresh) {
+            val oldNode = old[newNode.file.path]
+            if (oldNode is DirNode && newNode is DirNode) {
+                // сохраняем старый узел, обновляем детей
+                rebuildDirDiff(oldNode)
+                result += oldNode
+            } else {
+                result += newNode
+                Log.d("new node ${newNode.file}")
+            }
+        }
+
+        node.children.clear()
+        node.children.addAll(result)
+    }
 
     private fun findDirNodeFast(dir: File): DirNode? = indexDir[dir]
 
