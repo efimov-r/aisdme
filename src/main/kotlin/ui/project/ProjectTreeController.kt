@@ -11,6 +11,7 @@ import java.nio.file.Files
 
 class ProjectTreeController: IControler, TreeState {
     private val nodes_ = mutableStateListOf<ProjectNode>()
+    private val indexDir: MutableMap<File, DirNode> = mutableMapOf()
 
     override fun getNodes() = nodes_
 
@@ -24,7 +25,12 @@ class ProjectTreeController: IControler, TreeState {
 
     suspend fun rebuildDir(deer: File): Boolean =
         withContext(Dispatchers.Swing) {
-            findDirNode(nodes_, deer)?.let { dirNode->
+            val dn = findDirNodeFast(deer) ?: run {
+                Log.d("no fast find dir")
+                findDirNode(nodes_, deer)
+            }
+
+            dn?.let { dirNode->
                 val newChildren = buildProjectTree(dirNode.file, dirNode.depth + 1)
                 Log.i("rebuild child: ${dirNode.file}")
                 dirNode.children.clear()
@@ -34,6 +40,8 @@ class ProjectTreeController: IControler, TreeState {
             Log.i("findDirNode is null, reload all")
             return@withContext false
         }
+
+    private fun findDirNodeFast(dir: File): DirNode? = indexDir[dir]
 
 
     private fun findDirNode(
@@ -60,11 +68,13 @@ class ProjectTreeController: IControler, TreeState {
             ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
             ?.map { f ->
                 if (f.isDirectory) {
-                    DirNode(
+                    val a = DirNode(
                         file = f,
                         depth = depth,
                         children = buildProjectTree(f, depth + 1)
                     )
+                    indexDir[f] = a
+                    a
                 } else if(Files.isSymbolicLink(f.toPath())) {
                     LinkNode(
                         file = f,
