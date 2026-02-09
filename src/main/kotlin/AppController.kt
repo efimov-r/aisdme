@@ -13,7 +13,7 @@ import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.ProjectController
-import non.era.aisdme.ui.project.ProjectState
+import non.era.aisdme.ui.project.TreeState
 import java.io.File
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
@@ -42,7 +42,7 @@ class AppController(
 
     fun getEditorHalfLeftController() : EditorHalfState = editor.leftTabs
     fun getEditorHalfRightController() : EditorHalfState = editor.rightTabs
-    fun getProjectState() : ProjectState = project
+    fun getProjectState() : TreeState = project
 
     fun clearErrors() {
         _errors.clear()

@@ -1,7 +1,5 @@
 package non.era.aisdme.ui.project
 
-import androidx.compose.foundation.ContextMenuArea
-import androidx.compose.foundation.ContextMenuItem
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -12,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.ui.components.contexmenu.ProjectFileContextMenu
 import non.era.aisdme.ui.editor.Panels

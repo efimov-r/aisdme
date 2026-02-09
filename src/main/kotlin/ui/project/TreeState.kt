@@ -1,5 +1,5 @@
 package non.era.aisdme.ui.project
 
-interface ProjectState {
+interface TreeState {
     fun getNodes(): List<ProjectNode>
 }
