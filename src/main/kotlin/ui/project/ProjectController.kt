@@ -1,6 +1,8 @@
 package non.era.aisdme.ui.project
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.IControler
 import java.io.File
 import java.nio.file.FileSystems
@@ -15,7 +17,9 @@ class ProjectController(
     val root = projectRoot
     val watchService = FileSystems.getDefault().newWatchService()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var reloadJob: Job? = null
+    private val pendingDirs = mutableSetOf<File>()
+    private val pandingMutex = Mutex()
+    private val appliPandingMutex = Mutex()
 
     private val projectTree = ProjectTreeController()
 
@@ -43,9 +47,11 @@ class ProjectController(
             for (event in key.pollEvents()) {
                 val fullPath = (key.watchable() as Path).resolve(event.context() as Path)
                 val parentDir = fullPath.parent?.toFile() ?: continue
-
-                if(!projectTree.rebuildDir(parentDir)) {
-                    scheduleReload()
+                pandingMutex.withLock {
+                    pendingDirs += parentDir
+                }
+                scope.launch {
+                    applyBatch()
                 }
 
                 if (event.kind() == ENTRY_CREATE && Files.isDirectory(fullPath)) { //новая директория
@@ -57,12 +63,22 @@ class ProjectController(
         }
     }
 
-    private fun scheduleReload() {
-        reloadJob?.cancel()
-        reloadJob = scope.launch {
-            delay(400)
-            yield()
-            projectTree.rebuildAllTree(root)
+    suspend fun applyBatch() {
+        if (!appliPandingMutex.tryLock()) return
+
+        try {
+            delay(300)
+            val dirs = pandingMutex.withLock {
+                val dirs = pendingDirs.toList()
+                pendingDirs.clear()
+                return@withLock dirs
+            }
+
+            for (dir in dirs) {
+                projectTree.rebuildDir(dir)
+            }
+        } finally {
+            appliPandingMutex.unlock()
         }
     }
 

@@ -37,7 +37,7 @@ class ProjectTreeController: IControler, TreeState {
                 dirNode.children.addAll(newChildren)
                 return@withContext true
             }
-            Log.i("findDirNode is null, reload all")
+            Log.e("findDirNode is null, reload all")
             return@withContext false
         }
 
