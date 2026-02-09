@@ -20,3 +20,8 @@ class FileNode(
     override val file: File,
     override val depth: Int
 ) : ProjectNode()
+
+class LinkNode(
+    override val file: File,
+    override val depth: Int
+) : ProjectNode()

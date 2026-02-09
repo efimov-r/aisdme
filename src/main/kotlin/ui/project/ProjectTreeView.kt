@@ -14,6 +14,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.LocalAppController
+import non.era.aisdme.ui.components.contexmenu.ProjectFileContextMenu
 import non.era.aisdme.ui.editor.Panels
 
 @Composable
@@ -35,9 +36,11 @@ fun ProjectNodeView(
     when (node) {
         is DirNode -> DirNodeView(node)
         is FileNode -> FileNodeView(node)
+        is LinkNode -> LinkNodeView(node)
     }
 }
 
+//todo контекстное
 @Composable
 fun DirNodeView(
     node: DirNode
@@ -67,21 +70,11 @@ fun DirNodeView(
 }
 
 @Composable
-fun FileNodeView(
-    node: FileNode
-) {
+fun FileNodeView(node: FileNode) {
     var lastClickTime by remember { mutableStateOf(0L) }
     val app = LocalAppController.current
 
-    ContextMenuArea(
-        items = {
-            listOf(
-                ContextMenuItem("Open in Left", onClick = {app.openFileInEditor(node.file, Panels.LEFT) }),
-                ContextMenuItem("Open in Right", onClick = {app.openFileInEditor(node.file, Panels.RIGHT)}),
-                ContextMenuItem("Open in Dolphin", onClick = { FileFMOpener.openFileInFileManager(node.file)}),
-            )
-        }
-    ) {
+    ProjectFileContextMenu(node) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -100,5 +93,17 @@ fun FileNodeView(
         ) {
             Text("📄 ${node.file.name}")
         }
+    }
+}
+
+//todo контекстное
+@Composable
+fun LinkNodeView(node: LinkNode) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = (node.depth * 16).dp)
+    ) {
+        Text("L: ${node.file.name}")
     }
 }

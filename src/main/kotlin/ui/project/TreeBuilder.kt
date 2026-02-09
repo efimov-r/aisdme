@@ -1,6 +1,7 @@
 package non.era.aisdme.ui.project
 
 import java.io.File
+import java.nio.file.Files
 
 object TreeBuilder {
     fun buildProjectTree(
@@ -17,6 +18,11 @@ object TreeBuilder {
                         file = f,
                         depth = depth,
                         children = buildProjectTree(f, depth + 1)
+                    )
+                } else if(Files.isSymbolicLink(f.toPath())) {
+                    LinkNode(
+                        file = f,
+                        depth = depth
                     )
                 } else {
                     FileNode(
