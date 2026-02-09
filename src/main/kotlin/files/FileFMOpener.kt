@@ -1,4 +1,4 @@
-package non.era.aisdme
+package non.era.aisdme.files
 
 import java.awt.Desktop
 import java.io.File

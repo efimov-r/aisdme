@@ -2,7 +2,10 @@ package non.era.aisdme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -10,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
+import non.era.aisdme.files.FilesController
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
 import non.era.aisdme.theme.AisDmeTheme
@@ -32,14 +36,18 @@ fun main() = application {
             ProjectController(File("/home/era/proj/os/aisdme/")).apply { load() }
         }
 
+        val filesController = remember {
+            FilesController()
+        }
+
         val appController = remember {
-            AppController(editorController, projectController)
+            AppController(editorController, projectController, filesController)
         }
 
         DisposableEffect(Unit) {
             onDispose {
                 println("DisposableEffect do")
-                editorController.saveAllAndDispose()
+                appController.dispose()
             }
         }
 
@@ -73,10 +81,30 @@ fun AisDmeContent() {
             })
         Box(Modifier.fillMaxHeight().width(60.dp).padding(6.dp, 0.dp, 0.dp, 0.dp).panel().padding(AisDmeSpacing.s))
     }
-
+    ErrorOverlay()
 }
 
 @Composable
 fun Modifier.panel(): Modifier {
     return background(colors.surface, AisDmeShapes.large)
+}
+
+//todo переделать под самоуплывающие
+@Composable
+fun ErrorOverlay() {
+    val app = LocalAppController.current
+    val errors = app.errors
+
+    if (errors.isNotEmpty()) {
+        AlertDialog(
+            onDismissRequest = { app.clearErrors() },
+            title = { Text("Error") },
+            text = { Text(errors.last()) },
+            confirmButton = {
+                Button(onClick = app::clearErrors) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 }

@@ -12,7 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import non.era.aisdme.FileFMOpener
+import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.ui.editor.Panels
 
@@ -76,8 +76,8 @@ fun FileNodeView(
     ContextMenuArea(
         items = {
             listOf(
-                ContextMenuItem("Open in Left", onClick = {app.openFile(node.file, Panels.LEFT) }),
-                ContextMenuItem("Open in Right", onClick = {app.openFile(node.file, Panels.RIGHT)}),
+                ContextMenuItem("Open in Left", onClick = {app.openFileInEditor(node.file, Panels.LEFT) }),
+                ContextMenuItem("Open in Right", onClick = {app.openFileInEditor(node.file, Panels.RIGHT)}),
                 ContextMenuItem("Open in Dolphin", onClick = { FileFMOpener.openFileInFileManager(node.file)}),
             )
         }
@@ -91,7 +91,7 @@ fun FileNodeView(
                         onTap = {
                             val now = System.currentTimeMillis()
                             if (now - lastClickTime < 350) {
-                                app.openFile(node.file, Panels.LEFT)
+                                app.openFileInEditor(node.file, Panels.LEFT)
                             }
                             lastClickTime = now
                         }
