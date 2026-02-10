@@ -18,7 +18,9 @@ import androidx.compose.ui.unit.dp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.Log
 import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.ui.components.contexmenu.ProjectDirContextMenu
 import non.era.aisdme.ui.components.contexmenu.ProjectFileContextMenu
+import non.era.aisdme.ui.components.contexmenu.ProjectSymlinkContextMenu
 import non.era.aisdme.ui.editor.Panels
 
 @Composable
@@ -51,31 +53,34 @@ fun DirNodeView(
 ) {
     val app = LocalAppController.current
     Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth().padding(horizontal = 6.dp)
-                .then(
-                    if(node.isSelect)
-                        Modifier.background(LocalAisDmeColors.current.selectedRow)
-                    else Modifier
-                )
-                .padding(start = (node.depth * 16).dp)
-                .clickable {
-                    node.expanded.value = !node.expanded.value
-                }
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            if (awaitPointerEvent().type == PointerEventType.Press) app.reselectElementTree(node)
+        ProjectDirContextMenu(node) {
+            val isSelected by remember { derivedStateOf { node.isSelect } }
+            val isCutted by remember { derivedStateOf { node.isCutted } }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth().padding(horizontal = 6.dp)
+                    .then(
+                        if(isSelected)
+                            Modifier.background(LocalAisDmeColors.current.selectedRow)
+                        else Modifier
+                    )
+                    .padding(start = (node.depth * 16).dp)
+                    .clickable {
+                        node.expanded.value = !node.expanded.value
+                    }
+                    .pointerInput(node) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                if (awaitPointerEvent().type == PointerEventType.Press) app.reselectElementTree(node)
+                            }
                         }
                     }
-                }
-        ) {
-            Text(color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
-                text = if (node.expanded.value) "📂 ${node.file.name}" else "📁 ${node.file.name}"
-            )
+            ) {
+                Text(color = if(isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
+                    text = if (node.expanded.value) "📂 ${node.file.name}" else "📁 ${node.file.name}"
+                )
+            }
         }
-
 
         if (node.expanded.value) {
             node.children.forEach { ch->
@@ -88,24 +93,26 @@ fun DirNodeView(
 @Composable
 fun FileNodeView(node: FileNode) {
     val app = LocalAppController.current
+    val isSelected by remember { derivedStateOf { node.isSelect } }
+    val isCutted by remember { derivedStateOf { node.isCutted } }
     ProjectFileContextMenu(node) {
         Row(
             modifier = Modifier
                 .fillMaxWidth().padding(horizontal = 6.dp)
                 .then(
-                    if(node.isSelect)
+                    if(isSelected)
                         Modifier.background(LocalAisDmeColors.current.selectedRow)
                     else Modifier
                 )
                 .padding(start = (node.depth * 16).dp)
-                .pointerInput(Unit) {
+                .pointerInput(node) {
                     detectTapGestures(
                         onDoubleTap = {
                             app.openFileInEditor(node.file, Panels.LEFT)
                         }
                     )
                 }
-                .pointerInput(Unit) {
+                .pointerInput(node) {
                     awaitPointerEventScope {
                         while (true) {
                             if (awaitPointerEvent().type == PointerEventType.Press) app.reselectElementTree(node)
@@ -113,34 +120,37 @@ fun FileNodeView(node: FileNode) {
                     }
                 }
         ) {
-            Text(color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
+            Text(color = if(isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
                 text = "📄 ${node.file.name}")
         }
     }
 }
 
-//todo контекстное
 @Composable
 fun LinkNodeView(node: LinkNode) {
     val app = LocalAppController.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth().padding(horizontal = 6.dp)
-            .then(
-                if(node.isSelect)
-                    Modifier.background(LocalAisDmeColors.current.selectedRow)
-                else Modifier
-            )
-            .padding(start = (node.depth * 16).dp)
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        if (awaitPointerEvent().type == PointerEventType.Press) app.reselectElementTree(node)
+    val isSelected by remember { derivedStateOf { node.isSelect } }
+    val isCutted by remember { derivedStateOf { node.isCutted } }
+    ProjectSymlinkContextMenu(node) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth().padding(horizontal = 6.dp)
+                .then(
+                    if(isSelected)
+                        Modifier.background(LocalAisDmeColors.current.selectedRow)
+                    else Modifier
+                )
+                .padding(start = (node.depth * 16).dp)
+                .pointerInput(node) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            if (awaitPointerEvent().type == PointerEventType.Press) app.reselectElementTree(node)
+                        }
                     }
                 }
-            }
-    ) {
-        Text(color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
-            text = "L: ${node.file.name}")
+        ) {
+            Text(color = if(isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
+                text = "L: ${node.file.name}")
+        }
     }
 }

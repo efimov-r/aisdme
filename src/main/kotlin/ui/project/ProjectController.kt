@@ -31,8 +31,8 @@ class ProjectController(
         watchLoop()
     }
 
-    fun reselectProjectNode(node: ProjectNode) = projectTree.reselectNode(node)
-    fun cuttedNodeMark(node: ProjectNode) = projectTree.reselectNode(node)
+    fun reselectMarkProjectNode(node: ProjectNode) = projectTree.reselectNode(node)
+    fun cutNoteMarkRecursive(node: ProjectNode) = projectTree.cutNoteMarkRecursive(node)
 
     private fun registerRecursively(root: Path) {
         fun registerDir(path: Path) =
@@ -78,12 +78,14 @@ class ProjectController(
             }
 
             for (dir in dirs) {
-                projectTree.rebuildDir(dir)
+                projectTree.rebuildDirDiff(dir)
             }
         } finally {
             appliPandingMutex.unlock()
         }
     }
+
+    fun reloadDeerFromDisk(node: DirNode) = projectTree.reloadDirFromDisk(node)
 
     override fun getNodes() = projectTree.getNodes()
 

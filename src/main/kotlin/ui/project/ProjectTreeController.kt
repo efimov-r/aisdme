@@ -3,8 +3,6 @@ package non.era.aisdme.ui.project
 import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import non.era.aisdme.IControler
 import non.era.aisdme.Log
@@ -15,11 +13,11 @@ class ProjectTreeController: IControler, TreeState {
     private val nodes_ = mutableStateListOf<ProjectNode>()
     private val indexDir: MutableMap<File, DirNode> = mutableMapOf()
     private var selectedNode: ProjectNode? = null
-    private var cuttedNode: ProjectNode? = null
 
     override fun getNodes() = nodes_
 
     fun reselectNode(node: ProjectNode) {
+        Log.d("reselect element: ${node.file}")
         fun findSelectedNode(nodes: List<ProjectNode>): ProjectNode? {
             for (node in nodes) {
                 if (node is DirNode) {
@@ -41,7 +39,7 @@ class ProjectTreeController: IControler, TreeState {
         selectedNode?.isSelect = true
     }
 
-    fun cutNoteMark(node: ProjectNode) {
+    fun cutNoteMarkRecursive(node: ProjectNode) {
         fun cutNodesUnmark(nodes: List<ProjectNode>) {
             for (node in nodes) {
                 if (node is DirNode) {
@@ -50,14 +48,15 @@ class ProjectTreeController: IControler, TreeState {
                 }
             }
         }
-
-        if(cuttedNode != null) {
-            cuttedNode?.isCutted = false
-        } else {
-            cutNodesUnmark(nodes_)
+        fun cutNodeMark(node: ProjectNode) {
+            node.isCutted = true
+            if(node is DirNode) {
+                node.children.forEach { cutNodeMark(it) }
+            }
         }
-        cuttedNode = node
-        cuttedNode?.isCutted = true
+
+        cutNodesUnmark(nodes_)
+        cutNodeMark(node)
     }
 
     suspend fun rebuildAllTree(root: File) {
@@ -68,7 +67,7 @@ class ProjectTreeController: IControler, TreeState {
         }
     }
 
-    suspend fun rebuildDir(deer: File): Boolean =
+    suspend fun rebuildDirDiff(deer: File): Boolean =
         withContext(Dispatchers.Swing) {
             val dn = findDirNodeFast(deer) ?: run {
                 Log.d("no fast find dir")
@@ -83,6 +82,12 @@ class ProjectTreeController: IControler, TreeState {
             Log.e("findDirNode is null, reload all")
             return@withContext false
         }
+
+    fun reloadDirFromDisk(dirNode: DirNode) {
+        Log.i("rebuild child: ${dirNode.file}")
+        dirNode.children.clear()
+        dirNode.children.addAll(buildProjectTree(dirNode.file, dirNode.depth + 1))
+    }
 
     private fun rebuildDirDiff(node: DirNode) {
         val old = node.children.associateBy { it.file.path }

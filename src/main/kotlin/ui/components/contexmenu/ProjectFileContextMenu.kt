@@ -7,7 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
-import non.era.aisdme.ui.components.dialogs.ConfirmDeleteDialog
+import non.era.aisdme.ui.components.dialogs.ConfirmDialog
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.FileNode
 
@@ -18,8 +18,9 @@ fun ProjectFileContextMenu(node: FileNode, content: @Composable () -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        ConfirmDeleteDialog(
-            fileName = node.file.toString(),
+        ConfirmDialog(
+            title = "Delete file?",
+            message = "File \"${node.file}\" will be deleted without the possibility of recovery.",
             onConfirm = { app.delete(node.file.toPath()) },
             onDismiss = { showDialog = false }
         )

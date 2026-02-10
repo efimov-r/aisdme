@@ -4,18 +4,19 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 
 @Composable
-fun ConfirmDeleteDialog(
-    fileName: String,
+fun ConfirmDialog(
+    title: String,
+    message: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Delete file?")
+            Text(title)
         },
         text = {
-            Text("File \"$fileName\" will be deleted without the possibility of recovery.")
+            Text(message)
         },
         confirmButton = {
             Button(

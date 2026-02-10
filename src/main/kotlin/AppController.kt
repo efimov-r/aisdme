@@ -12,7 +12,7 @@ import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
-import non.era.aisdme.ui.project.FileNode
+import non.era.aisdme.ui.project.DirNode
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
 import non.era.aisdme.ui.project.TreeState
@@ -56,10 +56,13 @@ class AppController(
     fun move(src: Path, dst: Path) = filesController.move(src, dst)
     fun copyToClipboard(paths: List<Path>, cut: Boolean) = filesController.copyToClipboard(paths, cut)
     fun pasteFromClipboard(targetDir: Path) = filesController.pasteFromClipboard(targetDir)
+    fun reloadDeerFromDisk(node: DirNode) = project.reloadDeerFromDisk(node)
 
-    fun reselectElementTree(node: ProjectNode) = project.reselectProjectNode(node)
+    fun reselectElementTree(node: ProjectNode) {
+        project.reselectMarkProjectNode(node)
+    }
     fun cutNode(node: ProjectNode) {
-        project.cuttedNodeMark(node)
+        project.cutNoteMarkRecursive(node)
         filesController.copyToClipboard(listOf(node.file.toPath()), true)
     }
 
