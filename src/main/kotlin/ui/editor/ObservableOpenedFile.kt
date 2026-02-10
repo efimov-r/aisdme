@@ -3,17 +3,19 @@ package non.era.aisdme.ui.editor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicIntegerArray
+
+enum class WriteStatus {
+    WRITABLE,
+    READ_ONLY_FS,
+    LOCKED,
+    ERROR
+}
 
 class ObservableOpenedFile private constructor(
     val id: Int,
@@ -21,11 +23,13 @@ class ObservableOpenedFile private constructor(
     textIn: String,
     savedTextIn: String,
     errorIn: String? = null,
+    loadStateNow: Boolean
 ) { //todo readOnly
     private val saveMutex: Mutex = Mutex()
     var autosaveJob: Job? = null
     var error by mutableStateOf(errorIn)
     var readOnly by mutableStateOf(true)
+    var loadState by mutableStateOf(loadStateNow)
     private var text_ by mutableStateOf(textIn)
     private var savedText_ by mutableStateOf(savedTextIn)
     var title by mutableStateOf(recomputeTitle())
@@ -75,24 +79,15 @@ class ObservableOpenedFile private constructor(
         private var nextTabId = AtomicInteger(0)
         private val nextTabIdMutex = Mutex()
 
-        fun createNew(file: File, initText: String, errorIn: String?): ObservableOpenedFile{
-            return ObservableOpenedFile(
-                id = nextTabId.getAndIncrement(),
-                file = file,
-                textIn = initText,
-                savedTextIn = initText,
-                errorIn = errorIn
-            )
-        }
-
-        fun createEmpty(file: File): ObservableOpenedFile{
+        fun createEmpty(file: File, loadStateNow: Boolean): ObservableOpenedFile{
             val t = ""
             return ObservableOpenedFile(
                 id = nextTabId.getAndIncrement(),
                 file = file,
                 textIn = t,
                 savedTextIn = t,
-                errorIn = null
+                errorIn = null,
+                loadStateNow = loadStateNow
             )
         }
     }

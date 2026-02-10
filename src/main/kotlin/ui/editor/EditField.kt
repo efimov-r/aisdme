@@ -15,6 +15,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +25,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
+import non.era.aisdme.Log
 import non.era.aisdme.theme.AisDmeSpacing
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 
@@ -65,6 +69,7 @@ fun EditorHalf(listTab: EditorHalfState, modifier: Modifier = Modifier){
                 text = tab.getText(),
                 error = tab.error,
                 readOnly = tab.readOnly,
+                loadState = tab.loadState,
                 onTextChange = { listTab.updateText(it) }
             )
         }
@@ -76,6 +81,7 @@ fun EditField(
     text: String,
     error: String?,
     readOnly: Boolean,
+    loadState: Boolean,
     onTextChange: (String) -> Unit
 ) {
     Column(
@@ -93,15 +99,14 @@ fun EditField(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                if (text.isEmpty()) {
+                if (loadState) {
                     Text(
-                        text = ";; source\\n;; Type your code here",
+                        text = "Load ... ",
                         color = colors.onBackground,
                         fontSize = 14.sp
                     )
                 } else {
                     val scrollState = rememberScrollState()
-
                     BasicTextField(
                         value = text,
                         readOnly = readOnly,

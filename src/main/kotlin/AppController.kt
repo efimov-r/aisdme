@@ -12,6 +12,7 @@ import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
+import non.era.aisdme.ui.errors.ErrorData
 import non.era.aisdme.ui.project.DirNode
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
@@ -29,13 +30,13 @@ class AppController(
     private val filesController: FilesController,
 ) {
     private val scopeFlow = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val _errors = mutableStateListOf<String>() //todo перейти на класс
-    val errors: List<String> get() = _errors
+    private val _errors = mutableStateListOf<ErrorData>()
+    val errors: List<ErrorData> get() = _errors
 
     init {
         scopeFlow.launch {
             filesController.errors.collect { error ->
-                _errors += error
+                _errors += ErrorData(error)
             }
         }
     }

@@ -21,6 +21,7 @@ import non.era.aisdme.ui.components.custom.ResizableColumn
 import non.era.aisdme.ui.components.custom.ResizableRow
 import non.era.aisdme.ui.editor.Editor
 import non.era.aisdme.ui.editor.EditorController
+import non.era.aisdme.ui.errors.ErrorOverlay
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectTreeView
 import non.era.aisdme.ui.win.AisDmeWindow
@@ -87,24 +88,4 @@ fun AisDmeContent() {
 @Composable
 fun Modifier.panel(): Modifier {
     return background(colors.surface, AisDmeShapes.large)
-}
-
-//todo переделать под самоуплывающие
-@Composable
-fun ErrorOverlay() {
-    val app = LocalAppController.current
-    val errors = app.errors
-
-    if (errors.isNotEmpty()) {
-        AlertDialog(
-            onDismissRequest = { app.clearErrors() },
-            title = { Text("Error") },
-            text = { Text(errors.last()) },
-            confirmButton = {
-                Button(onClick = app::clearErrors) {
-                    Text("OK")
-                }
-            }
-        )
-    }
 }

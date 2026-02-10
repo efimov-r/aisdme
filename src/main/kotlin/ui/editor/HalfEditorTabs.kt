@@ -45,7 +45,7 @@ class HalfEditorTabs(
             if (!listTabs.contains(tabMapId)) listTabs.add(tabMapId)
             activeTabId_ = tabMapId
         } ?: run {
-            val tabEmpty = ObservableOpenedFile.createEmpty(file)
+            val tabEmpty = ObservableOpenedFile.createEmpty(file = file, loadStateNow = true)
             files[tabEmpty.id] = tabEmpty
             listTabs.add(tabEmpty.id)
             activeTabId_ = tabEmpty.id
@@ -57,6 +57,7 @@ class HalfEditorTabs(
                         listMutex.withLock {
                             tabEmpty.initText(text)
                             tabEmpty.readOnly = false
+                            tabEmpty.loadState = false
                         }
                     }
                 }.getOrElse {
