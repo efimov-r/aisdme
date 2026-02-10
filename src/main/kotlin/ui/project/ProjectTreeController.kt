@@ -3,6 +3,8 @@ package non.era.aisdme.ui.project
 import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import non.era.aisdme.IControler
 import non.era.aisdme.Log
@@ -12,8 +14,51 @@ import java.nio.file.Files
 class ProjectTreeController: IControler, TreeState {
     private val nodes_ = mutableStateListOf<ProjectNode>()
     private val indexDir: MutableMap<File, DirNode> = mutableMapOf()
+    private var selectedNode: ProjectNode? = null
+    private var cuttedNode: ProjectNode? = null
 
     override fun getNodes() = nodes_
+
+    fun reselectNode(node: ProjectNode) {
+        fun findSelectedNode(nodes: List<ProjectNode>): ProjectNode? {
+            for (node in nodes) {
+                if (node is DirNode) {
+                    if (node.isSelect) return node
+                    findSelectedNode(node.children)?.let { return it }
+                }
+            }
+            return null
+        }
+
+        if(selectedNode != null) {
+            selectedNode?.isSelect = false
+        } else {
+            findSelectedNode(nodes_)?.let { node ->
+                node.isSelect = false
+            }
+        }
+        selectedNode = node
+        selectedNode?.isSelect = true
+    }
+
+    fun cutNoteMark(node: ProjectNode) {
+        fun cutNodesUnmark(nodes: List<ProjectNode>) {
+            for (node in nodes) {
+                if (node is DirNode) {
+                    if (node.isCutted) node.isCutted = false
+                    cutNodesUnmark(node.children)
+                }
+            }
+        }
+
+        if(cuttedNode != null) {
+            cuttedNode?.isCutted = false
+        } else {
+            cutNodesUnmark(nodes_)
+        }
+        cuttedNode = node
+        cuttedNode?.isCutted = true
+    }
 
     suspend fun rebuildAllTree(root: File) {
         val newTree = buildProjectTree(root)
@@ -30,7 +75,7 @@ class ProjectTreeController: IControler, TreeState {
                 findDirNode(nodes_, deer)
             }
 
-            dn?.let { dirNode->
+            dn?.let { dirNode ->
                 Log.i("rebuild child: ${dirNode.file}")
                 rebuildDirDiff(dirNode)
                 return@withContext true

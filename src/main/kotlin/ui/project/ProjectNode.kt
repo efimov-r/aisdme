@@ -1,14 +1,18 @@
 package non.era.aisdme.ui.project
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import java.io.File
 
 sealed class ProjectNode {
     abstract val file: File
     abstract val depth: Int
+    var isSelect by mutableStateOf(false)
+    var isCutted by mutableStateOf(false)
 }
 
 class DirNode : ProjectNode {

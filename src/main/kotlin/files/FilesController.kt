@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.swing.Swing
 import non.era.aisdme.IControler
+import non.era.aisdme.Log
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor.stringFlavor
 import java.awt.datatransfer.StringSelection
@@ -28,6 +29,7 @@ class FilesController : IControler {
             runCatching {
                 operation()
             }.onFailure { e ->
+                Log.e("Error ${e.message}")
                 withContext(Dispatchers.Swing) {
                     _errors.emit(e.message ?: "Unknown error")
                 }

@@ -31,6 +31,9 @@ class ProjectController(
         watchLoop()
     }
 
+    fun reselectProjectNode(node: ProjectNode) = projectTree.reselectNode(node)
+    fun cuttedNodeMark(node: ProjectNode) = projectTree.reselectNode(node)
+
     private fun registerRecursively(root: Path) {
         fun registerDir(path: Path) =
             path.register(watchService,ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY)

@@ -79,7 +79,7 @@ fun AisDmeContent() {
             {
                 Box(Modifier.fillMaxSize().panel())
             })
-        Box(Modifier.fillMaxHeight().width(60.dp).padding(6.dp, 0.dp, 0.dp, 0.dp).panel().padding(AisDmeSpacing.s))
+        Box(Modifier.fillMaxHeight().width(60.dp).padding(start = 6.dp).panel().padding(AisDmeSpacing.s))
     }
     ErrorOverlay()
 }

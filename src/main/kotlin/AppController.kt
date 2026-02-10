@@ -12,9 +12,12 @@ import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
+import non.era.aisdme.ui.project.FileNode
 import non.era.aisdme.ui.project.ProjectController
+import non.era.aisdme.ui.project.ProjectNode
 import non.era.aisdme.ui.project.TreeState
 import java.io.File
+import java.nio.file.Path
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
@@ -43,6 +46,22 @@ class AppController(
     fun getEditorHalfLeftController() : EditorHalfState = editor.leftTabs
     fun getEditorHalfRightController() : EditorHalfState = editor.rightTabs
     fun getProjectState() : TreeState = project
+
+    fun createFile(path: Path) = filesController.createFile(path)
+    fun createDirectory(path: Path) = filesController.createDirectory(path)
+    fun delete(path: Path) = filesController.delete(path)
+    fun deleteRecursive(path: Path) = filesController.deleteRecursive(path)
+    fun copy(src: Path, dst: Path) = filesController.copy(src, dst)
+    fun copyRecursive(src: Path, dst: Path) = filesController.copyRecursive(src, dst)
+    fun move(src: Path, dst: Path) = filesController.move(src, dst)
+    fun copyToClipboard(paths: List<Path>, cut: Boolean) = filesController.copyToClipboard(paths, cut)
+    fun pasteFromClipboard(targetDir: Path) = filesController.pasteFromClipboard(targetDir)
+
+    fun reselectElementTree(node: ProjectNode) = project.reselectProjectNode(node)
+    fun cutNode(node: ProjectNode) {
+        project.cuttedNodeMark(node)
+        filesController.copyToClipboard(listOf(node.file.toPath()), true)
+    }
 
     fun clearErrors() {
         _errors.clear()
