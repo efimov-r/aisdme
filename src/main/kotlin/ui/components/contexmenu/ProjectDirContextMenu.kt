@@ -2,14 +2,17 @@ package non.era.aisdme.ui.components.contexmenu
 
 import androidx.compose.runtime.*
 import non.era.aisdme.LocalAppController
+import non.era.aisdme.Log
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.ui.components.dialogs.ConfirmDialog
+import non.era.aisdme.ui.components.dialogs.FileNameDialog
 import non.era.aisdme.ui.project.DirNode
 
 @Composable
 fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
     val app = LocalAppController.current
     var showDelDialog by remember { mutableStateOf(false) }
+    var showNewDialog by remember { mutableStateOf(false) }
 
     if (showDelDialog) {
         ConfirmDialog(
@@ -20,10 +23,23 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
         )
     }
 
+    if (showNewDialog) {
+        FileNameDialog(
+            title = "CrEateee",
+            initial = "",
+            onConfirm = { Log.i("new $it") },
+            onDismiss = { showNewDialog = false }
+        )
+    }
+
     RightClickArea(
         menuEntries = {
             listOf(
-                //todo new
+                MenuEntry.Item(
+                    title = "New",
+                    icon = null,
+                    shortcut = ""
+                ) { showNewDialog = true },
 
                 MenuEntry.Divider,
 

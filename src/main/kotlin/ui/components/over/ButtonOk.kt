@@ -12,7 +12,10 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeButtonBorder
 
 @Composable
-fun ButtonOk(onClick: () -> Unit) =
+fun ButtonOk(
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) =
     Button(
         modifier = Modifier.width(90.dp),
         shape = AisDmeShapes.medium,
@@ -21,7 +24,8 @@ fun ButtonOk(onClick: () -> Unit) =
         colors = ButtonDefaults.buttonColors(
             backgroundColor = LocalAisDmeColors.current.primary,
             contentColor = LocalAisDmeColors.current.onPrimary
-        )
+        ),
+        enabled = enabled
     ) {
         Text("Ok")
     }
