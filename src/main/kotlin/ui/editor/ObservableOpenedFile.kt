@@ -11,10 +11,11 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 enum class WriteStatus {
+    LOAD,
     WRITABLE,
-    READ_ONLY_FS,
-    LOCKED,
-    ERROR
+    READ_ONLY_FS, //!Files.isWritable(file.toPath())
+    LOCKED,//error write
+    ERROR //!file.exists()
 }
 
 class ObservableOpenedFile private constructor(
@@ -29,6 +30,7 @@ class ObservableOpenedFile private constructor(
     var autosaveJob: Job? = null
     var error by mutableStateOf(errorIn)
     var readOnly by mutableStateOf(true)
+    var writeStatus by mutableStateOf(WriteStatus.WRITABLE)
     var loadState by mutableStateOf(loadStateNow)
     private var text_ by mutableStateOf(textIn)
     private var savedText_ by mutableStateOf(savedTextIn)

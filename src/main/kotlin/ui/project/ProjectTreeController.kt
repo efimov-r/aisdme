@@ -2,14 +2,16 @@ package non.era.aisdme.ui.project
 
 import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import non.era.aisdme.IControler
 import non.era.aisdme.Log
+import non.era.aisdme.ui.UiController
 import java.io.File
 import java.nio.file.Files
 
-class ProjectTreeController: IControler, TreeState {
+class ProjectTreeController: UiController(), TreeState {
     private val nodes_ = mutableStateListOf<ProjectNode>()
     private val indexDir: MutableMap<File, DirNode> = mutableMapOf()
     private var selectedNode: ProjectNode? = null
@@ -84,6 +86,10 @@ class ProjectTreeController: IControler, TreeState {
         }
 
     fun reloadDirFromDisk(dirNode: DirNode) {
+        scope.launch { //todo for test error
+            newError("test!")
+            newError("test2!")
+        }
         Log.i("rebuild child: ${dirNode.file}")
         dirNode.children.clear()
         dirNode.children.addAll(buildProjectTree(dirNode.file, dirNode.depth + 1))
@@ -157,9 +163,5 @@ class ProjectTreeController: IControler, TreeState {
                     )
                 }
             } ?: emptyList()
-    }
-
-    override fun dispose() {
-        //ignore
     }
 }

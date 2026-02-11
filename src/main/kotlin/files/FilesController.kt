@@ -1,11 +1,6 @@
 package non.era.aisdme.files
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.swing.Swing
-import non.era.aisdme.IControler
-import non.era.aisdme.Log
+import non.era.aisdme.ui.UiController
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor.stringFlavor
 import java.awt.datatransfer.StringSelection
@@ -14,29 +9,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
-class FilesController : IControler {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _errors = MutableSharedFlow<String>(
-        replay = 0,
-        extraBufferCapacity = 16
-    )
-    val errors: SharedFlow<String> = _errors
-
-    private fun <T> safeLaunch(
-        operation: suspend () -> T
-    ): Job {
-        return scope.launch {
-            runCatching {
-                operation()
-            }.onFailure { e ->
-                Log.e("Error ${e.message}")
-                withContext(Dispatchers.Swing) {
-                    _errors.emit(e.message ?: "Unknown error")
-                }
-            }
-        }
-    }
-
+class FilesController : UiController() {
     fun createFile(path: Path) = safeLaunch {
             Files.createFile(path)
     }
@@ -120,9 +93,5 @@ class FilesController : IControler {
                 deleteRecursive(src)
             }
         }
-    }
-
-    override fun dispose() {
-        scope.cancel()
     }
 }

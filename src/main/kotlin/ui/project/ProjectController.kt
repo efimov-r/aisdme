@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.IControler
+import non.era.aisdme.ui.UiController
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -12,11 +13,10 @@ import java.nio.file.StandardWatchEventKinds.*
 
 class ProjectController(
     projectRoot: File
-) : TreeState, IControler {
+) : TreeState, UiController() {
     
     val root = projectRoot
     val watchService = FileSystems.getDefault().newWatchService()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val pendingDirs = mutableSetOf<File>()
     private val pandingMutex = Mutex()
     private val appliPandingMutex = Mutex()
@@ -29,6 +29,7 @@ class ProjectController(
         }
         registerRecursively(root.toPath())
         watchLoop()
+        projectTree.subscriptionError { newError(it) }
     }
 
     fun reselectMarkProjectNode(node: ProjectNode) = projectTree.reselectNode(node)
@@ -89,8 +90,7 @@ class ProjectController(
 
     override fun getNodes() = projectTree.getNodes()
 
-    override fun dispose() {
-        scope.cancel()
+    override fun disposeAfter() {
         projectTree.dispose()
         watchService.close()
     }

@@ -13,7 +13,7 @@ import java.io.File
 class HalfEditorTabs(
     private var files: MutableMap<Int, ObservableOpenedFile>,
     private val autosaveDelayMs: Long,
-    private val scope: CoroutineScope
+    private val eScope: CoroutineScope
 ) : EditorHalfState {
     private val listMutex: Mutex = Mutex()
 
@@ -49,7 +49,7 @@ class HalfEditorTabs(
             files[tabEmpty.id] = tabEmpty
             listTabs.add(tabEmpty.id)
             activeTabId_ = tabEmpty.id
-            scope.async {
+            eScope.async {
                 runCatching {
                     delay(300) //todo debug!!
                     val text = if (file.exists()) file.readText() else ""
@@ -74,13 +74,13 @@ class HalfEditorTabs(
     override fun updateText(newText: String) {
         val activTabLocal = files[activeTabId_]
         activTabLocal?.setText(newText)
-        scope.launch {
+        eScope.launch {
             activTabLocal?.updateTitle()
         }
         activTabLocal?.let{ tab->
             tab.autosaveJob?.cancel()
 
-            tab.autosaveJob = scope.launch {
+            tab.autosaveJob = eScope.launch {
                 delay(autosaveDelayMs)
                 if (!tab.isModified) return@launch
                 if (tab.fileNotCanWrite()) return@launch
@@ -89,7 +89,7 @@ class HalfEditorTabs(
                     tab.writeTextToFile()
                     withContext(Dispatchers.Swing){
                         tab.error = null
-                        tab.setSavedText(tab.getText(), scope)
+                        tab.setSavedText(tab.getText(), eScope)
                     }
 
                 }.getOrElse {
@@ -122,7 +122,7 @@ class HalfEditorTabs(
     fun saveAll() {
         runBlocking {
             files.values.map { ta ->
-                scope.launch {
+                eScope.launch {
                     ta.autosaveJob?.cancel()
                     if (ta.fileNotCanWrite()) return@launch
                     runCatching {

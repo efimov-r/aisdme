@@ -25,46 +25,43 @@ val LocalAppController = staticCompositionLocalOf<AppController> {
 }
 
 class AppController(
-    private val editor: EditorController,
-    private val project: ProjectController,
-    private val filesController: FilesController,
+    private val editorC: EditorController,
+    private val projectC: ProjectController,
+    private val filesC: FilesController,
 ) {
-    private val scopeFlow = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val _errors = mutableStateListOf<ErrorData>()
     val errors: List<ErrorData> get() = _errors
 
     init {
-        scopeFlow.launch {
-            filesController.errors.collect { error ->
-                _errors += ErrorData(error)
-            }
-        }
+        editorC.subscriptionError {  _errors += it }
+        projectC.subscriptionError {  _errors += it }
+        filesC.subscriptionError {  _errors += it }
     }
 
-    fun openFileInEditor(file: File, panel: Panels) = editor.openFile(file, panel)
-    fun rightToLeftHalf() = editor.rightToLeftHalf()
+    fun openFileInEditor(file: File, panel: Panels) = editorC.openFile(file, panel)
+    fun rightToLeftHalf() = editorC.rightToLeftHalf()
 
-    fun getEditorHalfLeftController() : EditorHalfState = editor.leftTabs
-    fun getEditorHalfRightController() : EditorHalfState = editor.rightTabs
-    fun getProjectState() : TreeState = project
+    fun getEditorHalfLeftController() : EditorHalfState = editorC.leftTabs
+    fun getEditorHalfRightController() : EditorHalfState = editorC.rightTabs
+    fun getProjectState() : TreeState = projectC
 
-    fun createFile(path: Path) = filesController.createFile(path)
-    fun createDirectory(path: Path) = filesController.createDirectory(path)
-    fun delete(path: Path) = filesController.delete(path)
-    fun deleteRecursive(path: Path) = filesController.deleteRecursive(path)
-    fun copy(src: Path, dst: Path) = filesController.copy(src, dst)
-    fun copyRecursive(src: Path, dst: Path) = filesController.copyRecursive(src, dst)
-    fun move(src: Path, dst: Path) = filesController.move(src, dst)
-    fun copyToClipboard(paths: List<Path>, cut: Boolean) = filesController.copyToClipboard(paths, cut)
-    fun pasteFromClipboard(targetDir: Path) = filesController.pasteFromClipboard(targetDir)
-    fun reloadDeerFromDisk(node: DirNode) = project.reloadDeerFromDisk(node)
+    fun createFile(path: Path) = filesC.createFile(path)
+    fun createDirectory(path: Path) = filesC.createDirectory(path)
+    fun delete(path: Path) = filesC.delete(path)
+    fun deleteRecursive(path: Path) = filesC.deleteRecursive(path)
+    fun copy(src: Path, dst: Path) = filesC.copy(src, dst)
+    fun copyRecursive(src: Path, dst: Path) = filesC.copyRecursive(src, dst)
+    fun move(src: Path, dst: Path) = filesC.move(src, dst)
+    fun copyToClipboard(paths: List<Path>, cut: Boolean) = filesC.copyToClipboard(paths, cut)
+    fun pasteFromClipboard(targetDir: Path) = filesC.pasteFromClipboard(targetDir)
+    fun reloadDeerFromDisk(node: DirNode) = projectC.reloadDeerFromDisk(node)
 
     fun reselectElementTree(node: ProjectNode) {
-        project.reselectMarkProjectNode(node)
+        projectC.reselectMarkProjectNode(node)
     }
     fun cutNode(node: ProjectNode) {
-        project.cutNoteMarkRecursive(node)
-        filesController.copyToClipboard(listOf(node.file.toPath()), true)
+        projectC.cutNoteMarkRecursive(node)
+        filesC.copyToClipboard(listOf(node.file.toPath()), true)
     }
 
     fun clearErrors() {
@@ -72,9 +69,8 @@ class AppController(
     }
 
     fun dispose() {
-        scopeFlow.cancel()
-        editor.dispose()
-        project.dispose()
-        filesController.dispose()
+        editorC.dispose()
+        projectC.dispose()
+        filesC.dispose()
     }
 }
