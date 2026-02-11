@@ -5,18 +5,18 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.swing.Swing
 import non.era.aisdme.IControler
 import non.era.aisdme.Log
-import non.era.aisdme.ui.errors.ErrorData
+import non.era.aisdme.ui.errors.GlobalMessage
 
 abstract class UiController : IControler {
     protected val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val scopeFlow = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val _errors = MutableSharedFlow<ErrorData>(
+    private val _errors = MutableSharedFlow<GlobalMessage>(
         replay = 0,
         extraBufferCapacity = 16
     )
 
     //execute in init with oll internal Controllers
-    fun subscriptionError(back: suspend (error: ErrorData) -> Unit) =
+    fun subscriptionError(back: suspend (error: GlobalMessage) -> Unit) =
         scopeFlow.launch {
             _errors.collect { back(it) }
             }
@@ -29,24 +29,40 @@ abstract class UiController : IControler {
                 operation()
             }.onFailure { e ->
                 withContext(Dispatchers.Swing) {
-                    newError(e)
+                    newGlobalError(e)
                 }
             }
         }
     }
 
-    protected suspend fun newError(err: ErrorData) {
+    protected suspend fun emitGlobalMessage(err: GlobalMessage) {
         _errors.emit(err)
     }
 
-    protected suspend fun newError(err: String) {
-        Log.e("Error: $err")
-        _errors.emit(ErrorData.createErrorObj(err))
+    protected suspend fun newGlobalInfo(title: String, text: String) {
+        _errors.emit(GlobalMessage.createGlobalInfo(title, text))
     }
 
-    protected suspend fun newError(e: Throwable) {
-        Log.e("Error ${e.message}")
-        _errors.emit(ErrorData.createErrorObj(e.message ?: "Unknown error"))
+    protected suspend fun newGlobalQuestion(title: String, text: String) {
+        _errors.emit(GlobalMessage.createGlobalQuestion(title, text))
+    }
+
+    protected suspend fun newGlobalSuccess(title: String, text: String) {
+        _errors.emit(GlobalMessage.createGlobalSuccess(title, text))
+    }
+
+    protected suspend fun newGlobalWarning(title: String, text: String) {
+        _errors.emit(GlobalMessage.createGlobalWarning(title, text))
+    }
+
+    protected suspend fun newGlobalError(err: String) {
+        Log.e("Error: $err")
+        _errors.emit(GlobalMessage.createGlobalError("Error", err))
+    }
+
+    protected suspend fun newGlobalError(e: Throwable) {
+        Log.e(e)
+        _errors.emit(GlobalMessage.createGlobalError("Error", e.message ?: "Unknown error"))
     }
 
     open fun disposeBefore(){}

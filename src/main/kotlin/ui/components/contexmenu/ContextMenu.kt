@@ -80,14 +80,8 @@ private fun MenuItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        // Иконка
-        Box(
-            modifier = Modifier.size(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            item.icon?.let {
-                SvgIcon(it)
-            }
+        item.icon?.let {
+            SvgIcon(it, Modifier.size(16.dp))
         }
 
         Spacer(Modifier.width(10.dp))

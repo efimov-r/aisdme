@@ -48,6 +48,7 @@ fun themedIconPath(base: String): String {
 @Composable
 fun SvgIcon(
     baseName: String,
+    modifier: Modifier = Modifier,
     size: Dp = 16.dp
 ) {
     val density = LocalDensity.current
@@ -61,7 +62,7 @@ fun SvgIcon(
         Icon(
             painter = painter,
             contentDescription = null,
-            modifier = Modifier.size(size),
+            modifier = modifier.size(size),
             tint = Color.Unspecified // ❗ ВАЖНО
         )
     }

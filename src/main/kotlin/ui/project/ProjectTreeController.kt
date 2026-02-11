@@ -5,7 +5,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
-import non.era.aisdme.IControler
 import non.era.aisdme.Log
 import non.era.aisdme.ui.UiController
 import java.io.File
@@ -86,10 +85,6 @@ class ProjectTreeController: UiController(), TreeState {
         }
 
     fun reloadDirFromDisk(dirNode: DirNode) {
-        scope.launch { //todo for test error
-            newError("test!")
-            newError("test2!")
-        }
         Log.i("rebuild child: ${dirNode.file}")
         dirNode.children.clear()
         dirNode.children.addAll(buildProjectTree(dirNode.file, dirNode.depth + 1))

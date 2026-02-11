@@ -29,7 +29,7 @@ class ProjectController(
         }
         registerRecursively(root.toPath())
         watchLoop()
-        projectTree.subscriptionError { newError(it) }
+        projectTree.subscriptionError { emitGlobalMessage(it) }
     }
 
     fun reselectMarkProjectNode(node: ProjectNode) = projectTree.reselectNode(node)

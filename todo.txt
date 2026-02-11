@@ -4,15 +4,11 @@ Horizontal scroll
 
 Кастомная title bar
 
-Caret-aware scrolling
 прокрутка к курсору
 
-Multiple tabs
 Map<File, EditorState>
 
-
 Undo / Redo
-через TextFieldValue
 
 обработать удаление файла извне открытого в редакторе
 

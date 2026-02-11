@@ -55,7 +55,7 @@ fun main() = application {
         CompositionLocalProvider(
             LocalAppController provides appController
         ) {
-            AisDmeTheme(false) {
+            AisDmeTheme(false) { //todo переключатель
                 AisDmeContent()
             }
         }

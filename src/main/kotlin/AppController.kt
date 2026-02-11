@@ -6,7 +6,7 @@ import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
-import non.era.aisdme.ui.errors.ErrorData
+import non.era.aisdme.ui.errors.GlobalMessage
 import non.era.aisdme.ui.project.DirNode
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
@@ -23,13 +23,13 @@ class AppController(
     private val projectC: ProjectController,
     private val filesC: FilesController,
 ) {
-    private val _errors = mutableStateListOf<ErrorData>()
-    val errors: List<ErrorData> get() = _errors
+    private val _globalMess = mutableStateListOf<GlobalMessage>()
+    val globalMess: List<GlobalMessage> get() = _globalMess
 
     init {
-        editorC.subscriptionError {  _errors += it }
-        projectC.subscriptionError {  _errors += it }
-        filesC.subscriptionError {  _errors += it }
+        editorC.subscriptionError {  _globalMess += it }
+        projectC.subscriptionError {  _globalMess += it }
+        filesC.subscriptionError {  _globalMess += it }
     }
 
     fun openFileInEditor(file: File, panel: Panels) = editorC.openFile(file, panel)
@@ -58,12 +58,12 @@ class AppController(
         filesC.copyToClipboard(listOf(node.file.toPath()), true)
     }
 
-    fun clearErrors() {
-        _errors.clear()
+    fun clearGlobalMess() {
+        _globalMess.clear()
     }
 
-    fun removeError(id: Int) {
-        _errors.removeIf { it.id == id }
+    fun removeMess(id: Int) {
+        _globalMess.removeIf { it.id == id }
     }
 
     fun dispose() {

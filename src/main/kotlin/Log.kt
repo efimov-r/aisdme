@@ -5,6 +5,10 @@ object Log {
         println(str)
     }
 
+    fun e(e: Throwable) {
+        println("Error ${e.message}")
+    }
+
     fun e(str: String) {
         println(str)
     }
