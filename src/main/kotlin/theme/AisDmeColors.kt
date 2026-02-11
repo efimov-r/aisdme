@@ -12,6 +12,7 @@ data class AisDmeColors(
     val surface: Color,
     val onBackground: Color,
     val onSurface: Color,
+    val surfaceBorder: Color,
     val custom: Color,
     val selectedRow: Color,
     val cutted: Color,
@@ -25,6 +26,7 @@ val LightAisDmeColors = AisDmeColors(
     surface = Color(0xFFFFFFFF),
     onBackground = Color.Black,
     onSurface = Color.Black,
+    surfaceBorder = Color(0xFF606060),
     custom = Color.Red,
     selectedRow = Color(0xFFD5D5D5),
     cutted = Color(0xFF858585),
@@ -38,7 +40,8 @@ val DarkAisDmeColors = AisDmeColors(
     surface = Color(0xFF1E1E1E),    // Поверхности (карточки, панели)
     onBackground = Color.White,     // Текст на фоне
     onSurface = Color.White,         // Текст на поверхностях
-    custom = Color.Green,
+    surfaceBorder = Color(0xFFf0f0f0), //рамка карточек
+    custom = Color.Green, //отладка
     selectedRow = Color(0xFFFFFFFF),
     cutted = Color(0xFF858585),
 )
