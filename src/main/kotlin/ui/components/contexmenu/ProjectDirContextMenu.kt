@@ -4,20 +4,19 @@ import androidx.compose.runtime.*
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.ui.components.dialogs.ConfirmDialog
-import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.DirNode
 
 @Composable
 fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
     val app = LocalAppController.current
-    var showDialog by remember { mutableStateOf(false) }
+    var showDelDialog by remember { mutableStateOf(false) }
 
-    if (showDialog) {
+    if (showDelDialog) {
         ConfirmDialog(
             title = "Delete directory?",
             message = "Directory \"${node.file}\" will be deleted without the possibility of recovery.",
             onConfirm = { app.delete(node.file.toPath()) },
-            onDismiss = { showDialog = false }
+            onDismiss = { showDelDialog = false }
         )
     }
 
@@ -52,7 +51,7 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
                     title = "Delete",
                     icon = "delete",
                     shortcut = "del"
-                ) { showDialog = true },
+                ) { showDelDialog = true },
 
                 MenuEntry.Divider,
 

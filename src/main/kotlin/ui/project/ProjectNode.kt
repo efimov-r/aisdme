@@ -11,7 +11,7 @@ import java.io.File
 sealed class ProjectNode {
     abstract val file: File
     abstract val depth: Int
-    var isSelect by mutableStateOf(false)
+    var isSelect by mutableStateOf(false) //todo убрать
     var isCutted by mutableStateOf(false)
 }
 

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.theme.aisDmeButtonBorder
 import non.era.aisdme.ui.components.over.SvgIcon
 
 @Composable
@@ -30,7 +31,7 @@ fun GlobalMessageItem(
     Surface(
         elevation = 3.dp,
         shape = AisDmeShapes.medium,
-        border = BorderStroke(1.dp, LocalAisDmeColors.current.surfaceBorder),
+        border = aisDmeButtonBorder(),
         modifier = modifier.fillMaxWidth()
     ) {
         val iconPadding = 12.dp

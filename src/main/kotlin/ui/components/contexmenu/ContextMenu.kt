@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import non.era.aisdme.theme.AisDmeShapes
+import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.theme.dialogBorder
 import non.era.aisdme.ui.components.over.SvgIcon
 
 sealed class MenuEntry {
@@ -50,7 +52,7 @@ fun ContextMenu(
                     color = colors.surface,
                     shape = AisDmeShapes.medium
                 )
-                .border(1.dp, colors.secondary, AisDmeShapes.medium)
+                .dialogBorder()
                 .padding(vertical = 6.dp)
         ) {
             entries.forEach { entry ->
@@ -111,7 +113,7 @@ private fun MenuDivider() {
     Divider(
         modifier = Modifier.padding(vertical = 6.dp),
         thickness = 1.dp,
-        color = colors.secondary.copy(alpha = 0.4f)
+        color = LocalAisDmeColors.current.surfaceBorder.copy(alpha = 0.4f)
     )
 }
 

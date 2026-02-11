@@ -25,6 +25,7 @@ import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
 import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.theme.aisDmeButtonBorder
 
 @Composable
 fun ErrorOverlay() {
@@ -89,7 +90,7 @@ fun ErrorOverlay() {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth(),
-                border = BorderStroke(1.dp, LocalAisDmeColors.current.surfaceBorder),
+                border = aisDmeButtonBorder(),
                 shape = AisDmeShapes.medium,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = LocalAisDmeColors.current.surface,

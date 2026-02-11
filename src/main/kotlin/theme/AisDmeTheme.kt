@@ -1,5 +1,7 @@
 package non.era.aisdme.theme
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
@@ -8,8 +10,23 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
+
+@Composable
+fun Modifier.dialogBorder() = this.border(1.dp, LocalAisDmeColors.current.surfaceBorder, AisDmeShapes.medium)
+
+@Composable
+@OptIn(ExperimentalComposeUiApi::class)
+fun aisDmeDialogProperties() = DialogProperties( scrimColor = LocalAisDmeColors.current.alertDialogScreem )
+
+@Composable
+fun aisDmeButtonBorder() = BorderStroke(1.dp, LocalAisDmeColors.current.surfaceBorder)
 
 val darkColors = darkColors(
         primary = Color(0xFFBB86FC),

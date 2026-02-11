@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 @Immutable
 data class AisDmeColors(
     val primary: Color,
+    val onPrimary: Color,
     val primaryVariant: Color,
     val secondary: Color,
     val background: Color,
@@ -16,10 +17,12 @@ data class AisDmeColors(
     val custom: Color,
     val selectedRow: Color,
     val cutted: Color,
+    val alertDialogScreem: Color,
 )
 
 val LightAisDmeColors = AisDmeColors(
-    primary = Color(0xFF6200EE),
+    primary = Color(0xFF3574F0),
+    onPrimary = Color(0xFFFFFFFF),
     primaryVariant = Color(0xFF3700B3),
     secondary = Color(0xFF03DAC6),
     background = Color(0xFFD5D5D5),
@@ -30,10 +33,12 @@ val LightAisDmeColors = AisDmeColors(
     custom = Color.Red,
     selectedRow = Color(0xFFD5D5D5),
     cutted = Color(0xFF858585),
+    alertDialogScreem = Color(0x00000000),
 )
 
 val DarkAisDmeColors = AisDmeColors(
-    primary = Color(0xFFBB86FC),
+    primary = Color(0xFF3574F0),
+    onPrimary = Color(0xFFFFFFFF),
     primaryVariant = Color(0xFF3700B3),
     secondary = Color(0xFF03DAC6),
     background = Color(0xFF121212), // Основной фон
@@ -44,7 +49,8 @@ val DarkAisDmeColors = AisDmeColors(
     custom = Color.Green, //отладка
     selectedRow = Color(0xFFFFFFFF),
     cutted = Color(0xFF858585),
-)
+    alertDialogScreem = Color(0x00000000),
+    )
 
 //!!!! Пример
 //LocalAisDmeColors.current.custom
