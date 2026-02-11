@@ -2,12 +2,6 @@ package non.era.aisdme
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.staticCompositionLocalOf
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
@@ -66,6 +60,10 @@ class AppController(
 
     fun clearErrors() {
         _errors.clear()
+    }
+
+    fun removeError(id: Int) {
+        _errors.removeIf { it.id == id }
     }
 
     fun dispose() {

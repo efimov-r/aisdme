@@ -79,7 +79,6 @@ class ObservableOpenedFile private constructor(
 
     companion object {
         private var nextTabId = AtomicInteger(0)
-        private val nextTabIdMutex = Mutex()
 
         fun createEmpty(file: File, loadStateNow: Boolean): ObservableOpenedFile{
             val t = ""

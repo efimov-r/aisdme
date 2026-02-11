@@ -41,12 +41,12 @@ abstract class UiController : IControler {
 
     protected suspend fun newError(err: String) {
         Log.e("Error: $err")
-        _errors.emit(ErrorData(err))
+        _errors.emit(ErrorData.createErrorObj(err))
     }
 
     protected suspend fun newError(e: Throwable) {
         Log.e("Error ${e.message}")
-        _errors.emit(ErrorData(e.message ?: "Unknown error"))
+        _errors.emit(ErrorData.createErrorObj(e.message ?: "Unknown error"))
     }
 
     open fun disposeBefore(){}
