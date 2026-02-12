@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.IControler
+import non.era.aisdme.Log
 import non.era.aisdme.ui.UiController
 import java.io.File
 import java.nio.file.FileSystems
@@ -36,6 +37,7 @@ class ProjectController(
     fun cutNoteMarkRecursive(node: ProjectNode) = projectTree.cutNoteMarkRecursive(node)
 
     private fun registerRecursively(root: Path) {
+        Log.d("registerRecursively")
         fun registerDir(path: Path) =
             path.register(watchService,ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY)
 
@@ -59,6 +61,7 @@ class ProjectController(
                 }
 
                 if (event.kind() == ENTRY_CREATE && Files.isDirectory(fullPath)) { //новая директория
+                    Log.d("new dir")
                     registerRecursively(fullPath)
                 }
             }
@@ -89,6 +92,7 @@ class ProjectController(
     fun reloadDeerFromDisk(node: DirNode) = projectTree.reloadDirFromDisk(node)
 
     override fun getNodes() = projectTree.getNodes()
+    override fun getSelectedNode(): ProjectNode? = projectTree.getSelectedNode()
 
     override fun disposeAfter() {
         projectTree.dispose()

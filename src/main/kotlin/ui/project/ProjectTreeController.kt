@@ -1,8 +1,10 @@
 package non.era.aisdme.ui.project
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import non.era.aisdme.Log
@@ -13,31 +15,14 @@ import java.nio.file.Files
 class ProjectTreeController: UiController(), TreeState {
     private val nodes_ = mutableStateListOf<ProjectNode>()
     private val indexDir: MutableMap<File, DirNode> = mutableMapOf()
-    private var selectedNode: ProjectNode? = null
+    private var _selectedNode: ProjectNode? by mutableStateOf(null)
 
     override fun getNodes() = nodes_
+    override fun getSelectedNode(): ProjectNode? = _selectedNode
 
     fun reselectNode(node: ProjectNode) {
         Log.d("reselect element: ${node.file}")
-        fun findSelectedNode(nodes: List<ProjectNode>): ProjectNode? {
-            for (node in nodes) {
-                if (node is DirNode) {
-                    if (node.isSelect) return node
-                    findSelectedNode(node.children)?.let { return it }
-                }
-            }
-            return null
-        }
-
-        if(selectedNode != null) {
-            selectedNode?.isSelect = false
-        } else {
-            findSelectedNode(nodes_)?.let { node ->
-                node.isSelect = false
-            }
-        }
-        selectedNode = node
-        selectedNode?.isSelect = true
+        _selectedNode = node
     }
 
     fun cutNoteMarkRecursive(node: ProjectNode) {
@@ -70,6 +55,7 @@ class ProjectTreeController: UiController(), TreeState {
 
     suspend fun rebuildDirDiff(deer: File): Boolean =
         withContext(Dispatchers.Swing) {
+            Log.d("rebuildDirDiff")
             val dn = findDirNodeFast(deer) ?: run {
                 Log.d("no fast find dir")
                 findDirNode(nodes_, deer)
@@ -112,7 +98,10 @@ class ProjectTreeController: UiController(), TreeState {
         node.children.addAll(result)
     }
 
-    private fun findDirNodeFast(dir: File): DirNode? = indexDir[dir]
+    private fun findDirNodeFast(dir: File): DirNode? {
+        return null //todo
+//        return indexDir[dir]
+    }
 
 
     private fun findDirNode(
