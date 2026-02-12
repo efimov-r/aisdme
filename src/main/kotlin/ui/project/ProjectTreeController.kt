@@ -20,11 +20,13 @@ class ProjectTreeController: UiController(), TreeState {
     override fun getNodes() = nodes_
     override fun getSelectedNode(): ProjectNode? = _selectedNode
 
+    //клик по элементу
     fun reselectNode(node: ProjectNode) {
         Log.d("reselect element: ${node.file}")
         _selectedNode = node
     }
 
+    //пометка что вырезано
     fun cutNoteMarkRecursive(node: ProjectNode) {
         fun cutNodesUnmark(nodes: List<ProjectNode>) {
             for (node in nodes) {
@@ -45,12 +47,20 @@ class ProjectTreeController: UiController(), TreeState {
         cutNodeMark(node)
     }
 
+    //todo пока только при старте
     suspend fun rebuildAllTree(root: File) {
         val newTree = buildProjectTree(root)
         withContext(Dispatchers.Swing) {
             nodes_.clear()
             nodes_.addAll(newTree)
         }
+    }
+
+    //из контекстного меню обновление
+    fun reloadDirFromDisk(dirNode: DirNode) {
+        Log.i("rebuild child from disk: ${dirNode.file}")
+        dirNode.children.clear()
+        dirNode.children.addAll(buildProjectTree(dirNode.file, dirNode.depth + 1))
     }
 
     suspend fun rebuildDirDiff(deer: File): Boolean =
@@ -69,12 +79,6 @@ class ProjectTreeController: UiController(), TreeState {
             Log.e("findDirNode is null, reload all")
             return@withContext false
         }
-
-    fun reloadDirFromDisk(dirNode: DirNode) {
-        Log.i("rebuild child: ${dirNode.file}")
-        dirNode.children.clear()
-        dirNode.children.addAll(buildProjectTree(dirNode.file, dirNode.depth + 1))
-    }
 
     private fun rebuildDirDiff(node: DirNode) {
         val old = node.children.associateBy { it.file.path }

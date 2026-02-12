@@ -51,14 +51,12 @@ fun DirNodeView(
     node: DirNode
 ) {
     val app = LocalAppController.current
+    val isSelected = app.getProjectState().getSelectedNode()?.file == node.file
+    val isCutted = node.isCutted
+
     Column {
         ProjectDirContextMenu(node) {
-            val isSelected by remember {
-                derivedStateOf {
-                    app.getProjectState().getSelectedNode()?.file == node.file
-                }
-            }
-            val isCutted by remember { derivedStateOf { node.isCutted } }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth().padding(horizontal = 6.dp)
@@ -96,12 +94,9 @@ fun DirNodeView(
 @Composable
 fun FileNodeView(node: FileNode) {
     val app = LocalAppController.current
-    val isSelected by remember {
-        derivedStateOf {
-            app.getProjectState().getSelectedNode()?.file == node.file
-        }
-    }
-    val isCutted by remember { derivedStateOf { node.isCutted } }
+    val isSelected = app.getProjectState().getSelectedNode()?.file == node.file
+    val isCutted = node.isCutted
+
     ProjectFileContextMenu(node) {
         Row(
             modifier = Modifier
@@ -136,12 +131,9 @@ fun FileNodeView(node: FileNode) {
 @Composable
 fun LinkNodeView(node: LinkNode) {
     val app = LocalAppController.current
-    val isSelected by remember {
-        derivedStateOf {
-            app.getProjectState().getSelectedNode()?.file == node.file
-        }
-    }
-    val isCutted by remember { derivedStateOf { node.isCutted } }
+    val isSelected = app.getProjectState().getSelectedNode()?.file == node.file
+    val isCutted = node.isCutted
+
     ProjectSymlinkContextMenu(node) {
         Row(
             modifier = Modifier
