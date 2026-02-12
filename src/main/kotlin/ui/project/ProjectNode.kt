@@ -32,6 +32,11 @@ class DirNode : ProjectNode {
         this.children.addAll(children)
         this.expanded = expanded
     }
+
+    fun copyUsefulParamsOfOldNode(old: DirNode) {
+        this.isCutted = old.isCutted
+
+    }
 }
 
 class FileNode(

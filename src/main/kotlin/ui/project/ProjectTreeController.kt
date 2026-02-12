@@ -14,7 +14,6 @@ import java.nio.file.Files
 
 class ProjectTreeController: UiController(), TreeState {
     private val nodes_ = mutableStateListOf<ProjectNode>()
-    private val indexDir: MutableMap<File, DirNode> = mutableMapOf()
     private var _selectedNode: ProjectNode? by mutableStateOf(null)
 
     override fun getNodes() = nodes_
@@ -22,7 +21,6 @@ class ProjectTreeController: UiController(), TreeState {
 
     //клик по элементу
     fun reselectNode(node: ProjectNode) {
-        Log.d("reselect element: ${node.file}")
         _selectedNode = node
     }
 
@@ -65,13 +63,8 @@ class ProjectTreeController: UiController(), TreeState {
 
     suspend fun rebuildDirDiff(deer: File): Boolean =
         withContext(Dispatchers.Swing) {
-            Log.d("rebuildDirDiff")
-            val dn = findDirNodeFast(deer) ?: run {
-                Log.d("no fast find dir")
-                findDirNode(nodes_, deer)
-            }
-
-            dn?.let { dirNode ->
+            Log.d("!rebuildDirDiff, long in ui")
+            findDirNode(nodes_, deer)?.let { dirNode ->
                 Log.i("rebuild child: ${dirNode.file}")
                 rebuildDirDiff(dirNode)
                 return@withContext true
@@ -94,19 +87,12 @@ class ProjectTreeController: UiController(), TreeState {
                 result += oldNode
             } else {
                 result += newNode
-                Log.d("new node ${newNode.file}")
             }
         }
 
         node.children.clear()
         node.children.addAll(result)
     }
-
-    private fun findDirNodeFast(dir: File): DirNode? {
-        return null //todo
-//        return indexDir[dir]
-    }
-
 
     private fun findDirNode(
         nodes: List<ProjectNode>,
@@ -132,13 +118,11 @@ class ProjectTreeController: UiController(), TreeState {
             ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
             ?.map { f ->
                 if (f.isDirectory) {
-                    val a = DirNode(
+                    DirNode(
                         file = f,
                         depth = depth,
                         children = buildProjectTree(f, depth + 1)
                     )
-                    indexDir[f] = a
-                    a
                 } else if(Files.isSymbolicLink(f.toPath())) {
                     LinkNode(
                         file = f,

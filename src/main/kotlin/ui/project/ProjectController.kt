@@ -74,7 +74,7 @@ class ProjectController(
         if (!appliPandingMutex.tryLock()) return
 
         try {
-            delay(300)
+            delay(200)
             val dirs = pandingMutex.withLock {
                 val dirs = pendingDirs.toList()
                 pendingDirs.clear()
