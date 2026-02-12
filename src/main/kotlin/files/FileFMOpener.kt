@@ -108,7 +108,7 @@ object FileFMOpener {
     /**
      * Открыть папку, содержащую файл, с выделением файла
      */
-    fun openContainingFolder(filePath: String) {
+    fun openContainingDirectory(filePath: String) {
         val file = File(filePath)
 
         if (!file.exists()) {

@@ -17,7 +17,8 @@ data class AisDmeColors(
     val custom: Color,
     val selectedRow: Color,
     val cutted: Color,
-    val alertDialogScreem: Color,
+    val transparent: Color,
+    val error: Color,
 )
 
 val LightAisDmeColors = AisDmeColors(
@@ -33,7 +34,8 @@ val LightAisDmeColors = AisDmeColors(
     custom = Color.Red,
     selectedRow = Color(0xFFD5D5D5),
     cutted = Color(0xFF858585),
-    alertDialogScreem = Color(0x00000000),
+    transparent = Color(0x00000000),
+    error = Color.Red,
 )
 
 val DarkAisDmeColors = AisDmeColors(
@@ -49,7 +51,8 @@ val DarkAisDmeColors = AisDmeColors(
     custom = Color.Green, //отладка
     selectedRow = Color(0xFFFFFFFF),
     cutted = Color(0xFF858585),
-    alertDialogScreem = Color(0x00000000),
+    transparent = Color(0x00000000),
+    error = Color.Red,
     )
 
 //!!!! Пример

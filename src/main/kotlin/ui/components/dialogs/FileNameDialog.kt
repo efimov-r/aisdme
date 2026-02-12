@@ -1,15 +1,26 @@
 package non.era.aisdme.ui.components.dialogs
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeDialogProperties
 import non.era.aisdme.theme.dialogBorder
 import non.era.aisdme.ui.components.over.ButtonCancel
@@ -22,7 +33,7 @@ fun FileNameDialog(
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var text by remember { mutableStateOf(initial) }
+    var text by remember { mutableStateOf("") }
     val error = remember(key1 = text) { validateFileName(text) }
     val focusRequester = remember { FocusRequester() }
 
@@ -52,23 +63,33 @@ fun FileNameDialog(
         title = { Text(title) },
 
         text = {
-            Column {
-                OutlinedTextField(
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .height(90.dp)) {
+                TextField(
                     value = text,
                     onValueChange = { text = it },
                     isError = error != null,
                     singleLine = true,
-                    label = { Text("Имя") },
-                    modifier = Modifier.run {
-                        fillMaxWidth().focusRequester(focusRequester)
-                    }
+                    placeholder = { Text(initial) }, // Вместо label используем placeholder
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = LocalAisDmeColors.current.primary, // Цвет черты при фокусе
+                        unfocusedIndicatorColor = LocalAisDmeColors.current.surfaceBorder, // Цвет черты без фокуса
+                        disabledIndicatorColor = LocalAisDmeColors.current.surfaceBorder, // Цвет черты для disabled
+                        errorIndicatorColor = LocalAisDmeColors.current.error, // Цвет черты при ошибке
+                        cursorColor = LocalAisDmeColors.current.primary, // Цвет курсора
+                        backgroundColor = LocalAisDmeColors.current.transparent // Прозрачный фон
+                    )
                 )
 
                 if (error != null) {
                     Text(
                         error,
-//                        color = MaterialTheme.colorScheme.error,
-//                        style = MaterialTheme.typography.bodySmall
+                        color = LocalAisDmeColors.current.error,
+                        style = LocalTextStyle.current.copy(fontSize = 12.sp, lineHeight = 20.sp)
                     )
                 }
             }
@@ -96,23 +117,23 @@ private val windowsReserved = setOf(
 )
 
 fun validateFileName(name: String): String? {
-    if (name.isBlank()) return "Имя не может быть пустым"
+    if (name.isBlank()) return "The name cannot be empty"
 
     if (name.contains('/'))
-        return "Имя не должно содержать /"
+        return "The name must not contain /"
 
     val winInvalid = Regex("""[<>:"\\|?*]""")
     if (winInvalid.containsMatchIn(name))
-        return "Недопустимые символы: <>:\"\\|?*"
+        return "Invalid characters: <>:\"\\|?*"
 
     if (name.last() == ' ' || name.last() == '.')
-        return "Имя не должно заканчиваться пробелом или точкой"
+        return "The name must not end with a space or dot."
 
     if (windowsReserved.contains(name.uppercase()))
-        return "Зарезервированное имя Windows"
+        return "Windows reserved"
 
     if (name.length > 255)
-        return "Слишком длинное имя"
+        return "The name is too long"
 
     return null
 }

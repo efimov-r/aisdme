@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
-import non.era.aisdme.Log
 import non.era.aisdme.theme.aisDmeDialogProperties
 import non.era.aisdme.theme.dialogBorder
 import non.era.aisdme.ui.components.over.ButtonCancel

@@ -13,8 +13,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 
@@ -23,7 +21,7 @@ fun Modifier.dialogBorder() = this.border(1.dp, LocalAisDmeColors.current.surfac
 
 @Composable
 @OptIn(ExperimentalComposeUiApi::class)
-fun aisDmeDialogProperties() = DialogProperties( scrimColor = LocalAisDmeColors.current.alertDialogScreem )
+fun aisDmeDialogProperties() = DialogProperties( scrimColor = LocalAisDmeColors.current.transparent )
 
 @Composable
 fun aisDmeButtonBorder() = BorderStroke(1.dp, LocalAisDmeColors.current.surfaceBorder)

@@ -2,7 +2,6 @@ package non.era.aisdme.ui.components.contexmenu
 
 import androidx.compose.runtime.*
 import non.era.aisdme.LocalAppController
-import non.era.aisdme.Log
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.ui.components.dialogs.ConfirmDialog
 import non.era.aisdme.ui.components.dialogs.FileNameDialog
@@ -12,7 +11,8 @@ import non.era.aisdme.ui.project.DirNode
 fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
     val app = LocalAppController.current
     var showDelDialog by remember { mutableStateOf(false) }
-    var showNewDialog by remember { mutableStateOf(false) }
+    var showNewFileDialog by remember { mutableStateOf(false) }
+    var showNewDirectoryDialog by remember { mutableStateOf(false) }
 
     if (showDelDialog) {
         ConfirmDialog(
@@ -23,12 +23,25 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
         )
     }
 
-    if (showNewDialog) {
+    if (showNewFileDialog) {
         FileNameDialog(
-            title = "CrEateee",
-            initial = "",
-            onConfirm = { Log.i("new $it") },
-            onDismiss = { showNewDialog = false }
+            title = "Create new File",
+            initial = "filename",
+            onConfirm = {
+                app.createFile(node.file.toPath().resolve(it))
+            },
+            onDismiss = { showNewFileDialog = false }
+        )
+    }
+
+    if (showNewDirectoryDialog) {
+        FileNameDialog(
+            title = "Create new Directory",
+            initial = "name directory",
+            onConfirm = {
+                app.createDirectory(node.file.toPath().resolve(it))
+            },
+            onDismiss = { showNewDirectoryDialog = false }
         )
     }
 
@@ -36,10 +49,16 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
         menuEntries = {
             listOf(
                 MenuEntry.Item(
-                    title = "New",
-                    icon = null,
+                    title = "New File",
+                    icon = "addFile",
                     shortcut = ""
-                ) { showNewDialog = true },
+                ) { showNewFileDialog = true },
+
+                MenuEntry.Item(
+                    title = "New Directory",
+                    icon = "addDirectory",
+                    shortcut = ""
+                ) { showNewDirectoryDialog = true },
 
                 MenuEntry.Divider,
 
