@@ -61,8 +61,9 @@ class FilesController : UiController() {
         )
     }
 
+    //todo перейти в бинарный формат копирования
     fun copyToClipboard(paths: List<Path>, cut: Boolean) = safeLaunch {
-        val prefix = if (cut) "cut:" else "copy:"
+        val prefix = if (cut) "cut:\n" else "copy:\n"
         val data = prefix + paths.joinToString("\n") { it.toAbsolutePath().toString() }
 
         Toolkit.getDefaultToolkit()

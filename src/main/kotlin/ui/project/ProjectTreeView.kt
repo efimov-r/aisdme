@@ -39,21 +39,13 @@ fun ProjectTreeView(
         .fillMaxHeight()
         .focusRequester(focusRequester)
         .onFocusChanged {
-            Log.d("new focus ${it.isFocused}")
             hasFocus = it.isFocused
         }
         .focusable()
         .onPreviewKeyEvent {
             if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-
-            when (it.key) {
-                Key.Enter, Key.NumPadEnter -> {
-                    Log.d("Enter!: ${app.getProjectState().getSelectedNode()?.file.toString()}")
-                    true
-                }
-
-                else -> false
-            } }) {
+            treeKeyFocusWork(it, app)
+        }) {
         LazyColumn(modifier = modifier
             .fillMaxHeight()) {
             items(app.getProjectState().getNodes()) { node ->
@@ -61,7 +53,6 @@ fun ProjectTreeView(
             }
         }
     }
-
 }
 
 @Composable

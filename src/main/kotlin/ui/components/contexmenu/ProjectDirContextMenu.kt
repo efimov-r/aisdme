@@ -18,7 +18,7 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
         ConfirmDialog(
             title = "Delete directory?",
             message = "Directory \"${node.file}\" will be deleted without the possibility of recovery.",
-            onConfirm = { app.delete(node.file.toPath()) },
+            onConfirm = { app.deleteRecursive(node.file.toPath()) },
             onDismiss = { showDelDialog = false }
         )
     }
