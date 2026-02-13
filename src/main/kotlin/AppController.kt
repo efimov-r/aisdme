@@ -50,9 +50,7 @@ class AppController(
     fun pasteFromClipboard(targetDir: Path) = filesC.pasteFromClipboard(targetDir)
     fun reloadDeerFromDisk(node: DirNode) = projectC.reloadDeerFromDisk(node)
 
-    fun reselectElementTree(node: ProjectNode) {
-        projectC.reselectMarkProjectNode(node)
-    }
+    fun reselectNode(node: ProjectNode?) = projectC.reselectNode(node)
     fun cutNode(node: ProjectNode) {
         projectC.cutNoteMarkRecursive(node)
         filesC.copyToClipboard(listOf(node.file.toPath()), true)

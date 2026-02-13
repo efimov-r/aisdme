@@ -19,7 +19,6 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.LocalAppController
-import non.era.aisdme.Log
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.ProjectDirContextMenu
 import non.era.aisdme.ui.components.contexmenu.ProjectFileContextMenu
@@ -88,7 +87,7 @@ fun DirNodeView(
                 text = if (node.expanded.value) "📂 ${node.file.name}" else "📁 ${node.file.name}",
                 node = node,
                 click = {
-                    node.expanded.value = !node.expanded.value
+                    node.openOrClose()
                 }
             )
         }
@@ -179,7 +178,7 @@ fun NodeView(
                     while (true) {
                         if (awaitPointerEvent().type == PointerEventType.Press) {
                             focusRequester.requestFocus()
-                            app.reselectElementTree(node)
+                            app.reselectNode(node)
                         }
                     }
                 }

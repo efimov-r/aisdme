@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import java.io.File
 
+//todo нормальное сравнение сделать и везде заменить
 sealed class ProjectNode {
     abstract val file: File
     abstract val depth: Int
@@ -33,9 +34,8 @@ class DirNode : ProjectNode {
         this.expanded = expanded
     }
 
-    fun copyUsefulParamsOfOldNode(old: DirNode) {
-        this.isCutted = old.isCutted
-
+    fun openOrClose() {
+        expanded.value = !expanded.value
     }
 }
 

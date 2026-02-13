@@ -3,7 +3,6 @@ package non.era.aisdme.ui.project
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import non.era.aisdme.IControler
 import non.era.aisdme.Log
 import non.era.aisdme.ui.UiController
 import java.io.File
@@ -33,7 +32,7 @@ class ProjectController(
         projectTree.subscriptionError { emitGlobalMessage(it) }
     }
 
-    fun reselectMarkProjectNode(node: ProjectNode) = projectTree.reselectNode(node)
+    override fun reselectNode(node: ProjectNode?) = projectTree.reselectNode(node)
     fun cutNoteMarkRecursive(node: ProjectNode) = projectTree.cutNoteMarkRecursive(node)
 
     private fun registerRecursively(root: Path) {

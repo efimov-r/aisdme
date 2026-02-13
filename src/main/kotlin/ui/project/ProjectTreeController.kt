@@ -17,12 +17,10 @@ class ProjectTreeController: UiController(), TreeState {
     private var _selectedNode: ProjectNode? by mutableStateOf(null)
 
     override fun getNodes() = nodes_
-    override fun getSelectedNode(): ProjectNode? = _selectedNode
+    override fun getSelectedNode(): ProjectNode? = _selectedNode //todo перейти на лист
 
     //клик по элементу
-    fun reselectNode(node: ProjectNode) {
-        _selectedNode = node
-    }
+    override fun reselectNode(node: ProjectNode?) { _selectedNode = node }
 
     //пометка что вырезано
     fun cutNoteMarkRecursive(node: ProjectNode) {
