@@ -8,30 +8,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import java.io.File
 
-//todo нормальное сравнение сделать и везде заменить
-sealed class ProjectNode {
-    abstract val file: File
-    abstract val depth: Int
+abstract class ProjectNode(
+    protected val _file: File,
+    val depth: Int
+) {
     var isCutted by mutableStateOf(false)
+
+    fun equalsOf(other: ProjectNode): Boolean {
+        return this._file == other._file
+    }
+
+    fun getFileName() = _file.name
+    fun getFilePath() = _file.toPath()
+    fun getFileString() = _file.toString()
+    fun getFile() = _file
+
 }
 
-class DirNode : ProjectNode {
-    override val file: File
-    override val depth: Int
-    val children: SnapshotStateList<ProjectNode>
-    val expanded: MutableState<Boolean>
+class DirNode(
+    file: File,
+    depth: Int,
+    children: List<ProjectNode>,
+    val expanded: MutableState<Boolean> = mutableStateOf(true)
+) : ProjectNode(file, depth) {
+    val children: SnapshotStateList<ProjectNode> = mutableStateListOf()
 
-    constructor(
-        file: File,
-        depth: Int,
-        children: List<ProjectNode>,
-        expanded: MutableState<Boolean> = mutableStateOf(true)
-    ) : super() {
-        this.file = file
-        this.depth = depth
-        this.children = mutableStateListOf()
+    init {
         this.children.addAll(children)
-        this.expanded = expanded
     }
 
     fun openOrClose() {
@@ -40,11 +43,11 @@ class DirNode : ProjectNode {
 }
 
 class FileNode(
-    override val file: File,
-    override val depth: Int
-) : ProjectNode()
+    file: File,
+    depth: Int
+) : ProjectNode(file, depth)
 
 class LinkNode(
-    override val file: File,
-    override val depth: Int
-) : ProjectNode()
+    file: File,
+    depth: Int
+) : ProjectNode(file, depth)

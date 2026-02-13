@@ -74,16 +74,16 @@ class ProjectTreeController: UiController(), TreeState {
 
     //из контекстного меню обновление
     fun reloadDirFromDisk(dirNode: DirNode) {
-        Log.i("rebuild child from disk: ${dirNode.file}")
+        Log.i("rebuild child from disk: ${dirNode.getFileString()}")
         dirNode.children.clear()
-        dirNode.children.addAll(buildProjectTree(dirNode.file, dirNode.depth + 1))
+        dirNode.children.addAll(buildProjectTree(dirNode.getFile(), dirNode.depth + 1))
     }
 
     suspend fun rebuildDirDiff(deer: File) =
         withContext(Dispatchers.Swing) {
             Log.d("!rebuildDirDiff, long in ui")
             findDirParentNode(nodes_, deer)?.let { dirNode ->
-                Log.i("rebuildDirDiff, pa ${dirNode.file.toString()}")
+                Log.i("rebuildDirDiff, pa ${dirNode.getFileString()}")
                 rebuildDirDiff(dirNode)
             } ?: {
                 Log.e("findDirNode is null, reload all")
@@ -94,13 +94,13 @@ class ProjectTreeController: UiController(), TreeState {
         }
 
     private fun rebuildDirDiff(node: DirNode) {
-        val old = node.children.associateBy { it.file.path }
-        val fresh = buildProjectTree(node.file, node.depth + 1)
+        val old = node.children.associateBy { it.getFilePath() }
+        val fresh = buildProjectTree(node.getFile(), node.depth + 1)
 
         val result = mutableListOf<ProjectNode>()
 
         for (newNode in fresh) {
-            val oldNode = old[newNode.file.path]
+            val oldNode = old[newNode.getFilePath()]
             if (oldNode is DirNode && newNode is DirNode) {
                 // сохраняем старый узел, обновляем детей
                 rebuildDirDiff(oldNode)
@@ -121,7 +121,7 @@ class ProjectTreeController: UiController(), TreeState {
         for (node in nodes) {
             if (node is DirNode) {
                 node.children.forEach { ch->
-                    if (ch.file == dir) return node
+                    if (ch.getFile() == dir) return node
                 }
                 findDirParentNode(node.children, dir)?.let { return it }
             }

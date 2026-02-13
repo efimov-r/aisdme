@@ -4,7 +4,6 @@ import androidx.compose.runtime.*
 import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
-import non.era.aisdme.ui.components.dialogs.ConfirmDialog
 import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
 import non.era.aisdme.ui.project.LinkNode
 
@@ -30,7 +29,7 @@ fun ProjectSymlinkContextMenu(node: LinkNode, content: @Composable () -> Unit) {
                     title = "Open in Dolphin",
                     icon = "npm",
                     shortcut = Hotkeys.OPEN_DOLPHIN
-                ) { FileFMOpener.openFileInFileManager(node.file) }
+                ) { FileFMOpener.openFileInFileManager(node.getFile()) }
             )
         }
     ) {

@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
-import non.era.aisdme.ui.components.dialogs.ConfirmDialog
 import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.FileNode
@@ -34,7 +33,7 @@ fun ProjectFileContextMenu(node: FileNode, content: @Composable () -> Unit) {
                     title = "Copy",
                     icon = "copy",
                     shortcut = Hotkeys.COPY
-                ) { app.copyToClipboard(listOf(node.file.toPath()), false) },
+                ) { app.copyToClipboard(listOf(node.getFilePath()), false) },
 
                 MenuEntry.Item(
                     title = "Delete",
@@ -48,13 +47,13 @@ fun ProjectFileContextMenu(node: FileNode, content: @Composable () -> Unit) {
                     title = "Open in Left",
                     icon = "applyNotConflictsRight",
                     shortcut = Hotkeys.LEFT
-                ) { app.openFileInEditor(node.file, Panels.LEFT) },
+                ) { app.openFileInEditor(node, Panels.LEFT) },
 
                 MenuEntry.Item(
                     title = "Open in Right",
                     icon = "applyNotConflictsLeft",
                     shortcut = Hotkeys.RIGHT
-                ) { app.openFileInEditor(node.file, Panels.RIGHT) },
+                ) { app.openFileInEditor(node, Panels.RIGHT) },
 
                 MenuEntry.Divider,
 
@@ -62,7 +61,7 @@ fun ProjectFileContextMenu(node: FileNode, content: @Composable () -> Unit) {
                     title = "Open in Dolphin",
                     icon = "npm",
                     shortcut = Hotkeys.OPEN_DOLPHIN
-                ) { FileFMOpener.openFileInFileManager(node.file) }
+                ) { FileFMOpener.openFileInFileManager(node.getFile()) }
             )
         }
     ) {

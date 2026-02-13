@@ -47,13 +47,13 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
                     title = "Copy",
                     icon = "copy",
                     shortcut = Hotkeys.COPY
-                ) { app.copyToClipboard(listOf(node.file.toPath()), false) },
+                ) { app.copyToClipboard(listOf(node.getFilePath()), false) },
 
                 MenuEntry.Item(
                     title = "Paste",
                     icon = "paste",
                     shortcut = Hotkeys.PASTE
-                ) { app.pasteFromClipboard(node.file.toPath()) },
+                ) { app.pasteFromClipboard(node.getFilePath()) },
 
                 MenuEntry.Divider,
 
@@ -69,7 +69,7 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
                     title = "Open in Dolphin",
                     icon = "npm",
                     shortcut = Hotkeys.OPEN_DOLPHIN
-                ) { FileFMOpener.openFileInFileManager(node.file) },
+                ) { FileFMOpener.openFileInFileManager(node.getFile()) },
 
                 MenuEntry.Divider,
 

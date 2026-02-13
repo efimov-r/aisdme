@@ -23,7 +23,6 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.ProjectDirContextMenu
 import non.era.aisdme.ui.components.contexmenu.ProjectFileContextMenu
 import non.era.aisdme.ui.components.contexmenu.ProjectSymlinkContextMenu
-import non.era.aisdme.ui.components.dialogs.ConfirmDialog
 import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
 import non.era.aisdme.ui.editor.Panels
 
@@ -83,7 +82,7 @@ fun DirNodeView(
     hasFocus: Boolean,
 ) {
     val app = LocalAppController.current
-    val isSelected = app.getProjectState().getSelectedNode()?.file == node.file
+    val isSelected = app.getProjectState().getSelectedNode()?.equalsOf(node) ?: false
     val isCutted = node.isCutted
 
     Column {
@@ -93,7 +92,7 @@ fun DirNodeView(
                 isCutted = isCutted,
                 focusRequester = focusRequester,
                 hasFocus = hasFocus,
-                text = if (node.expanded.value) "📂 ${node.file.name}" else "📁 ${node.file.name}",
+                text = if (node.expanded.value) "📂 ${node.getFileName()}" else "📁 ${node.getFileName()}",
                 node = node,
                 click = {
                     node.openOrClose()
@@ -114,7 +113,7 @@ fun FileNodeView(node: FileNode,
                  focusRequester: FocusRequester,
                  hasFocus: Boolean,) {
     val app = LocalAppController.current
-    val isSelected = app.getProjectState().getSelectedNode()?.file == node.file
+    val isSelected = app.getProjectState().getSelectedNode()?.equalsOf(node) ?: false
     val isCutted = node.isCutted
 
     ProjectFileContextMenu(node) {
@@ -123,9 +122,9 @@ fun FileNodeView(node: FileNode,
             isCutted = isCutted,
             focusRequester = focusRequester,
             hasFocus = hasFocus,
-            text = "📄 ${node.file.name}",
+            text = "📄 ${node.getFileName()}",
             node = node,
-            doubleClick = { app.openFileInEditor(node.file, Panels.LEFT) }
+            doubleClick = { app.openFileInEditor(node, Panels.LEFT) }
             )
     }
 }
@@ -135,7 +134,7 @@ fun LinkNodeView(node: LinkNode,
                  focusRequester: FocusRequester,
                  hasFocus: Boolean,) {
     val app = LocalAppController.current
-    val isSelected = app.getProjectState().getSelectedNode()?.file == node.file
+    val isSelected = app.getProjectState().getSelectedNode()?.equalsOf(node) ?: false
     val isCutted = node.isCutted
 
     ProjectSymlinkContextMenu(node) {
@@ -144,7 +143,7 @@ fun LinkNodeView(node: LinkNode,
             isCutted = isCutted,
             focusRequester = focusRequester,
             hasFocus = hasFocus,
-            text = "L: ${node.file.name}",
+            text = "L: ${node.getFileName()}",
             node = node,
             )
     }

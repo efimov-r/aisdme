@@ -11,7 +11,6 @@ import non.era.aisdme.ui.project.DirNode
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
 import non.era.aisdme.ui.project.TreeState
-import java.io.File
 import java.nio.file.Path
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
@@ -32,7 +31,7 @@ class AppController(
         filesC.subscriptionError {  _globalMess += it }
     }
 
-    fun openFileInEditor(file: File, panel: Panels) = editorC.openFile(file, panel)
+    fun openFileInEditor(node: ProjectNode, panel: Panels) = editorC.openFile(node.getFile(), panel)
     fun rightToLeftHalf() = editorC.rightToLeftHalf()
 
     fun getEditorHalfLeftController() : EditorHalfState = editorC.leftTabs
@@ -51,7 +50,7 @@ class AppController(
     fun reselectNode(node: ProjectNode?) = projectC.reselectNode(node)
     fun cutNode(node: ProjectNode) {
         projectC.cutNoteMarkRecursive(node)
-        filesC.copyToClipboard(listOf(node.file.toPath()), true)
+        filesC.copyToClipboard(listOf(node.getFilePath()), true)
     }
 
     fun clearGlobalMess() {

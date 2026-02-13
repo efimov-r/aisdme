@@ -13,24 +13,24 @@ fun DeleteNodeDialog(app: AppController, node: ProjectNode, onDismiss: () -> Uni
         is LinkNode -> {
             ConfirmDialog(
                 title = "Delete symlink?",
-                message = "Symlink \"${node.file}\" will be deleted without the possibility of recovery.",
-                onConfirm = { app.delete(node.file.toPath()) },
+                message = "Symlink \"${node.getFileString()}\" will be deleted without the possibility of recovery.",
+                onConfirm = { app.delete(node.getFilePath()) },
                 onDismiss = onDismiss
             )
         }
         is DirNode -> {
             ConfirmDialog(
                 title = "Delete directory?",
-                message = "Directory \"${node.file}\" will be deleted without the possibility of recovery.",
-                onConfirm = { app.deleteRecursive(node.file.toPath()) },
+                message = "Directory \"${node.getFileString()}\" will be deleted without the possibility of recovery.",
+                onConfirm = { app.deleteRecursive(node.getFilePath()) },
                 onDismiss = onDismiss
             )
         }
         is FileNode -> {
             ConfirmDialog(
                 title = "Delete file?",
-                message = "File \"${node.file}\" will be deleted without the possibility of recovery.",
-                onConfirm = { app.delete(node.file.toPath()) },
+                message = "File \"${node.getFileString()}\" will be deleted without the possibility of recovery.",
+                onConfirm = { app.delete(node.getFilePath()) },
                 onDismiss = onDismiss
             )
         }

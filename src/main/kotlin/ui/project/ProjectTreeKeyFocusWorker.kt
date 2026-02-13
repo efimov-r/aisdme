@@ -15,14 +15,14 @@ fun treeKeyFocusWork(
     when {
         Hotkeys.COPY.ifDu(event) -> {
             if(selected is FileNode || selected is DirNode) {
-                app.copyToClipboard(listOf(selected.file.toPath()), false)
+                app.copyToClipboard(listOf(selected.getFilePath()), false)
             }
             return true
         }
 
         Hotkeys.PASTE.ifDu(event) -> {
             if(selected is DirNode) {
-                app.pasteFromClipboard(selected.file.toPath())
+                app.pasteFromClipboard(selected.getFilePath())
             }
             return true
         }
@@ -41,7 +41,7 @@ fun treeKeyFocusWork(
         }
 
         Hotkeys.OPEN_DOLPHIN.ifDu(event) -> {
-            selected?.let { FileFMOpener.openFileInFileManager(it.file) }
+            selected?.let { FileFMOpener.openFileInFileManager(it.getFile()) }
             return true
         }
 
@@ -54,14 +54,14 @@ fun treeKeyFocusWork(
 
         Hotkeys.LEFT.ifDu(event) -> {
             if(selected is FileNode) {
-                app.openFileInEditor(selected.file, Panels.LEFT)
+                app.openFileInEditor(selected, Panels.LEFT)
             }
             return true
         }
 
         Hotkeys.RIGHT.ifDu(event) -> {
             if(selected is FileNode) {
-                app.openFileInEditor(selected.file, Panels.RIGHT)
+                app.openFileInEditor(selected, Panels.RIGHT)
             }
             return true
         }
@@ -112,13 +112,13 @@ object ProjectListBuilder {
 
     fun nextOf(node: ProjectNode?) : ProjectNode?  {
         if(node == null) return null
-        val i = result.indexOfFirst { it.file == node.file }
+        val i = result.indexOfFirst { it.equalsOf(node) }
         return result.getOrNull(i + 1) ?: node
     }
 
     fun lastOf(node: ProjectNode?) : ProjectNode?  {
         if(node == null) return null
-        val i = result.indexOfFirst { it.file == node.file }
+        val i = result.indexOfFirst { it.equalsOf(node) }
         return result.getOrNull(i - 1) ?: node
     }
 }

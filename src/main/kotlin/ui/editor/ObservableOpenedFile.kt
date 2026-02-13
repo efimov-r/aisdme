@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
 enum class WriteStatus {
     LOAD,
     WRITABLE,
-    READ_ONLY_FS, //!Files.isWritable(file.toPath())
+    READ_ONLY_FS, //!Files.isWritable(getFilepath())
     LOCKED,//error write
     ERROR //!file.exists()
 }

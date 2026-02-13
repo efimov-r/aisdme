@@ -35,7 +35,7 @@ fun NewNodeDialog(
                 title = "Create new File",
                 initial = "filename",
                 onConfirm = {
-                    app.createFile(insertNode.file.toPath().resolve(it))
+                    app.createFile(insertNode.getFilePath().resolve(it))
                 },
                 onDismiss = onDismiss
             )
@@ -45,7 +45,7 @@ fun NewNodeDialog(
                 title = "Create new Directory",
                 initial = "name directory",
                 onConfirm = {
-                    app.createDirectory(insertNode.file.toPath().resolve(it))
+                    app.createDirectory(insertNode.getFilePath().resolve(it))
                 },
                 onDismiss = onDismiss
             )
