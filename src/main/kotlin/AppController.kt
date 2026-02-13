@@ -43,9 +43,7 @@ class AppController(
     fun createDirectory(path: Path) = filesC.createDirectory(path)
     fun delete(path: Path) = filesC.delete(path)
     fun deleteRecursive(path: Path) = filesC.deleteRecursive(path)
-    fun copy(src: Path, dst: Path) = filesC.copy(src, dst)
-    fun copyRecursive(src: Path, dst: Path) = filesC.copyRecursive(src, dst)
-    fun move(src: Path, dst: Path) = filesC.move(src, dst)
+    fun move(src: Path, dst: Path) = filesC.move(src, dst) //todo сделать перемещение мышкой?
     fun copyToClipboard(paths: List<Path>, cut: Boolean) = filesC.copyToClipboard(paths, cut)
     fun pasteFromClipboard(targetDir: Path) = filesC.pasteFromClipboard(targetDir)
     fun reloadDeerFromDisk(node: DirNode) = projectC.reloadDeerFromDisk(node)

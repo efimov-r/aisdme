@@ -6,7 +6,8 @@ object Log {
     }
 
     fun e(e: Throwable) {
-        println("Error ${e.message}")
+        val stackTrace = e.stackTraceToString()
+        println("Error: ${e.message}\n\n${stackTrace}")
     }
 
     fun e(str: String) {

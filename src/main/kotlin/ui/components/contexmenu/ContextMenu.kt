@@ -35,6 +35,7 @@ sealed class MenuEntry {
     object Divider : MenuEntry()
 }
 
+//todo положение на экране чтобы не вылазило
 @Composable
 fun ContextMenu(
     entries: List<MenuEntry>,

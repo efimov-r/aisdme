@@ -62,7 +62,15 @@ abstract class UiController : IControler {
 
     protected suspend fun newGlobalError(e: Throwable) {
         Log.e(e)
-        _errors.emit(GlobalMessage.createGlobalError("Error", e.message ?: "Unknown error"))
+
+        val title = e::class.simpleName ?: "Error"
+        val message = e.message ?: "Unknown error"
+        val stackTrace = e.stackTraceToString()
+
+        _errors.emit(GlobalMessage.createGlobalError(
+            title = title,
+            err = "$message\n\n$stackTrace"
+        ))
     }
 
     open fun disposeBefore(){}

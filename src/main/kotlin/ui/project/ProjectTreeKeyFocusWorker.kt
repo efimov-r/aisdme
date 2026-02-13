@@ -35,7 +35,6 @@ fun treeKeyFocusWork(
             return true
         }
 
-        //todo удаленная директория торчит в списке (не обновляется)
         Hotkeys.DELETE.ifDu(event) -> {
             showDelDialog()
             return true
