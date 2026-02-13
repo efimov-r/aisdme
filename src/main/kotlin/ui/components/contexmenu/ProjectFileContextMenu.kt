@@ -9,6 +9,7 @@ import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.ui.components.dialogs.ConfirmDialog
+import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.FileNode
 
@@ -16,16 +17,9 @@ import non.era.aisdme.ui.project.FileNode
 @Composable
 fun ProjectFileContextMenu(node: FileNode, content: @Composable () -> Unit) {
     val app = LocalAppController.current
-    var showDialog by remember { mutableStateOf(false) }
 
-    if (showDialog) {
-        ConfirmDialog(
-            title = "Delete file?",
-            message = "File \"${node.file}\" will be deleted without the possibility of recovery.",
-            onConfirm = { app.delete(node.file.toPath()) },
-            onDismiss = { showDialog = false }
-        )
-    }
+    var showDialog by remember { mutableStateOf(false) }
+    if (showDialog) DeleteNodeDialog(app, node) { showDialog = false }
 
     RightClickArea(
         menuEntries = {

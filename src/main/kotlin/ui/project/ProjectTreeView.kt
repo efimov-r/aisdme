@@ -23,6 +23,8 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.ProjectDirContextMenu
 import non.era.aisdme.ui.components.contexmenu.ProjectFileContextMenu
 import non.era.aisdme.ui.components.contexmenu.ProjectSymlinkContextMenu
+import non.era.aisdme.ui.components.dialogs.ConfirmDialog
+import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
 import non.era.aisdme.ui.editor.Panels
 
 @Composable
@@ -34,6 +36,11 @@ fun ProjectTreeView(
     val focusRequester = remember { FocusRequester() }
     var hasFocus by remember { mutableStateOf(false) }
 
+    var showDialog by remember { mutableStateOf(false) }
+    if (showDialog) app.getProjectState().getSelectedNode()?.let {
+        DeleteNodeDialog(app, it) { showDialog = false }
+    } ?: { showDialog = false }
+
     Box(modifier = modifier
         .fillMaxHeight()
         .focusRequester(focusRequester)
@@ -43,7 +50,9 @@ fun ProjectTreeView(
         .focusable()
         .onPreviewKeyEvent {
             if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-            treeKeyFocusWork(it, app)
+            treeKeyFocusWork(it, app) {
+                showDialog = true
+            }
         }) {
         LazyColumn(modifier = modifier
             .fillMaxHeight()) {

@@ -6,7 +6,11 @@ import non.era.aisdme.Hotkeys
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.ui.editor.Panels
 
-fun treeKeyFocusWork(event: KeyEvent, app: AppController): Boolean {
+fun treeKeyFocusWork(
+    event: KeyEvent,
+    app: AppController,
+    showDelDialog: ()->Unit,
+): Boolean {
     val selected = app.getProjectState().getSelectedNode()
     when {
         Hotkeys.COPY.ifDu(event) -> {
@@ -32,13 +36,8 @@ fun treeKeyFocusWork(event: KeyEvent, app: AppController): Boolean {
         }
 
         //todo удаленная директория торчит в списке (не обновляется)
-        Hotkeys.DELETE.ifDu(event) -> { //todo dialog
-            if (selected is FileNode || selected is LinkNode) {
-                app.delete(selected.file.toPath())
-            }
-            if(selected is DirNode) {
-                app.deleteRecursive(selected.file.toPath())
-            }
+        Hotkeys.DELETE.ifDu(event) -> {
+            showDelDialog()
             return true
         }
 

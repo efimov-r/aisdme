@@ -1,18 +1,9 @@
 package non.era.aisdme.ui.components.dialogs
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -20,14 +11,49 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import non.era.aisdme.AppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeDialogProperties
 import non.era.aisdme.theme.dialogBorder
 import non.era.aisdme.ui.components.over.ButtonCancel
 import non.era.aisdme.ui.components.over.ButtonOk
+import non.era.aisdme.ui.project.DirNode
+
+enum class TypeNew {
+    FILE, DIRECTORY
+}
 
 @Composable
-fun FileNameDialog(
+fun NewNodeDialog(
+    app: AppController,
+    insertNode: DirNode,
+    typeNew: TypeNew,
+    onDismiss: () -> Unit
+) = when(typeNew) {
+        TypeNew.FILE -> {
+            FileNodeDialog(
+                title = "Create new File",
+                initial = "filename",
+                onConfirm = {
+                    app.createFile(insertNode.file.toPath().resolve(it))
+                },
+                onDismiss = onDismiss
+            )
+        }
+        TypeNew.DIRECTORY -> {
+            FileNodeDialog(
+                title = "Create new Directory",
+                initial = "name directory",
+                onConfirm = {
+                    app.createDirectory(insertNode.file.toPath().resolve(it))
+                },
+                onDismiss = onDismiss
+            )
+        }
+    }
+
+@Composable
+private fun FileNodeDialog(
     title: String,
     initial: String = "",
     onConfirm: (String) -> Unit,

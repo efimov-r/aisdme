@@ -4,47 +4,23 @@ import androidx.compose.runtime.*
 import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
-import non.era.aisdme.ui.components.dialogs.ConfirmDialog
-import non.era.aisdme.ui.components.dialogs.FileNameDialog
+import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
+import non.era.aisdme.ui.components.dialogs.NewNodeDialog
+import non.era.aisdme.ui.components.dialogs.TypeNew
 import non.era.aisdme.ui.project.DirNode
 
 @Composable
 fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
     val app = LocalAppController.current
+
     var showDelDialog by remember { mutableStateOf(false) }
+    if (showDelDialog) DeleteNodeDialog(app, node) { showDelDialog = false }
+
     var showNewFileDialog by remember { mutableStateOf(false) }
+    if (showNewFileDialog) NewNodeDialog(app, node, TypeNew.FILE) { showNewFileDialog = false }
+
     var showNewDirectoryDialog by remember { mutableStateOf(false) }
-
-    if (showDelDialog) {
-        ConfirmDialog(
-            title = "Delete directory?",
-            message = "Directory \"${node.file}\" will be deleted without the possibility of recovery.",
-            onConfirm = { app.deleteRecursive(node.file.toPath()) },
-            onDismiss = { showDelDialog = false }
-        )
-    }
-
-    if (showNewFileDialog) {
-        FileNameDialog(
-            title = "Create new File",
-            initial = "filename",
-            onConfirm = {
-                app.createFile(node.file.toPath().resolve(it))
-            },
-            onDismiss = { showNewFileDialog = false }
-        )
-    }
-
-    if (showNewDirectoryDialog) {
-        FileNameDialog(
-            title = "Create new Directory",
-            initial = "name directory",
-            onConfirm = {
-                app.createDirectory(node.file.toPath().resolve(it))
-            },
-            onDismiss = { showNewDirectoryDialog = false }
-        )
-    }
+    if (showNewDirectoryDialog) NewNodeDialog(app, node, TypeNew.DIRECTORY) { showNewDirectoryDialog = false }
 
     RightClickArea(
         menuEntries = {
