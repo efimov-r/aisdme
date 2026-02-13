@@ -5,7 +5,7 @@ import java.awt.Desktop
 import java.io.File
 import java.io.IOException
 
-object FileFMOpener {
+object FileDolphinOpener {
     fun openFileInFileManager(file: File) {
 
         // Проверяем, существует ли файл/папка

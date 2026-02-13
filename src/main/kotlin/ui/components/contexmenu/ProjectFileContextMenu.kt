@@ -7,7 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
-import non.era.aisdme.files.FileFMOpener
+import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.FileNode
@@ -61,7 +61,7 @@ fun ProjectFileContextMenu(node: FileNode, content: @Composable () -> Unit) {
                     title = "Open in Dolphin",
                     icon = "npm",
                     shortcut = Hotkeys.OPEN_DOLPHIN
-                ) { FileFMOpener.openFileInFileManager(node.getFile()) }
+                ) { FileDolphinOpener.openFileInFileManager(node.getFile()) }
             )
         }
     ) {

@@ -3,7 +3,7 @@ package non.era.aisdme.ui.components.contexmenu
 import androidx.compose.runtime.*
 import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
-import non.era.aisdme.files.FileFMOpener
+import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
 import non.era.aisdme.ui.components.dialogs.NewNodeDialog
 import non.era.aisdme.ui.components.dialogs.TypeNew
@@ -69,7 +69,7 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
                     title = "Open in Dolphin",
                     icon = "npm",
                     shortcut = Hotkeys.OPEN_DOLPHIN
-                ) { FileFMOpener.openFileInFileManager(node.getFile()) },
+                ) { FileDolphinOpener.openFileInFileManager(node.getFile()) },
 
                 MenuEntry.Divider,
 

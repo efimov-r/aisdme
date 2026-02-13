@@ -3,7 +3,7 @@ package non.era.aisdme.ui.project
 import androidx.compose.ui.input.key.KeyEvent
 import non.era.aisdme.AppController
 import non.era.aisdme.Hotkeys
-import non.era.aisdme.files.FileFMOpener
+import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.ui.editor.Panels
 
 fun treeKeyFocusWork(
@@ -41,7 +41,7 @@ fun treeKeyFocusWork(
         }
 
         Hotkeys.OPEN_DOLPHIN.ifDu(event) -> {
-            selected?.let { FileFMOpener.openFileInFileManager(it.getFile()) }
+            selected?.let { FileDolphinOpener.openFileInFileManager(it.getFile()) }
             return true
         }
 
