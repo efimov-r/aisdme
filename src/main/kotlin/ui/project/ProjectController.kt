@@ -25,7 +25,8 @@ class ProjectController(
 
     init {
         scope.launch {
-            projectTree.rebuildAllTree(root)
+            projectTree.setRootProject(root)
+            projectTree.rebuildAllTree()
         }
         registerRecursively(root.toPath())
         watchLoop()
@@ -53,6 +54,7 @@ class ProjectController(
                 val fullPath = (key.watchable() as Path).resolve(event.context() as Path)
                 val parentDir = fullPath.parent?.toFile() ?: continue
                 pandingMutex.withLock {
+                    Log.d("new pendingDir ${parentDir.toString()}")
                     pendingDirs += parentDir
                 }
                 scope.launch {
@@ -60,12 +62,15 @@ class ProjectController(
                 }
 
                 if (event.kind() == ENTRY_CREATE && Files.isDirectory(fullPath)) { //новая директория
-                    Log.d("new dir")
+                    Log.d("new dir register recursively")
                     registerRecursively(fullPath)
                 }
             }
 
-            if (!key.reset()) break
+            if (!key.reset()) {
+                key.cancel()
+                continue
+            }
         }
     }
 

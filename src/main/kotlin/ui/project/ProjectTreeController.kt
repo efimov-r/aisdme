@@ -5,7 +5,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import non.era.aisdme.Log
 import non.era.aisdme.ui.UiController
@@ -15,6 +18,9 @@ import java.nio.file.Files
 class ProjectTreeController: UiController(), TreeState {
     private val nodes_ = mutableStateListOf<ProjectNode>()
     private var _selectedNode: ProjectNode? by mutableStateOf(null)
+
+    private val rootMutex = Mutex()
+    private var rootProject: File? = null
 
     override fun getNodes() = nodes_
     override fun getSelectedNode(): ProjectNode? = _selectedNode //todo перейти на лист
@@ -44,8 +50,22 @@ class ProjectTreeController: UiController(), TreeState {
     }
 
     //todo пока только при старте
-    suspend fun rebuildAllTree(root: File) {
-        val newTree = buildProjectTree(root)
+    suspend fun setRootProject(root: File) =
+        rootMutex.withLock {
+            rootProject = root
+        }
+
+    suspend fun rebuildAllTree() {
+        val newTree = rootMutex.withLock {
+            if(rootProject == null) {
+                withContext(Dispatchers.Swing) {
+                    newGlobalError("Root project not found")
+                }
+                return@withLock emptyList()
+            } else {
+                return@withLock buildProjectTree(rootProject!!)
+            }
+        }
         withContext(Dispatchers.Swing) {
             nodes_.clear()
             nodes_.addAll(newTree)
@@ -59,16 +79,18 @@ class ProjectTreeController: UiController(), TreeState {
         dirNode.children.addAll(buildProjectTree(dirNode.file, dirNode.depth + 1))
     }
 
-    suspend fun rebuildDirDiff(deer: File): Boolean =
+    suspend fun rebuildDirDiff(deer: File) =
         withContext(Dispatchers.Swing) {
             Log.d("!rebuildDirDiff, long in ui")
-            findDirNode(nodes_, deer)?.let { dirNode ->
-                Log.i("rebuild child: ${dirNode.file}")
+            findDirParentNode(nodes_, deer)?.let { dirNode ->
+                Log.i("rebuildDirDiff, pa ${dirNode.file.toString()}")
                 rebuildDirDiff(dirNode)
-                return@withContext true
+            } ?: {
+                Log.e("findDirNode is null, reload all")
+                scope.launch {
+                    rebuildAllTree()
+                }
             }
-            Log.e("findDirNode is null, reload all")
-            return@withContext false
         }
 
     private fun rebuildDirDiff(node: DirNode) {
@@ -92,14 +114,16 @@ class ProjectTreeController: UiController(), TreeState {
         node.children.addAll(result)
     }
 
-    private fun findDirNode(
+    private fun findDirParentNode(
         nodes: List<ProjectNode>,
         dir: File
     ): DirNode? {
         for (node in nodes) {
             if (node is DirNode) {
-                if (node.file == dir) return node
-                findDirNode(node.children, dir)?.let { return it }
+                node.children.forEach { ch->
+                    if (ch.file == dir) return node
+                }
+                findDirParentNode(node.children, dir)?.let { return it }
             }
         }
         return null
