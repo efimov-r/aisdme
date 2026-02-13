@@ -5,11 +5,12 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import non.era.aisdme.AppController
+import non.era.aisdme.Hotkeys
 
 fun treeKeyFocusWork(event: KeyEvent, app: AppController): Boolean {
     val selected = app.getProjectState().getSelectedNode()
     when {
-        event.isCtrlPressed && event.key == Key.C -> {
+        Hotkeys.COPY.ifDu(event) -> {
             if(selected is FileNode || selected is DirNode) {
                 app.copyToClipboard(listOf(selected.file.toPath()), false)
                 return true
@@ -17,7 +18,7 @@ fun treeKeyFocusWork(event: KeyEvent, app: AppController): Boolean {
             return false
         }
 
-        event.isCtrlPressed && event.key == Key.V -> {
+        Hotkeys.PASTE.ifDu(event) -> {
             if(selected is DirNode) {
                 app.pasteFromClipboard(selected.file.toPath())
                 return true
@@ -26,7 +27,7 @@ fun treeKeyFocusWork(event: KeyEvent, app: AppController): Boolean {
         }
 
         //todo вырезка-вставка папки падает в ошибку
-        event.isCtrlPressed && event.key == Key.X -> {
+        Hotkeys.CUT.ifDu(event) -> {
             if(selected is FileNode || selected is DirNode) {
                 app.cutNode(selected)
                 return true
@@ -35,7 +36,7 @@ fun treeKeyFocusWork(event: KeyEvent, app: AppController): Boolean {
         }
 
         //todo удаленная директория торчит в списке (не обновляется)
-        event.key == Key.Delete -> { //todo dialog
+        Hotkeys.DELETE.ifDu(event) -> { //todo dialog
             if (selected is FileNode) {
                 app.delete(selected.file.toPath())
                 return true

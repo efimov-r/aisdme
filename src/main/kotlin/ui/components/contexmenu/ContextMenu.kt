@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import non.era.aisdme.Hotkeys
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.dialogBorder
@@ -27,7 +28,7 @@ sealed class MenuEntry {
     data class Item(
         val title: String,
         val icon: String? = null,
-        val shortcut: String? = null,
+        val shortcut: Hotkeys? = null,
         val onClick: () -> Unit
     ) : MenuEntry()
 
@@ -100,7 +101,7 @@ private fun MenuItem(
         item.shortcut?.let {
             Text(
                 modifier = Modifier.padding(bottom = 4.dp),
-                text = it,
+                text = it.vis,
                 color = colors.onSurface.copy(alpha = 0.5f),
                 fontSize = 12.sp
             )

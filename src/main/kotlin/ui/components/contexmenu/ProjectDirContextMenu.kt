@@ -1,6 +1,7 @@
 package non.era.aisdme.ui.components.contexmenu
 
 import androidx.compose.runtime.*
+import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.ui.components.dialogs.ConfirmDialog
@@ -51,13 +52,11 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
                 MenuEntry.Item(
                     title = "New File",
                     icon = "addFile",
-                    shortcut = ""
                 ) { showNewFileDialog = true },
 
                 MenuEntry.Item(
                     title = "New Directory",
                     icon = "addDirectory",
-                    shortcut = ""
                 ) { showNewDirectoryDialog = true },
 
                 MenuEntry.Divider,
@@ -65,19 +64,19 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
                 MenuEntry.Item(
                     title = "Cut",
                     icon = "cut",
-                    shortcut = "Ctrl + x"
+                    shortcut = Hotkeys.CUT
                 ) { app.cutNode(node) },
 
                 MenuEntry.Item(
                     title = "Copy",
                     icon = "copy",
-                    shortcut = "Ctrl + c"
+                    shortcut = Hotkeys.COPY
                 ) { app.copyToClipboard(listOf(node.file.toPath()), false) },
 
                 MenuEntry.Item(
                     title = "Paste",
                     icon = "paste",
-                    shortcut = "Ctrl + v"
+                    shortcut = Hotkeys.PASTE
                 ) { app.pasteFromClipboard(node.file.toPath()) },
 
                 MenuEntry.Divider,
@@ -85,14 +84,15 @@ fun ProjectDirContextMenu(node: DirNode, content: @Composable () -> Unit) {
                 MenuEntry.Item(
                     title = "Delete",
                     icon = "delete",
-                    shortcut = "del"
+                    shortcut = Hotkeys.DELETE
                 ) { showDelDialog = true },
 
                 MenuEntry.Divider,
 
                 MenuEntry.Item(
                     title = "Open in Dolphin",
-                    icon = "npm"
+                    icon = "npm",
+                    shortcut = Hotkeys.OPEN_DOLPHIN
                 ) { FileFMOpener.openFileInFileManager(node.file) },
 
                 MenuEntry.Divider,

@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.ui.components.dialogs.ConfirmDialog
@@ -32,19 +33,19 @@ fun ProjectFileContextMenu(node: FileNode, content: @Composable () -> Unit) {
                 MenuEntry.Item(
                     title = "Cut",
                     icon = "cut",
-                    shortcut = "Ctrl + x"
+                    shortcut = Hotkeys.CUT
                 ) { app.cutNode(node) },
 
                 MenuEntry.Item(
                     title = "Copy",
                     icon = "copy",
-                    shortcut = "Ctrl + c"
+                    shortcut = Hotkeys.COPY
                 ) { app.copyToClipboard(listOf(node.file.toPath()), false) },
 
                 MenuEntry.Item(
                     title = "Delete",
                     icon = "delete",
-                    shortcut = "del"
+                    shortcut = Hotkeys.DELETE
                 ) { showDialog = true },
 
                 MenuEntry.Divider,
@@ -52,20 +53,21 @@ fun ProjectFileContextMenu(node: FileNode, content: @Composable () -> Unit) {
                 MenuEntry.Item(
                     title = "Open in Left",
                     icon = "applyNotConflictsRight",
-                    shortcut = ""
+                    shortcut = Hotkeys.LEFT
                 ) { app.openFileInEditor(node.file, Panels.LEFT) },
 
                 MenuEntry.Item(
                     title = "Open in Right",
                     icon = "applyNotConflictsLeft",
-                    shortcut = ""
+                    shortcut = Hotkeys.RIGHT
                 ) { app.openFileInEditor(node.file, Panels.RIGHT) },
 
                 MenuEntry.Divider,
 
                 MenuEntry.Item(
                     title = "Open in Dolphin",
-                    icon = "npm"
+                    icon = "npm",
+                    shortcut = Hotkeys.OPEN_DOLPHIN
                 ) { FileFMOpener.openFileInFileManager(node.file) }
             )
         }

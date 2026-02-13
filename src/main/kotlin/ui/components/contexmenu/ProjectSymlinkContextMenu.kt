@@ -1,6 +1,7 @@
 package non.era.aisdme.ui.components.contexmenu
 
 import androidx.compose.runtime.*
+import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.files.FileFMOpener
 import non.era.aisdme.ui.components.dialogs.ConfirmDialog
@@ -26,14 +27,15 @@ fun ProjectSymlinkContextMenu(node: LinkNode, content: @Composable () -> Unit) {
                 MenuEntry.Item(
                     title = "Delete",
                     icon = "delete",
-                    shortcut = "del"
+                    shortcut = Hotkeys.DELETE
                 ) { showDialog = true },
 
                 MenuEntry.Divider,
 
                 MenuEntry.Item(
                     title = "Open in Dolphin",
-                    icon = "npm"
+                    icon = "npm",
+                    shortcut = Hotkeys.OPEN_DOLPHIN
                 ) { FileFMOpener.openFileInFileManager(node.file) }
             )
         }
