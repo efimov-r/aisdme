@@ -8,32 +8,45 @@ import non.era.aisdme.ui.project.LinkNode
 import non.era.aisdme.ui.project.ProjectNode
 
 @Composable
-fun DeleteNodeDialog(app: AppController, node: ProjectNode, onDismiss: () -> Unit) {
-    when (node) {
-        is LinkNode -> {
-            ConfirmDialog(
-                title = "Delete symlink?",
-                message = "Symlink \"${node.getFileString()}\" will be deleted without the possibility of recovery.",
-                onConfirm = { app.delete(node.getFilePath()) },
-                onDismiss = onDismiss
-            )
+fun DeleteSelectedNodeDialog(app: AppController, onDismiss: () -> Unit) {
+    val nodes = app.getSelectedNodes()
+    if(nodes.size == 1) {
+        when (nodes[0]) {
+            is LinkNode -> {
+                ConfirmDialog(
+                    title = "Delete symlink?",
+                    message = "Symlink \"${nodes[0].getFileString()}\" will be deleted without the possibility of recovery.",
+                    onConfirm = { app.deleteSelected() },
+                    onDismiss = onDismiss
+                )
+            }
+            is DirNode -> {
+                ConfirmDialog(
+                    title = "Delete directory?",
+                    message = "Directory \"${nodes[0].getFileString()}\" will be deleted without the possibility of recovery.",
+                    onConfirm = { app.deleteSelected() },
+                    onDismiss = onDismiss
+                )
+            }
+            is FileNode -> {
+                ConfirmDialog(
+                    title = "Delete file?",
+                    message = "File \"${nodes[0].getFileString()}\" will be deleted without the possibility of recovery.",
+                    onConfirm = { app.deleteSelected() },
+                    onDismiss = onDismiss
+                )
+            }
         }
-        is DirNode -> {
-            ConfirmDialog(
-                title = "Delete directory?",
-                message = "Directory \"${node.getFileString()}\" will be deleted without the possibility of recovery.",
-                onConfirm = { app.deleteRecursive(node.getFilePath()) },
-                onDismiss = onDismiss
-            )
+    } else {
+        var nodesText = "\n"
+        nodes.forEach { node ->
+            nodesText += (node.getFileString() + "\n")
         }
-        is FileNode -> {
-            ConfirmDialog(
-                title = "Delete file?",
-                message = "File \"${node.getFileString()}\" will be deleted without the possibility of recovery.",
-                onConfirm = { app.delete(node.getFilePath()) },
-                onDismiss = onDismiss
-            )
-        }
+        ConfirmDialog(
+            title = "Delete objects?",
+            message = "Objects: $nodesText will be deleted without the possibility of recovery.",
+            onConfirm = { app.deleteSelected() },
+            onDismiss = onDismiss
+        )
     }
-
 }

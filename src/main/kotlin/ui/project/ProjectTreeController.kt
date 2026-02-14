@@ -16,17 +16,38 @@ import java.io.File
 import java.nio.file.Files
 
 class ProjectTreeController: UiController(), TreeState {
-    private val nodes_ = mutableStateListOf<ProjectNode>()
-    private var _selectedNode: ProjectNode? by mutableStateOf(null)
+    private val _nodes = mutableStateListOf<ProjectNode>()
+    override fun getNodes() = _nodes
 
     private val rootMutex = Mutex()
     private var rootProject: File? = null
 
-    override fun getNodes() = nodes_
-    override fun getSelectedNode(): ProjectNode? = _selectedNode //todo перейти на лист
+    override fun getSelectedNodes(): List<ProjectNode> {
+        return findSelectedNodes(_nodes)
+    }
 
     //клик по элементу
-    override fun reselectNode(node: ProjectNode?) { _selectedNode = node }
+    override fun reselectNode(node: ProjectNode) {
+        getSelectedNodes().forEach { node ->
+            node.setSelected(false)
+        }
+        node.setSelected(true)
+    }
+
+    override fun addSelectNode(node: ProjectNode) = node.setSelected(true)
+
+    private fun findSelectedNodes(nodes: List<ProjectNode>): List<ProjectNode> {
+        val result: MutableList<ProjectNode> = mutableListOf()
+        for (node in nodes) {
+            if(node.isSelected()) {
+                result.add(node)
+            }
+            if (node is DirNode) {
+                result.addAll(findSelectedNodes(node.children))
+            }
+        }
+        return result
+    }
 
     //пометка что вырезано
     fun cutNoteMarkRecursive(node: ProjectNode) {
@@ -45,7 +66,7 @@ class ProjectTreeController: UiController(), TreeState {
             }
         }
 
-        cutNodesUnmark(nodes_)
+        cutNodesUnmark(_nodes)
         cutNodeMark(node)
     }
 
@@ -67,22 +88,26 @@ class ProjectTreeController: UiController(), TreeState {
             }
         }
         withContext(Dispatchers.Swing) {
-            nodes_.clear()
-            nodes_.addAll(newTree)
+            _nodes.clear()
+            _nodes.addAll(newTree)
         }
     }
 
     //из контекстного меню обновление
-    fun reloadDirFromDisk(dirNode: DirNode) {
-        Log.i("rebuild child from disk: ${dirNode.getFileString()}")
-        dirNode.children.clear()
-        dirNode.children.addAll(buildProjectTree(dirNode.getFile(), dirNode.depth + 1))
+    fun reloadDirFromDisk() {
+        getSelectedNodes().forEach { dirNode ->
+            if(dirNode is DirNode) {
+                Log.i("rebuild child from disk: ${dirNode.getFileString()}")
+                dirNode.children.clear()
+                dirNode.children.addAll(buildProjectTree(dirNode.getFile(), dirNode.depth + 1))
+            }
+        }
     }
 
     suspend fun rebuildDirDiff(deer: File) =
         withContext(Dispatchers.Swing) {
             Log.d("!rebuildDirDiff, long in ui")
-            findDirParentNode(nodes_, deer)?.let { dirNode ->
+            findDirParentNode(_nodes, deer)?.let { dirNode ->
                 Log.i("rebuildDirDiff, pa ${dirNode.getFileString()}")
                 rebuildDirDiff(dirNode)
             } ?: {

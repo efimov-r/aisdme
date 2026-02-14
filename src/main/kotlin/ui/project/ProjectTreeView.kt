@@ -14,82 +14,73 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
-import non.era.aisdme.ui.components.contexmenu.ProjectDirContextMenu
-import non.era.aisdme.ui.components.contexmenu.ProjectFileContextMenu
-import non.era.aisdme.ui.components.contexmenu.ProjectSymlinkContextMenu
-import non.era.aisdme.ui.components.dialogs.DeleteNodeDialog
+import non.era.aisdme.ui.components.contexmenu.ProjectTreeContextMenu
+import non.era.aisdme.ui.components.dialogs.DeleteSelectedNodeDialog
 import non.era.aisdme.ui.editor.Panels
 
 @Composable
-fun ProjectTreeView(
-    modifier: Modifier = Modifier
-) {
+fun ProjectTreeView(modifier: Modifier = Modifier) {
     val app = LocalAppController.current
 
     val focusRequester = remember { FocusRequester() }
     var hasFocus by remember { mutableStateOf(false) }
 
     var showDialog by remember { mutableStateOf(false) }
-    if (showDialog) app.getProjectState().getSelectedNode()?.let {
-        DeleteNodeDialog(app, it) { showDialog = false }
-    } ?: { showDialog = false }
+    if (showDialog) {
+        DeleteSelectedNodeDialog(app) { showDialog = false }
+    }
 
-    Box(modifier = modifier
-        .fillMaxHeight()
-        .focusRequester(focusRequester)
-        .onFocusChanged {
-            hasFocus = it.isFocused
-        }
-        .focusable()
-        .onPreviewKeyEvent {
-            if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-            treeKeyFocusWork(it, app) {
-                showDialog = true
+    ProjectTreeContextMenu {
+        Box(modifier = modifier
+            .fillMaxHeight()
+            .focusRequester(focusRequester)
+            .onFocusChanged {
+                hasFocus = it.isFocused
             }
-        }) {
-        LazyColumn(modifier = modifier
-            .fillMaxHeight()) {
-            items(app.getProjectState().getNodes()) { node ->
-                ProjectNodeView(node, focusRequester, hasFocus)
+            .focusable()
+            .onPreviewKeyEvent {
+                if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                treeKeyFocusWork(it, app) {
+                    showDialog = true
+                }
+            }) {
+            LazyColumn(modifier = modifier
+                .fillMaxHeight()) {
+                items(app.getNodes()) { node ->
+                    ProjectNodeView(node, focusRequester, hasFocus)
+                }
             }
         }
     }
 }
 
 @Composable
-fun ProjectNodeView(
+private fun ProjectNodeView(
     node: ProjectNode,
     focusRequester: FocusRequester,
     hasFocus: Boolean,
 ) {
-    when (node) {
-        is DirNode -> DirNodeView(node, focusRequester, hasFocus)
-        is FileNode -> FileNodeView(node, focusRequester, hasFocus)
-        is LinkNode -> LinkNodeView(node, focusRequester, hasFocus)
-    }
+        when (node) {
+            is DirNode -> DirNodeView(node, focusRequester, hasFocus)
+            is FileNode -> FileNodeView(node, focusRequester, hasFocus)
+            is LinkNode -> LinkNodeView(node, focusRequester, hasFocus)
+        }
 }
 
 @Composable
-fun DirNodeView(
-    node: DirNode,
-    focusRequester: FocusRequester,
-    hasFocus: Boolean,
-) {
-    val app = LocalAppController.current
-    val isSelected = app.getProjectState().getSelectedNode()?.equalsOf(node) ?: false
-    val isCutted = node.isCutted
-
+private fun DirNodeView(node: DirNode, focusRequester: FocusRequester, hasFocus: Boolean) =
     Column {
-        ProjectDirContextMenu(node) {
             NodeView(
-                isSelected = isSelected,
-                isCutted = isCutted,
+                isSelected = node.isSelected(),
+                isCutted = node.isCutted,
                 focusRequester = focusRequester,
                 hasFocus = hasFocus,
                 text = if (node.expanded.value) "📂 ${node.getFileName()}" else "📁 ${node.getFileName()}",
@@ -98,7 +89,6 @@ fun DirNodeView(
                     node.openOrClose()
                 }
             )
-        }
 
         if (node.expanded.value) {
             node.children.forEach { ch->
@@ -106,51 +96,34 @@ fun DirNodeView(
             }
         }
     }
-}
 
 @Composable
-fun FileNodeView(node: FileNode,
-                 focusRequester: FocusRequester,
-                 hasFocus: Boolean,) {
+private fun FileNodeView(node: FileNode, focusRequester: FocusRequester, hasFocus: Boolean,) {
     val app = LocalAppController.current
-    val isSelected = app.getProjectState().getSelectedNode()?.equalsOf(node) ?: false
-    val isCutted = node.isCutted
-
-    ProjectFileContextMenu(node) {
         NodeView(
-            isSelected = isSelected,
-            isCutted = isCutted,
+            isSelected = node.isSelected(),
+            isCutted = node.isCutted,
             focusRequester = focusRequester,
             hasFocus = hasFocus,
             text = "📄 ${node.getFileName()}",
             node = node,
-            doubleClick = { app.openFileInEditor(node, Panels.LEFT) }
+            doubleClick = { app.doubleFileClick(node, Panels.LEFT) }
             )
-    }
 }
 
 @Composable
-fun LinkNodeView(node: LinkNode,
-                 focusRequester: FocusRequester,
-                 hasFocus: Boolean,) {
-    val app = LocalAppController.current
-    val isSelected = app.getProjectState().getSelectedNode()?.equalsOf(node) ?: false
-    val isCutted = node.isCutted
-
-    ProjectSymlinkContextMenu(node) {
+private fun LinkNodeView(node: LinkNode, focusRequester: FocusRequester, hasFocus: Boolean) =
         NodeView(
-            isSelected = isSelected,
-            isCutted = isCutted,
+            isSelected = node.isSelected(),
+            isCutted = node.isCutted,
             focusRequester = focusRequester,
             hasFocus = hasFocus,
             text = "L: ${node.getFileName()}",
             node = node,
             )
-    }
-}
 
 @Composable
-fun NodeView(
+private fun NodeView(
              isSelected: Boolean,
              isCutted: Boolean,
              focusRequester: FocusRequester,

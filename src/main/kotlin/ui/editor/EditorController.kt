@@ -1,6 +1,8 @@
 package non.era.aisdme.ui.editor
 
 import non.era.aisdme.ui.UiController
+import non.era.aisdme.ui.project.FileNode
+import non.era.aisdme.ui.project.ProjectNode
 import java.io.File
 
 enum class Panels{
@@ -15,8 +17,14 @@ class EditorController(
     var leftTabs = HalfEditorTabs(files, autosaveDelayMs, scope)
     var rightTabs = HalfEditorTabs(files, autosaveDelayMs, scope)
 
-    fun openFile(file: File, pane: Panels = Panels.LEFT) {
-        when(pane){
+    fun openNodes(nodes: List<ProjectNode>, panel: Panels = Panels.LEFT) {
+        nodes.forEach { node->
+            if(node is FileNode) openFile(node.getFile(), panel)
+        }
+    }
+
+    fun openFile(file: File, panel: Panels = Panels.LEFT) {
+        when(panel){
             Panels.RIGHT -> rightTabs.openFile(file)
             Panels.LEFT -> leftTabs.openFile(file)
         }

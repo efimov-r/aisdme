@@ -13,6 +13,10 @@ abstract class ProjectNode(
     val depth: Int
 ) {
     var isCutted by mutableStateOf(false)
+    private var _isSelected by mutableStateOf(false)
+
+    fun isSelected() = _isSelected
+    fun setSelected(isSelected: Boolean) {_isSelected = isSelected}
 
     fun equalsOf(other: ProjectNode): Boolean {
         return this._file == other._file
@@ -29,7 +33,7 @@ class DirNode(
     file: File,
     depth: Int,
     children: List<ProjectNode>,
-    val expanded: MutableState<Boolean> = mutableStateOf(true)
+    val expanded: MutableState<Boolean> = mutableStateOf(true) //todo всегда развернутое при старте, хуйня
 ) : ProjectNode(file, depth) {
     val children: SnapshotStateList<ProjectNode> = mutableStateListOf()
 

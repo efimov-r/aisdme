@@ -3,7 +3,6 @@ package non.era.aisdme.ui.project
 import androidx.compose.ui.input.key.KeyEvent
 import non.era.aisdme.AppController
 import non.era.aisdme.Hotkeys
-import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.ui.editor.Panels
 
 fun treeKeyFocusWork(
@@ -11,27 +10,19 @@ fun treeKeyFocusWork(
     app: AppController,
     showDelDialog: ()->Unit,
 ): Boolean {
-    val selected = app.getProjectState().getSelectedNode()
     when {
         Hotkeys.COPY.ifDu(event) -> {
-            if(selected is FileNode || selected is DirNode) {
-                app.copyToClipboard(listOf(selected.getFilePath()), false)
-            }
+            app.copySelectedToClipboard(false)
+            return true
+        }
+
+        Hotkeys.CUT.ifDu(event) -> {
+            app.copySelectedToClipboard(true)
             return true
         }
 
         Hotkeys.PASTE.ifDu(event) -> {
-            if(selected is DirNode) {
-                app.pasteFromClipboard(selected.getFilePath())
-            }
-            return true
-        }
-
-        //todo вырезка-вставка папки падает в ошибку
-        Hotkeys.CUT.ifDu(event) -> {
-            if(selected is FileNode || selected is DirNode) {
-                app.cutNode(selected)
-            }
+            app.pasteToSelectedNode()
             return true
         }
 
@@ -41,44 +32,54 @@ fun treeKeyFocusWork(
         }
 
         Hotkeys.OPEN_DOLPHIN.ifDu(event) -> {
-            selected?.let { FileDolphinOpener.openFileInFileManager(it.getFile()) }
+            app.openSelectedInFileManager()
             return true
         }
 
         Hotkeys.ENTER.ifDu(event) -> {
-            if(selected is DirNode) {
-                selected.openOrClose()
+            val selected = app.getSelectedNodes()
+            if(selected.size == 1 && selected[0] is DirNode) {
+                (selected[0] as DirNode).openOrClose()
+                return true
+            }
+            if(selected.size == 1 && selected[0] is FileNode) {
+                app.openSelectedNodesInEditor(Panels.LEFT)
             }
             return true
         }
 
         Hotkeys.LEFT.ifDu(event) -> {
-            if(selected is FileNode) {
-                app.openFileInEditor(selected, Panels.LEFT)
-            }
+            app.openSelectedNodesInEditor(Panels.LEFT)
             return true
         }
 
         Hotkeys.RIGHT.ifDu(event) -> {
-            if(selected is FileNode) {
-                app.openFileInEditor(selected, Panels.RIGHT)
-            }
+            app.openSelectedNodesInEditor(Panels.RIGHT)
             return true
         }
 
         Hotkeys.TOP.ifDu(event) -> {
-            app.reselectNode(ProjectListBuilder.build(app).lastOf(selected))
+            val selected = app.getSelectedNodes()
+            if(selected.size == 1) {
+                ProjectListBuilder.build(app).lastOf(selected[0])?.let {
+                    app.reselectNode(it)
+                }
+
+            }
             return true
         }
 
         Hotkeys.BOTTOM.ifDu(event) -> {
-            app.reselectNode(ProjectListBuilder.build(app).nextOf(selected))
+            val selected = app.getSelectedNodes()
+            if(selected.size == 1) {
+                ProjectListBuilder.build(app).nextOf(selected[0])?.let {
+                    app.reselectNode(it)
+                }
+            }
             return true
         }
         else -> return false
     }
-
-
 }
 
 object ProjectListBuilder {
@@ -103,7 +104,7 @@ object ProjectListBuilder {
 
     fun build(app: AppController) : ProjectListBuilder {
         result = mutableListOf()
-        val nodes = app.getProjectState().getNodes()
+        val nodes = app.getNodes()
         nodes.forEach { node ->
             nodeBuild(node)
         }

@@ -1,12 +1,19 @@
 package non.era.aisdme.files
 
 import non.era.aisdme.Log
+import non.era.aisdme.ui.project.ProjectNode
 import java.awt.Desktop
 import java.io.File
 import java.io.IOException
 
 object FileDolphinOpener {
-    fun openFileInFileManager(file: File) {
+    fun openNodesInFileManager(nodes: List<ProjectNode>) {
+        nodes.forEach { node ->
+            openFileInFileManager(node.getFile())
+        }
+    }
+
+    private fun openFileInFileManager(file: File) {
 
         // Проверяем, существует ли файл/папка
         if (!file.exists()) {

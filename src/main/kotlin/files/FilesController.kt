@@ -1,175 +1,135 @@
 package non.era.aisdme.files
 
+import kotlinx.coroutines.launch
 import non.era.aisdme.ui.UiController
-import java.awt.Toolkit
-import java.awt.datatransfer.DataFlavor
-import java.awt.datatransfer.DataFlavor.stringFlavor
-import java.awt.datatransfer.StringSelection
-import java.awt.datatransfer.Transferable
-import java.awt.datatransfer.UnsupportedFlavorException
+import non.era.aisdme.ui.project.DirNode
+import non.era.aisdme.ui.project.ProjectNode
 import java.io.File
-import java.io.IOException
-import java.net.URI
-import java.nio.file.AtomicMoveNotSupportedException
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.StandardCopyOption
-import java.nio.file.attribute.BasicFileAttributes
 
-class FilesController : UiController() {
-    fun createFile(path: Path) = safeLaunch {
-            Files.createFile(path)
-    }
-
-    fun createDirectory(path: Path) = safeLaunch {
-        Files.createDirectory(path)
-    }
-
-    fun delete(path: Path) = safeLaunch {
-        Files.deleteIfExists(path)
-    }
-
-    fun deleteRecursive(path: Path) {
-        if (!Files.exists(path)) return
-
-        Files.walkFileTree(path, object : SimpleFileVisitor<Path>() {
-
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                Files.deleteIfExists(file)
-                return FileVisitResult.CONTINUE
+class FilesController : UiController(), IFileController {
+    override fun createFile(nodes: List<ProjectNode>, name: String) {
+        if(nodes.isEmpty()) {
+            scope.launch {
+                newGlobalError("Directory for file creation is not selected")
             }
-
-            override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
-                Files.deleteIfExists(dir)
-                return FileVisitResult.CONTINUE
+            return
+        }
+        if(nodes.size != 1) {
+            scope.launch {
+                newGlobalError("Create a file in only one directory")
             }
-        })
-    }
-
-    private fun copyRecursive(src: Path, dst: Path) = safeLaunch {
-        Files.walk(src).forEach { source ->
-            val target = dst.resolve(src.relativize(source))
-            if (Files.isDirectory(source)) {
-                Files.createDirectories(target)
-            } else {
-                Files.copy(
-                    source,
-                    target,
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.COPY_ATTRIBUTES
-                )
+            return
+        }
+        val node = nodes[0]
+        if(node !is DirNode) {
+            scope.launch {
+                newGlobalError("Create a file in only directory")
             }
+            return
+        }
+        safeLaunch {
+            FilesExecutor.createFile(node.getFilePath().resolve(name))
         }
     }
 
-    fun copyToClipboard(paths: List<Path>, cut: Boolean) {
-        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-
-        val transferable = FileTransferable(
-            paths.map { it.toFile() },
-            cut
-        )
-
-        clipboard.setContents(transferable, null)
+    override fun createDirectory(nodes: List<ProjectNode>, name: String) {
+        if(nodes.isEmpty()) {
+            scope.launch {
+                newGlobalError("Directory for directory creation is not selected")
+            }
+            return
+        }
+        if(nodes.size != 1) {
+            scope.launch {
+                newGlobalError("Create a directory in only one directory")
+            }
+            return
+        }
+        val node = nodes[0]
+        if(node !is DirNode) {
+            scope.launch {
+                newGlobalError("Create a file in only directory")
+            }
+            return
+        }
+        safeLaunch {
+            FilesExecutor.createDirectory(node.getFilePath().resolve(name))
+        }
     }
 
-    fun pasteFromClipboard(targetDir: Path) = safeLaunch {
-        val (paths, isCut) = getClipboardFiles()
-
-        for (src in paths) {
-
-            val dst = targetDir.resolve(src.fileName)
-
-            if (!Files.exists(src)) {// файл уже перемещён другим приложением
-                continue
+    override fun delete(nodes: List<ProjectNode>) {
+        if(nodes.isEmpty()) {
+            scope.launch {
+                newGlobalError("Directory or file for delete is not selected")
             }
-
-            try {
-                if (isCut) {// ПРАВИЛЬНЫЙ способ для CUT
-                    Files.move(
-                        src,
-                        dst,
-                        StandardCopyOption.REPLACE_EXISTING
-                    )
+            return
+        }
+        safeLaunch {
+            nodes.forEach { node->
+                if(node is DirNode) {
+                    if(node.getFile().exists()) FilesExecutor.deleteRecursive(node.getFilePath())
                 } else {
-                    // COPY
-                    if (Files.isDirectory(src)) {
-                        copyRecursive(src, dst)
-                    } else {
-                        Files.copy(
-                            src,
-                            dst,
-                            StandardCopyOption.REPLACE_EXISTING
-                        )
-                    }
-                }
-            } catch (e: AtomicMoveNotSupportedException) {// fallback для разных дисков / FS
-                if (isCut) {
-                    if (Files.isDirectory(src)) {
-                        copyRecursive(src, dst)
-                        deleteRecursive(src)
-                    } else {
-                        Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING)
-                        Files.deleteIfExists(src)
-                    }
+                    if(node.getFile().exists()) FilesExecutor.delete(node.getFilePath())
                 }
             }
         }
     }
 
-    private fun getClipboardFiles(): Pair<List<Path>, Boolean> {
-        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        val contents = clipboard.getContents(null)
-
-        val files = mutableListOf<Path>()
-        var isCut = false
-
-        // Windows Explorer
-        if (contents.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-            val list = contents.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
-            files.addAll(list.map { it.toPath() })
-        }
-
-        // Linux / macOS (Dolphin, Nautilus)
-        val uriFlavor = DataFlavor("text/uri-list;class=java.lang.String")
-
-        if (contents.isDataFlavorSupported(uriFlavor)) {
-            val data = contents.getTransferData(uriFlavor) as String
-
-            data.lines()
-                .filter { it.isNotBlank() && !it.startsWith("#") }
-                .map { URI(it.trim()) }
-                .forEach { files.add(Paths.get(it)) }
-        }
-
-        // CUT flag
-        val cutFlavor = DataFlavor("application/x-kde-cutselection;class=java.lang.String")
-
-        if (contents.isDataFlavorSupported(cutFlavor)) {
-            isCut = true
-        }
-
-        return files to isCut
+    private fun areAllInSameDirectory(nodes: List<ProjectNode>): Boolean {
+        if (nodes.isEmpty()) return true
+        val firstParent = nodes.first().getFile().parent
+        return nodes.all { it.getFile().parent == firstParent }
     }
 
-
-    fun move(src: Path, dst: Path) = safeLaunch {
-        Files.move(
-            src,
-            dst,
-            StandardCopyOption.REPLACE_EXISTING
-        )
+    override fun copyToClipboard(nodes: List<ProjectNode>, cut: Boolean) {
+        if(nodes.isEmpty()) {
+            scope.launch {
+                newGlobalError("Directory or file for copy/cut is not selected")
+            }
+            return
+        }
+        if(!areAllInSameDirectory(nodes)) {
+            scope.launch {
+                newGlobalError("Files must be in the same directory")
+            }
+            return
+        }
+        FilesExecutor.copyToClipboard(nodes.map{it.getFilePath()}, cut)
     }
 
-//    fun copy(src: Path, dst: Path) = safeLaunch {
-//        Files.copy(
-//            src,
-//            dst,
-//            StandardCopyOption.REPLACE_EXISTING,
-//            StandardCopyOption.COPY_ATTRIBUTES
-//        )
+    override fun pasteFromClipboard(targetNode: List<ProjectNode>) {
+        if(targetNode.isEmpty()) {
+            scope.launch {
+                newGlobalError("Directory for paste is not selected")
+            }
+            return
+        }
+        if(targetNode.size != 1) {
+            scope.launch {
+                newGlobalError("Pasting is only available in one directory.")
+            }
+            return
+        }
+        val node = targetNode[0]
+        if(node !is DirNode) {
+            scope.launch {
+                newGlobalError("Pasting is only available in directory.")
+            }
+            return
+        }
+        safeLaunch {
+            FilesExecutor.pasteFromClipboard(node.getFilePath())
+        }
+    }
+
+    override fun move(src: ProjectNode, dst: ProjectNode) {
+        safeLaunch {
+            FilesExecutor.move(src.getFilePath(), dst.getFilePath())
+        }
+    }
+
+//    override fun copy(src: Path, dst: Path) = safeLaunch {
+//        FilesExecutor.copy(src, dst)
 //    }
 }

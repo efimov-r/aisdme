@@ -2,16 +2,15 @@ package non.era.aisdme
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.staticCompositionLocalOf
+import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.errors.GlobalMessage
-import non.era.aisdme.ui.project.DirNode
+import non.era.aisdme.ui.project.FileNode
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
-import non.era.aisdme.ui.project.TreeState
-import java.nio.file.Path
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
@@ -21,37 +20,43 @@ class AppController(
     private val editorC: EditorController,
     private val projectC: ProjectController,
     private val filesC: FilesController,
-) {
+)  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
 
     init {
-        editorC.subscriptionError {  _globalMess += it }
-        projectC.subscriptionError {  _globalMess += it }
-        filesC.subscriptionError {  _globalMess += it }
+        editorC.subscriptionError { _globalMess += it }
+        projectC.subscriptionError { _globalMess += it }
+        filesC.subscriptionError { _globalMess += it }
     }
 
-    fun openFileInEditor(node: ProjectNode, panel: Panels) = editorC.openFile(node.getFile(), panel)
+    fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)
+    fun doubleFileClick(node: FileNode, panel: Panels) {
+        projectC.reselectNode(node)
+        editorC.openFile(node.getFile(), panel)
+    }
     fun rightToLeftHalf() = editorC.rightToLeftHalf()
 
-    fun getEditorHalfLeftController() : EditorHalfState = editorC.leftTabs
-    fun getEditorHalfRightController() : EditorHalfState = editorC.rightTabs
-    fun getProjectState() : TreeState = projectC
+    fun getEditorHalfLeftController(): EditorHalfState = editorC.leftTabs
+    fun getEditorHalfRightController(): EditorHalfState = editorC.rightTabs
+    fun getSelectedNodes() = projectC.getSelectedNodes()
+    fun getNodes() = projectC.getNodes()
 
-    fun createFile(path: Path) = filesC.createFile(path)
-    fun createDirectory(path: Path) = filesC.createDirectory(path)
-    fun delete(path: Path) = filesC.delete(path)
-    fun deleteRecursive(path: Path) = filesC.deleteRecursive(path)
-    fun move(src: Path, dst: Path) = filesC.move(src, dst) //todo сделать перемещение мышкой?
-    fun copyToClipboard(paths: List<Path>, cut: Boolean) = filesC.copyToClipboard(paths, cut)
-    fun pasteFromClipboard(targetDir: Path) = filesC.pasteFromClipboard(targetDir)
-    fun reloadDeerFromDisk(node: DirNode) = projectC.reloadDeerFromDisk(node)
-
-    fun reselectNode(node: ProjectNode?) = projectC.reselectNode(node)
-    fun cutNode(node: ProjectNode) { //todo нахуя если есть copyToClipboard
-        projectC.cutNoteMarkRecursive(node)
-        filesC.copyToClipboard(listOf(node.getFilePath()), true)
+    fun createFileInSelected(name: String) = filesC.createFile(projectC.getSelectedNodes(), name)
+    fun createDirectoryInSelected(name: String) = filesC.createDirectory(projectC.getSelectedNodes(), name)
+    fun deleteSelected() = filesC.delete(projectC.getSelectedNodes())
+    fun move(src: ProjectNode, dst: ProjectNode) = filesC.move(src, dst) //todo сделать перемещение мышкой?
+    fun copySelectedToClipboard(cut: Boolean) {
+        val selected = projectC.getSelectedNodes()
+        if(cut) selected.forEach { projectC.cutNoteMarkRecursive(it) }
+        filesC.copyToClipboard(selected, cut)
     }
+    fun pasteToSelectedNode() = filesC.pasteFromClipboard(projectC.getSelectedNodes())
+
+    fun reloadSelectedDeerFromDisk() = projectC.reloadDeerFromDisk()
+    fun openSelectedInFileManager() = FileDolphinOpener.openNodesInFileManager(projectC.getSelectedNodes())
+
+    fun reselectNode(node: ProjectNode) = projectC.reselectNode(node)
 
     fun clearGlobalMess() {
         _globalMess.clear()

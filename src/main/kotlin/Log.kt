@@ -1,20 +1,23 @@
 package non.era.aisdme
 
+import java.text.SimpleDateFormat
+import java.util.Date
+
 object Log {
     fun i(str: String) {
-        println(str)
+        println("[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] $str")
     }
 
     fun e(e: Throwable) {
         val stackTrace = e.stackTraceToString()
-        println("Error: ${e.message}\n\n${stackTrace}")
+        println("[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] Error: ${e.message}\n\n$stackTrace")
     }
 
     fun e(str: String) {
-        println(str)
+        println("[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] $str")
     }
 
     fun d(str: String) {
-        println(str)
+        println("[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] $str")
     }
 }

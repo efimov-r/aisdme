@@ -118,37 +118,3 @@ private fun MenuDivider() {
         color = LocalAisDmeColors.current.surfaceBorder.copy(alpha = 0.4f)
     )
 }
-
-@Composable
-fun RightClickArea(
-    menuEntries: () -> List<MenuEntry>,
-    content: @Composable () -> Unit
-) {
-    var menuPosition by remember { mutableStateOf<Offset?>(null) }
-
-    Box(
-        Modifier.pointerInput(Unit) {
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent()
-                    if (
-                        event.type == PointerEventType.Press &&
-                        event.buttons.isSecondaryPressed
-                    ) {
-                        menuPosition = event.changes.first().position
-                    }
-                }
-            }
-        }
-    ) {
-        content()
-
-        menuPosition?.let { pos ->
-            ContextMenu(
-                entries = menuEntries(),
-                position = pos,
-                onDismiss = { menuPosition = null }
-            )
-        }
-    }
-}

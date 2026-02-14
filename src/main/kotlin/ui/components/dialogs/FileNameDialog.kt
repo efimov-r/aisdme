@@ -26,7 +26,6 @@ enum class TypeNew {
 @Composable
 fun NewNodeDialog(
     app: AppController,
-    insertNode: DirNode,
     typeNew: TypeNew,
     onDismiss: () -> Unit
 ) = when(typeNew) {
@@ -35,7 +34,7 @@ fun NewNodeDialog(
                 title = "Create new File",
                 initial = "filename",
                 onConfirm = {
-                    app.createFile(insertNode.getFilePath().resolve(it))
+                    app.createFileInSelected(it)
                 },
                 onDismiss = onDismiss
             )
@@ -45,7 +44,7 @@ fun NewNodeDialog(
                 title = "Create new Directory",
                 initial = "name directory",
                 onConfirm = {
-                    app.createDirectory(insertNode.getFilePath().resolve(it))
+                    app.createDirectoryInSelected(it)
                 },
                 onDismiss = onDismiss
             )

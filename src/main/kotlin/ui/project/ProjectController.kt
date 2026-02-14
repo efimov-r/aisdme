@@ -33,7 +33,6 @@ class ProjectController(
         projectTree.subscriptionError { emitGlobalMessage(it) }
     }
 
-    override fun reselectNode(node: ProjectNode?) = projectTree.reselectNode(node)
     fun cutNoteMarkRecursive(node: ProjectNode) = projectTree.cutNoteMarkRecursive(node)
 
     private fun registerRecursively(root: Path) {
@@ -93,10 +92,12 @@ class ProjectController(
         }
     }
 
-    fun reloadDeerFromDisk(node: DirNode) = projectTree.reloadDirFromDisk(node)
+    fun reloadDeerFromDisk() = projectTree.reloadDirFromDisk()
 
     override fun getNodes() = projectTree.getNodes()
-    override fun getSelectedNode(): ProjectNode? = projectTree.getSelectedNode()
+    override fun getSelectedNodes(): List<ProjectNode> = projectTree.getSelectedNodes()
+    override fun reselectNode(node: ProjectNode) = projectTree.reselectNode(node)
+    override fun addSelectNode(node: ProjectNode) = projectTree.addSelectNode(node)
 
     override fun disposeAfter() {
         projectTree.dispose()
