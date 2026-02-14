@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.ProjectTreeContextMenu
+import non.era.aisdme.ui.components.custom.DragailableElement
 import non.era.aisdme.ui.components.dialogs.DeleteSelectedNodeDialog
 import non.era.aisdme.ui.editor.Panels
 
@@ -68,11 +69,21 @@ private fun ProjectNodeView(
     focusRequester: FocusRequester,
     hasFocus: Boolean,
 ) {
+    val app = LocalAppController.current
+
+    DisposableEffect(node) {
+        onDispose {
+            app.getNodeBounds().remove(node)
+        }
+    }
+
+    Box {
         when (node) {
             is DirNode -> DirNodeView(node, focusRequester, hasFocus)
             is FileNode -> FileNodeView(node, focusRequester, hasFocus)
             is LinkNode -> LinkNodeView(node, focusRequester, hasFocus)
         }
+    }
 }
 
 @Composable
@@ -133,39 +144,49 @@ private fun NodeView(
              click: () -> Unit = {},
              doubleClick: (Offset) -> Unit = {}) {
     val app = LocalAppController.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth().padding(horizontal = 6.dp)
-            .background(
-                when {
-                    isSelected && hasFocus ->
-                        LocalAisDmeColors.current.primary.copy(alpha = 0.5f)
 
-                    isSelected && !hasFocus ->
-                        LocalAisDmeColors.current.selectedRow.copy(alpha = 0.5f)
+    val isDropTarget = app.getDragState().draggingNode != null &&
+                       app.getDragState().draggingNode != node &&
+                       app.getNodeBounds()[node]?.contains(app.getDragState().dragPosition) == true
 
-                    else -> Color.Transparent
-                }
-            )
-            .padding(start = (node.depth * 16).dp)
-            .pointerInput(node) {
-                detectTapGestures(
-                    onDoubleTap = doubleClick,
-                    onPress = { click() }
+    DragailableElement(app, node) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth().padding(horizontal = 6.dp)
+                .background(
+                    when {
+                        isSelected && hasFocus ->
+                            LocalAisDmeColors.current.primary.copy(alpha = 0.5f)
+
+                        isSelected && !hasFocus ->
+                            LocalAisDmeColors.current.selectedRow.copy(alpha = 0.5f)
+
+                        isDropTarget ->
+                            LocalAisDmeColors.current.primary.copy(alpha = 0.2f)
+
+                        else -> Color.Transparent
+                    }
                 )
-            }
-            .pointerInput(node) {
-                awaitPointerEventScope {
-                    while (true) {
-                        if (awaitPointerEvent().type == PointerEventType.Press) {
-                            focusRequester.requestFocus()
-                            app.reselectNode(node)
+                .padding(start = (node.depth * 16).dp)
+                .pointerInput(node) {
+                    detectTapGestures(
+                        onDoubleTap = doubleClick,
+                        onPress = { click() }
+                    )
+                }
+                .pointerInput(node) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            if (awaitPointerEvent().type == PointerEventType.Press) {
+                                focusRequester.requestFocus()
+                                app.reselectNode(node)
+                            }
                         }
                     }
                 }
-            }
-    ) {
-        Text(color = if(isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
-            text = text)
+        ) {
+            Text(color = if(isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
+                text = text)
+        }
     }
 }

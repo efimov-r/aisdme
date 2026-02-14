@@ -1,7 +1,9 @@
 package non.era.aisdme
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.geometry.Rect
 import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
@@ -9,8 +11,10 @@ import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.errors.GlobalMessage
 import non.era.aisdme.ui.project.FileNode
+import non.era.aisdme.ui.project.MoveController
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
+import non.era.aisdme.ui.project.TreeDragState
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
@@ -20,6 +24,7 @@ class AppController(
     private val editorC: EditorController,
     private val projectC: ProjectController,
     private val filesC: FilesController,
+    private val moveC: MoveController,
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
@@ -28,7 +33,12 @@ class AppController(
         editorC.subscriptionError { _globalMess += it }
         projectC.subscriptionError { _globalMess += it }
         filesC.subscriptionError { _globalMess += it }
+        moveC.subscriptionError { _globalMess += it }
     }
+
+    fun getDragState() = moveC.getDragState()
+    fun getNodeBounds() = moveC.getNodeBounds()
+    fun finishDrop() = moveC.finishDrop()
 
     fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)
     fun doubleFileClick(node: FileNode, panel: Panels) {
@@ -70,5 +80,6 @@ class AppController(
         editorC.dispose()
         projectC.dispose()
         filesC.dispose()
+        moveC.dispose()
     }
 }

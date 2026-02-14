@@ -22,6 +22,7 @@ import non.era.aisdme.ui.components.custom.ResizableRow
 import non.era.aisdme.ui.editor.Editor
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.errors.ErrorOverlay
+import non.era.aisdme.ui.project.MoveController
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectTreeView
 import non.era.aisdme.ui.win.AisDmeWindow
@@ -41,8 +42,15 @@ fun main() = application {
             FilesController()
         }
 
+        val moveController = remember {
+            MoveController()
+        }
+
         val appController = remember {
-            AppController(editorController, projectController, filesController)
+            AppController(editorController,
+                projectController,
+                filesController,
+                moveController)
         }
 
         DisposableEffect(Unit) {

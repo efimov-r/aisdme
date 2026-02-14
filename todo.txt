@@ -17,3 +17,37 @@ Map<File, EditorState>
     ползунок прокрутки
     даблклик корректный
     в одну строку + значки + галочки
+
+
+
+Показ drag preview
+if (dragState.draggingNode != null) {
+    Popup {
+        DragGhost(...)
+    }
+}
+
+Auto expand folder on hover
+hover 700ms → папка раскрывается
+
+
+
+IDE различают:
+drop INSIDE folder
+drop BEFORE node
+drop AFTER node
+Это делается через деление bounds на зоны:
+верх 30% = insert before
+середина = inside
+низ = after
+
+
+insert line indicator
+
+autoscroll при drag к краю
+
+animated drop preview
+
+multi-selection drag
+
+OS-native file DnD integration
