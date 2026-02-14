@@ -43,9 +43,7 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
         content()
 
         if (menuState.isVisible) {
-            TreeContextMenu(
-                menuState.position
-            ) {
+            TreeContextMenu(menuState) {
                 menuState.hide()
             }
         }
@@ -53,7 +51,7 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
 }
 
 @Composable
-private fun TreeContextMenu(pos: Offset, onDismiss: () -> Unit) {
+private fun TreeContextMenu(state: ContextMenuState, onDismiss: () -> Unit) {
     val app = LocalAppController.current
     val selected = app.getSelectedNodes()
     val listItems: MutableList<MenuEntry> = mutableListOf()
@@ -99,7 +97,7 @@ private fun TreeContextMenu(pos: Offset, onDismiss: () -> Unit) {
 
     ContextMenu(
         entries = listItems,
-        position = pos,
+        state = state,
         onDismiss = onDismiss
     )
 }

@@ -35,15 +35,15 @@ sealed class MenuEntry {
     object Divider : MenuEntry()
 }
 
-//todo положение на экране чтобы не вылазило
+//todo контекстное меню без мыши
 @Composable
 fun ContextMenu(
     entries: List<MenuEntry>,
-    position: Offset,
+    state: ContextMenuState,
     onDismiss: () -> Unit
 ) {
     Popup(
-        offset = IntOffset(position.x.toInt(), position.y.toInt()),
+        popupPositionProvider = SmartMenuPositionProvider(state.position),
         onDismissRequest = onDismiss,
         focusable = true
     ) {
