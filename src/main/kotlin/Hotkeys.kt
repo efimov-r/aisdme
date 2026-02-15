@@ -4,6 +4,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.isAltPressed
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 
 enum class Hotkeys (
@@ -19,6 +20,8 @@ enum class Hotkeys (
     ESC("esc", {it.key == Key.Escape}),
     TOP("up", {it.key == Key.DirectionUp}),
     BOTTOM("down", {it.key == Key.DirectionDown}),
+    SHIFT_TOP("Shift + up", {it.isShiftPressed && it.key == Key.DirectionUp}),
+    SHIFT_BOTTOM("Shift + down", {it.isShiftPressed && it.key == Key.DirectionDown}),
     LEFT("left", {it.key == Key.DirectionLeft}),
     RIGHT("right", {it.key == Key.DirectionRight}),
 }

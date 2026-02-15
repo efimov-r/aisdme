@@ -23,10 +23,17 @@ import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.DirNode
 import non.era.aisdme.ui.project.FileNode
 import non.era.aisdme.ui.project.ProjectNode
+import javax.swing.JColorChooser.showDialog
 
 @Composable
 fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
+    val app = LocalAppController.current
+
     val menuState = remember { ContextMenuState() }
+    var showDelDialog by remember { mutableStateOf(false) }
+    var showNewFileDialog by remember { mutableStateOf(false) }
+    var showNewDirectoryDialog by remember { mutableStateOf(false) }
+
     Box(Modifier.pointerInput(Unit) {
         awaitPointerEventScope {
             while (true) {
@@ -43,63 +50,68 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
         content()
 
         if (menuState.isVisible) {
-            TreeContextMenu(menuState) {
-                menuState.hide()
-            }
+            TreeContextMenu(
+                state = menuState,
+                showDelDialog = { showDelDialog = true },
+                showNewFileDialog = { showNewFileDialog = true },
+                showNewDirectoryDialog = { showNewDirectoryDialog = true },
+                onDismiss = { menuState.hide() }
+            )
         }
+
+        if (showDelDialog) DeleteSelectedNodeDialog(app) { showDelDialog = false }
+        if (showNewFileDialog) NewNodeDialog(app, TypeNew.FILE) { showNewFileDialog = false }
+        if (showNewDirectoryDialog) NewNodeDialog(app, TypeNew.DIRECTORY) { showNewDirectoryDialog = false }
     }
 }
 
 @Composable
-private fun TreeContextMenu(state: ContextMenuState, onDismiss: () -> Unit) {
+private fun TreeContextMenu(
+    state: ContextMenuState,
+    showDelDialog: () -> Unit,
+    showNewFileDialog: () -> Unit,
+    showNewDirectoryDialog: () -> Unit,
+    onDismiss: () -> Unit) {
     val app = LocalAppController.current
     val selected = app.getSelectedNodes()
-    val listItems: MutableList<MenuEntry> = mutableListOf()
-    Log.d("recompose context menu")
 
-    var showDelDialog by remember { mutableStateOf(false) }
-    if (showDelDialog) DeleteSelectedNodeDialog(app) { showDelDialog = false }
+    buildList {
+        if(isSingleDirectory(selected)) {
+            add(newFileItem { showNewFileDialog() })
+            add(newDirectoryItem { showNewDirectoryDialog() })
+            add(divider())
+        }
 
-    var showNewFileDialog by remember { mutableStateOf(false) }
-    if (showNewFileDialog) NewNodeDialog(app, TypeNew.FILE) { showNewFileDialog = false }
+        add(cutItem(app))
+        add(copyItem(app))
 
-    var showNewDirectoryDialog by remember { mutableStateOf(false) }
-    if (showNewDirectoryDialog) NewNodeDialog(app, TypeNew.DIRECTORY) { showNewDirectoryDialog = false }
+        if(isSingleDirectory(selected))
+            add(pasteItem(app))
 
+        add( deleteItem {
+            showDelDialog()
+        } )
+        add(divider())
 
-    if(isSingleDirectory(selected)) {
-        listItems.add(newFileItem { showNewFileDialog = true })
-        listItems.add(newDirectoryItem { showNewDirectoryDialog = true })
-        listItems.add(divider())
+        if(isOnlyFile(selected)) {
+            add(openInLeftItem(app))
+            add(openInRightItem(app))
+            add(divider())
+        }
+
+        add(openDolphinItem(app))
+
+        if(isSingleDirectory(selected)) {
+            add(divider())
+            add(reloadDiskItem(app))
+        }
+    }.let {
+        ContextMenu(
+            entries = it,
+            state = state,
+            onDismiss = onDismiss
+        )
     }
-
-    listItems.add(cutItem(app))
-    listItems.add(copyItem(app))
-
-    if(isSingleDirectory(selected))
-        listItems.add(pasteItem(app))
-
-    listItems.add( deleteItem { showDelDialog = true } )
-    listItems.add(divider())
-
-    if(isSingleFile(selected)) {
-        listItems.add(openInLeftItem(app))
-        listItems.add(openInRightItem(app))
-        listItems.add(divider())
-    }
-
-    listItems.add(openDolphinItem(app))
-
-    if(isSingleDirectory(selected)) {
-        listItems.add(divider())
-        listItems.add(reloadDiskItem(app))
-    }
-
-    ContextMenu(
-        entries = listItems,
-        state = state,
-        onDismiss = onDismiss
-    )
 }
 
 private fun newDirectoryItem(onClick: () -> Unit) = MenuEntry.Item(
@@ -166,3 +178,4 @@ private fun divider() = MenuEntry.Divider
 
 private fun isSingleDirectory(selected: List<ProjectNode>) = selected.size == 1 && selected[0] is DirNode
 private fun isSingleFile(selected: List<ProjectNode>) = selected.size == 1 && selected[0] is FileNode
+private fun isOnlyFile(selected: List<ProjectNode>) = selected.filterNot { it is FileNode }.isEmpty()

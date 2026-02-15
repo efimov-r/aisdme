@@ -24,38 +24,39 @@ object ProjectListBuilder {
         }
     }
 
-    fun build(nodes: List<ProjectNode>) : ProjectListBuilder {
+    fun build(nodes: List<ProjectNode>, selected: List<ProjectNode>) : ProjectListBuilder {
         _result = mutableListOf()
-        _selected = listOf()
+        _selected = selected
         nodes.forEach { node ->
             nodeBuild(node)
         }
         return this
     }
 
-    fun buildSelected(selected: List<ProjectNode>) : ProjectListBuilder {
-        _selected = selected
-        return this
-    }
-
-    fun nextOf(node: ProjectNode?) : ProjectNode?  {
-        if(node == null) return null
+    private fun getNextNodeOf(node: ProjectNode) : ProjectNode {
         val i = _result.indexOfFirst { it.equalsOf(node) }
         return _result.getOrNull(i + 1) ?: node
     }
 
-    fun lastOf(node: ProjectNode?) : ProjectNode?  {
-        if(node == null) return null
+    fun nextOf(node: ProjectNode) {
+        val r = getNextNodeOf(node)
+        _selected.forEach { it.setSelected(false) }
+        r.setSelected(true)
+    }
+
+    private fun getLastNodeOf(node: ProjectNode) : ProjectNode {
         val i = _result.indexOfFirst { it.equalsOf(node) }
         return _result.getOrNull(i - 1) ?: node
     }
 
-    fun fromAndTo(to: ProjectNode?): List<ProjectNode> {
-        if(to == null) return _selected
+    fun lastOf(node: ProjectNode) {
+        val r = getLastNodeOf(node)
+        _selected.forEach { it.setSelected(false) }
+        r.setSelected(true)
+    }
 
-        val indexToObj = _result.withIndex().firstOrNull { it.value.equalsOf(to) }?.index ?: return listOf(to)
-
-        val l = _selected.mapNotNull { sn-> //лист позиций селекнутых элементов
+    private fun listPositionSelectedNodes(): List<Int> =
+        _selected.mapNotNull { sn->
             _result.forEachIndexed { index, node ->
                 if(node.equalsOf(sn)) {
                     return@mapNotNull index
@@ -64,12 +65,67 @@ object ProjectListBuilder {
             return@mapNotNull null
         }
 
-        val maxSelected = l.maxOrNull() ?: return _selected
-        val minSelected = l.minOrNull() ?: return _selected
+    fun fromAndTo(to: ProjectNode) {
+        val indexToObj = _result.withIndex().firstOrNull { it.value.equalsOf(to) }?.index ?: return
+
+        val l = listPositionSelectedNodes()
+
+        val maxSelected = l.maxOrNull() ?: run{
+            to.setSelected(true)
+            return
+        }
+        val minSelected = l.minOrNull() ?: run{
+            to.setSelected(true)
+            return
+        }
 
         val max = max(maxSelected, indexToObj)
         val min = min(minSelected, indexToObj)
 
-        return _result.slice(min..max)
+        _result.slice(min..max).forEach {
+            it.setSelected(true)
+        }
+    }
+
+    fun shiftTop(firstMovement: Movement?) {
+        if(_selected.isEmpty()) return
+
+        if(_selected.size == 1) {
+            getLastNodeOf(_selected[0]).setSelected(true)
+        } else {
+            if(firstMovement == null) return
+
+            when(firstMovement){
+                Movement.TOP -> {
+                    val minSelected = listPositionSelectedNodes().minOrNull() ?: return
+                    getLastNodeOf(_result[minSelected]).setSelected(true)
+                }
+                Movement.BOTTOM -> {
+                    val maxSelected = listPositionSelectedNodes().maxOrNull() ?: return
+                    _result[maxSelected].setSelected(false)
+                }
+            }
+        }
+    }
+
+    fun shiftBottom(firstMovement: Movement?) {
+        if(_selected.isEmpty()) return
+
+        if(_selected.size == 1) {
+            getNextNodeOf(_selected[0]).setSelected(true)
+        } else {
+            if(firstMovement == null) return
+
+            when(firstMovement){
+                Movement.TOP -> {
+                    val minSelected = listPositionSelectedNodes().minOrNull() ?: return
+                    _result[minSelected].setSelected(false)
+                }
+                Movement.BOTTOM -> {
+                    val maxSelected = listPositionSelectedNodes().maxOrNull() ?: return
+                    getNextNodeOf(_result[maxSelected]).setSelected(true)
+                }
+            }
+        }
     }
 }

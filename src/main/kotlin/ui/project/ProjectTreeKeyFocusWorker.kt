@@ -58,26 +58,26 @@ fun treeKeyFocusWork(
             return true
         }
 
-        Hotkeys.TOP.ifDu(event) -> {
-            val selected = app.getSelectedNodes()
-            if(selected.size == 1) {
-                ProjectListBuilder.build(app.getNodes()).lastOf(selected[0])?.let {
-                    app.reselectNode(it)
-                }
+        Hotkeys.SHIFT_TOP.ifDu(event) -> {
+            app.movementOnTree(TypeMovementOnTree.SHIFT_TOP)
+            return true
+        }
 
-            }
+        Hotkeys.TOP.ifDu(event) -> {
+            app.movementOnTree(TypeMovementOnTree.TOP)
+            return true
+        }
+
+        Hotkeys.SHIFT_BOTTOM.ifDu(event) -> {
+            app.movementOnTree(TypeMovementOnTree.SHIFT_BOTTOM)
             return true
         }
 
         Hotkeys.BOTTOM.ifDu(event) -> {
-            val selected = app.getSelectedNodes()
-            if(selected.size == 1) {
-                ProjectListBuilder.build(app.getNodes()).nextOf(selected[0])?.let {
-                    app.reselectNode(it)
-                }
-            }
+            app.movementOnTree(TypeMovementOnTree.BOTTOM)
             return true
         }
+
         else -> return false
     }
 }

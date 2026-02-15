@@ -1,17 +1,15 @@
 package non.era.aisdme
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.geometry.Rect
 import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.errors.GlobalMessage
-import non.era.aisdme.ui.project.FileNode
 import non.era.aisdme.ui.project.MoveController
+import non.era.aisdme.ui.project.TypeMovementOnTree
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
 import non.era.aisdme.ui.project.TypeClickNode
@@ -46,10 +44,11 @@ class AppController(
 
     fun getEditorHalfLeftController(): EditorHalfState = editorC.leftTabs
     fun getEditorHalfRightController(): EditorHalfState = editorC.rightTabs
-    fun getSelectedNodes() = projectC.getSelectedNodes()
+    fun getSelectedNodes() = projectC.getSelectedNodes() //todo убрать?
     fun getNodes() = projectC.getNodes()
 
     fun clickNode(node: ProjectNode, typeClick: TypeClickNode) = projectC.clickNode(node, typeClick)
+    fun movementOnTree(typeMovement: TypeMovementOnTree) = projectC.movementOnTree(typeMovement)
 
     fun createFileInSelected(name: String) = filesC.createFile(projectC.getSelectedNodes(), name)
     fun createDirectoryInSelected(name: String) = filesC.createDirectory(projectC.getSelectedNodes(), name)
@@ -64,8 +63,6 @@ class AppController(
 
     fun reloadSelectedDeerFromDisk() = projectC.reloadDeerFromDisk()
     fun openSelectedInFileManager() = FileDolphinOpener.openNodesInFileManager(projectC.getSelectedNodes())
-
-    fun reselectNode(node: ProjectNode) = projectC.reselectNode(node)
 
     fun clearGlobalMess() {
         _globalMess.clear()
