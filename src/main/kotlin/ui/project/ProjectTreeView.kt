@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.ProjectTreeContextMenu
-import non.era.aisdme.ui.components.custom.DragailableElement
+import non.era.aisdme.ui.components.custom.DragailableTreeElement
 import non.era.aisdme.ui.components.dialogs.DeleteSelectedNodeDialog
 import non.era.aisdme.ui.editor.Panels
 
@@ -90,13 +90,11 @@ private fun ProjectNodeView(
 private fun DirNodeView(node: DirNode, focusRequester: FocusRequester, hasFocus: Boolean) =
     Column {
             NodeView(
-                isSelected = node.isSelected(),
-                isCutted = node.isCutted,
                 focusRequester = focusRequester,
                 hasFocus = hasFocus,
                 text = if (node.expanded.value) "📂 ${node.getFileName()}" else "📁 ${node.getFileName()}",
                 node = node,
-                click = {
+                doubleClick = {
                     node.openOrClose()
                 }
             )
@@ -112,8 +110,6 @@ private fun DirNodeView(node: DirNode, focusRequester: FocusRequester, hasFocus:
 private fun FileNodeView(node: FileNode, focusRequester: FocusRequester, hasFocus: Boolean,) {
     val app = LocalAppController.current
         NodeView(
-            isSelected = node.isSelected(),
-            isCutted = node.isCutted,
             focusRequester = focusRequester,
             hasFocus = hasFocus,
             text = "📄 ${node.getFileName()}",
@@ -125,8 +121,6 @@ private fun FileNodeView(node: FileNode, focusRequester: FocusRequester, hasFocu
 @Composable
 private fun LinkNodeView(node: LinkNode, focusRequester: FocusRequester, hasFocus: Boolean) =
         NodeView(
-            isSelected = node.isSelected(),
-            isCutted = node.isCutted,
             focusRequester = focusRequester,
             hasFocus = hasFocus,
             text = "L: ${node.getFileName()}",
@@ -135,21 +129,21 @@ private fun LinkNodeView(node: LinkNode, focusRequester: FocusRequester, hasFocu
 
 @Composable
 private fun NodeView(
-             isSelected: Boolean,
-             isCutted: Boolean,
              focusRequester: FocusRequester,
              hasFocus: Boolean,
              text: String,
              node: ProjectNode,
-             click: () -> Unit = {},
              doubleClick: (Offset) -> Unit = {}) {
     val app = LocalAppController.current
+    val isSelected = node.isSelected()
 
-    val isDropTarget = app.getDragState().draggingNode != null &&
-                       app.getDragState().draggingNode != node &&
-                       app.getNodeBounds()[node]?.contains(app.getDragState().dragPosition) == true
+    val isDropTarget = if(app.getDragState().draggingNode) {
+        app.getNodeBounds()[node]?.contains(app.getDragState().dragPosition) == true
+    } else {
+        false
+    }
 
-    DragailableElement(app, node) {
+    DragailableTreeElement(app, node) {
         Row(
             modifier = Modifier
                 .fillMaxWidth().padding(horizontal = 6.dp)
@@ -170,13 +164,12 @@ private fun NodeView(
                 .padding(start = (node.depth * 16).dp)
                 .pointerInput(node) {
                     detectTapGestures(
-                        onDoubleTap = doubleClick,
-                        onPress = { click() }
+                        onDoubleTap = doubleClick
                     )
                 }
                 .pointerInput(node) {
                     awaitPointerEventScope {
-                        while (true) {
+                        while (true) { //todo выбор элемента при отпускании или при нажатии в зависимости от количества
                             if (awaitPointerEvent().type == PointerEventType.Press) {
                                 focusRequester.requestFocus()
                                 app.reselectNode(node)
@@ -185,7 +178,7 @@ private fun NodeView(
                     }
                 }
         ) {
-            Text(color = if(isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
+            Text(color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
                 text = text)
         }
     }

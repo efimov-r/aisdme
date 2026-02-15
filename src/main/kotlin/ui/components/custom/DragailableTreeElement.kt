@@ -18,9 +18,9 @@ import non.era.aisdme.ui.project.ProjectNode
 import kotlin.collections.set
 
 @Composable
-fun DragailableElement(app: AppController,
-                       node: ProjectNode,
-                       content: @Composable BoxScope.() -> Unit) {
+fun DragailableTreeElement(app: AppController,
+                           node: ProjectNode,
+                           content: @Composable BoxScope.() -> Unit) {
     var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
     Box(modifier = Modifier
         .onGloballyPositioned {
@@ -30,7 +30,7 @@ fun DragailableElement(app: AppController,
         .pointerInput(node) {
             detectDragGestures(
                 onDragStart = { offset ->
-                    app.getDragState().draggingNode = node
+                    app.getDragState().draggingNode = true
                     app.getDragState().dragPosition = offset
                 },
                 onDrag = { change, _ ->
@@ -45,7 +45,7 @@ fun DragailableElement(app: AppController,
                     app.finishDrop()
                 },
                 onDragCancel = {
-                    app.getDragState().draggingNode = null
+                    app.getDragState().draggingNode = false
                 }
             )
         },

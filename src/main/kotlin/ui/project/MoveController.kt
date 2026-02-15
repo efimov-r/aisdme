@@ -1,9 +1,18 @@
 package non.era.aisdme.ui.project
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import non.era.aisdme.Log
 import non.era.aisdme.ui.UiController
+
+class TreeDragState {
+    var draggingNode by mutableStateOf(false)
+    var dragPosition by mutableStateOf(Offset.Zero)
+}
 
 class MoveController : UiController() {
     private val _dragState = TreeDragState()
@@ -13,10 +22,10 @@ class MoveController : UiController() {
     fun getNodeBounds() = _nodeBounds
 
     fun finishDrop() {
-        val dragged = _dragState.draggingNode ?: return
+        if(!_dragState.draggingNode) return
         val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragState.dragPosition) }?.key ?: return
-        moveNode(dragged, target)
-        _dragState.draggingNode = null
+        Log.d("move to: ${target.getFile()}")
+        _dragState.draggingNode = false
     }
 
     private fun canMove(src: ProjectNode, dst: ProjectNode): Boolean {
@@ -26,8 +35,4 @@ class MoveController : UiController() {
         return true
     }
 
-    private fun moveNode(dragged: ProjectNode, target: ProjectNode){
-        Log.d("move: ${dragged.getFile()} to ${target.getFile()}")
-        //todo
-    }
 }

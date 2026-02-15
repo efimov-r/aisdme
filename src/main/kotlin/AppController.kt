@@ -14,7 +14,6 @@ import non.era.aisdme.ui.project.FileNode
 import non.era.aisdme.ui.project.MoveController
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
-import non.era.aisdme.ui.project.TreeDragState
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
