@@ -1,9 +1,6 @@
 package non.era.aisdme.ui.project
 
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
@@ -26,7 +23,6 @@ class ProjectTreeController: UiController(), TreeState {
         return findSelectedNodes(_nodes)
     }
 
-    //клик по элементу
     override fun reselectNode(node: ProjectNode) {
         getSelectedNodes().forEach { node ->
             node.setSelected(false)

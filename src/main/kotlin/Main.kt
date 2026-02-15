@@ -30,12 +30,16 @@ import java.io.File
 
 fun main() = application {
     AisDmeWindow(onCloseRequest = ::exitApplication) {
+        val bus = remember {
+            AppEventBus()
+        }
+
         val editorController = remember {
-            EditorController()
+            EditorController(bus = bus)
         }
 
         val projectController = remember {
-            ProjectController(File("/home/era/proj/os/aisdme/"))
+            ProjectController(projectRoot = File("/home/era/proj/os/aisdme/"), bus = bus)
         }
 
         val filesController = remember {

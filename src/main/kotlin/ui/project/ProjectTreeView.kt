@@ -18,12 +18,17 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isCtrlPressed
+import androidx.compose.ui.input.pointer.isPrimaryPressed
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.ProjectTreeContextMenu
 import non.era.aisdme.ui.components.custom.DragailableTreeElement
+import non.era.aisdme.ui.components.custom.ProjectNodeClick
 import non.era.aisdme.ui.components.dialogs.DeleteSelectedNodeDialog
 import non.era.aisdme.ui.editor.Panels
 
@@ -41,7 +46,7 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
 
     ProjectTreeContextMenu {
         Box(modifier = modifier
-            .fillMaxHeight()
+            .fillMaxHeight().padding(horizontal = 6.dp)
             .focusRequester(focusRequester)
             .onFocusChanged {
                 hasFocus = it.isFocused
@@ -52,11 +57,20 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
                 treeKeyFocusWork(it, app) {
                     showDialog = true
                 }
+            }
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        if (awaitPointerEvent().type == PointerEventType.Press) {
+                            focusRequester.requestFocus()
+                        }
+                    }
+                }
             }) {
             LazyColumn(modifier = modifier
                 .fillMaxHeight()) {
                 items(app.getNodes()) { node ->
-                    ProjectNodeView(node, focusRequester, hasFocus)
+                    ProjectNodeView(node, hasFocus)
                 }
             }
         }
@@ -66,7 +80,6 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
 @Composable
 private fun ProjectNodeView(
     node: ProjectNode,
-    focusRequester: FocusRequester,
     hasFocus: Boolean,
 ) {
     val app = LocalAppController.current
@@ -79,49 +92,42 @@ private fun ProjectNodeView(
 
     Box {
         when (node) {
-            is DirNode -> DirNodeView(node, focusRequester, hasFocus)
-            is FileNode -> FileNodeView(node, focusRequester, hasFocus)
-            is LinkNode -> LinkNodeView(node, focusRequester, hasFocus)
+            is DirNode -> DirNodeView(node, hasFocus)
+            is FileNode -> FileNodeView(node, hasFocus)
+            is LinkNode -> LinkNodeView(node, hasFocus)
         }
     }
 }
 
 @Composable
-private fun DirNodeView(node: DirNode, focusRequester: FocusRequester, hasFocus: Boolean) =
+private fun DirNodeView(node: DirNode, hasFocus: Boolean) =
     Column {
             NodeView(
-                focusRequester = focusRequester,
                 hasFocus = hasFocus,
                 text = if (node.expanded.value) "📂 ${node.getFileName()}" else "📁 ${node.getFileName()}",
                 node = node,
-                doubleClick = {
-                    node.openOrClose()
-                }
             )
 
         if (node.expanded.value) {
             node.children.forEach { ch->
-                ProjectNodeView(ch, focusRequester, hasFocus)
+                ProjectNodeView(ch, hasFocus)
             }
         }
     }
 
 @Composable
-private fun FileNodeView(node: FileNode, focusRequester: FocusRequester, hasFocus: Boolean,) {
+private fun FileNodeView(node: FileNode, hasFocus: Boolean,) {
     val app = LocalAppController.current
         NodeView(
-            focusRequester = focusRequester,
             hasFocus = hasFocus,
             text = "📄 ${node.getFileName()}",
             node = node,
-            doubleClick = { app.doubleFileClick(node, Panels.LEFT) }
             )
 }
 
 @Composable
-private fun LinkNodeView(node: LinkNode, focusRequester: FocusRequester, hasFocus: Boolean) =
+private fun LinkNodeView(node: LinkNode, hasFocus: Boolean) =
         NodeView(
-            focusRequester = focusRequester,
             hasFocus = hasFocus,
             text = "L: ${node.getFileName()}",
             node = node,
@@ -129,11 +135,9 @@ private fun LinkNodeView(node: LinkNode, focusRequester: FocusRequester, hasFocu
 
 @Composable
 private fun NodeView(
-             focusRequester: FocusRequester,
              hasFocus: Boolean,
              text: String,
-             node: ProjectNode,
-             doubleClick: (Offset) -> Unit = {}) {
+             node: ProjectNode) {
     val app = LocalAppController.current
     val isSelected = node.isSelected()
 
@@ -144,42 +148,29 @@ private fun NodeView(
     }
 
     DragailableTreeElement(app, node) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth().padding(horizontal = 6.dp)
-                .background(
-                    when {
-                        isSelected && hasFocus ->
-                            LocalAisDmeColors.current.primary.copy(alpha = 0.5f)
+        ProjectNodeClick(node, app) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        when {
+                            isSelected && hasFocus ->
+                                LocalAisDmeColors.current.primary.copy(alpha = 0.5f)
 
-                        isSelected && !hasFocus ->
-                            LocalAisDmeColors.current.selectedRow.copy(alpha = 0.5f)
+                            isSelected && !hasFocus ->
+                                LocalAisDmeColors.current.selectedRow.copy(alpha = 0.5f)
 
-                        isDropTarget ->
-                            LocalAisDmeColors.current.primary.copy(alpha = 0.2f)
+                            isDropTarget ->
+                                LocalAisDmeColors.current.primary.copy(alpha = 0.2f)
 
-                        else -> Color.Transparent
-                    }
-                )
-                .padding(start = (node.depth * 16).dp)
-                .pointerInput(node) {
-                    detectTapGestures(
-                        onDoubleTap = doubleClick
-                    )
-                }
-                .pointerInput(node) {
-                    awaitPointerEventScope {
-                        while (true) { //todo выбор элемента при отпускании или при нажатии в зависимости от количества
-                            if (awaitPointerEvent().type == PointerEventType.Press) {
-                                focusRequester.requestFocus()
-                                app.reselectNode(node)
-                            }
+                            else -> Color.Transparent
                         }
-                    }
-                }
-        ) {
-            Text(color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
-                text = text)
+                    )
+                    .padding(start = (node.depth * 16).dp)
+            ) {
+                Text(color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
+                    text = text)
+            }
         }
     }
 }

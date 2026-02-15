@@ -61,7 +61,7 @@ fun treeKeyFocusWork(
         Hotkeys.TOP.ifDu(event) -> {
             val selected = app.getSelectedNodes()
             if(selected.size == 1) {
-                ProjectListBuilder.build(app).lastOf(selected[0])?.let {
+                ProjectListBuilder.build(app.getNodes()).lastOf(selected[0])?.let {
                     app.reselectNode(it)
                 }
 
@@ -72,54 +72,12 @@ fun treeKeyFocusWork(
         Hotkeys.BOTTOM.ifDu(event) -> {
             val selected = app.getSelectedNodes()
             if(selected.size == 1) {
-                ProjectListBuilder.build(app).nextOf(selected[0])?.let {
+                ProjectListBuilder.build(app.getNodes()).nextOf(selected[0])?.let {
                     app.reselectNode(it)
                 }
             }
             return true
         }
         else -> return false
-    }
-}
-
-object ProjectListBuilder {
-    private var result: MutableList<ProjectNode> = mutableListOf()
-
-    private fun dirBuild(node: DirNode) {
-        result.add(node)
-        if (node.expanded.value) {
-            node.children.forEach { child ->
-                nodeBuild(child)
-            }
-        }
-    }
-
-    private fun nodeBuild(node: ProjectNode) {
-        when (node) {
-            is DirNode -> dirBuild(node)
-            is FileNode -> result.add(node)
-            is LinkNode -> result.add(node)
-        }
-    }
-
-    fun build(app: AppController) : ProjectListBuilder {
-        result = mutableListOf()
-        val nodes = app.getNodes()
-        nodes.forEach { node ->
-            nodeBuild(node)
-        }
-        return this
-    }
-
-    fun nextOf(node: ProjectNode?) : ProjectNode?  {
-        if(node == null) return null
-        val i = result.indexOfFirst { it.equalsOf(node) }
-        return result.getOrNull(i + 1) ?: node
-    }
-
-    fun lastOf(node: ProjectNode?) : ProjectNode?  {
-        if(node == null) return null
-        val i = result.indexOfFirst { it.equalsOf(node) }
-        return result.getOrNull(i - 1) ?: node
     }
 }

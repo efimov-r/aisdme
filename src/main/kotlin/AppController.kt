@@ -14,6 +14,7 @@ import non.era.aisdme.ui.project.FileNode
 import non.era.aisdme.ui.project.MoveController
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.project.ProjectNode
+import non.era.aisdme.ui.project.TypeClickNode
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
@@ -40,16 +41,15 @@ class AppController(
     fun finishDrop() = moveC.finishDrop()
 
     fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)
-    fun doubleFileClick(node: FileNode, panel: Panels) {
-        projectC.reselectNode(node)
-        editorC.openFile(node.getFile(), panel)
-    }
+
     fun rightToLeftHalf() = editorC.rightToLeftHalf()
 
     fun getEditorHalfLeftController(): EditorHalfState = editorC.leftTabs
     fun getEditorHalfRightController(): EditorHalfState = editorC.rightTabs
     fun getSelectedNodes() = projectC.getSelectedNodes()
     fun getNodes() = projectC.getNodes()
+
+    fun clickNode(node: ProjectNode, typeClick: TypeClickNode) = projectC.clickNode(node, typeClick)
 
     fun createFileInSelected(name: String) = filesC.createFile(projectC.getSelectedNodes(), name)
     fun createDirectoryInSelected(name: String) = filesC.createDirectory(projectC.getSelectedNodes(), name)
