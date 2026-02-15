@@ -4,6 +4,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,13 @@ fun DragailableTreeElement(app: AppController,
                            node: ProjectNode,
                            content: @Composable BoxScope.() -> Unit) {
     var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    DisposableEffect(node) {
+        onDispose {
+            app.getNodeBounds().remove(node)
+        }
+    }
+
     Box(modifier = Modifier
         .onGloballyPositioned {
             coords = it
