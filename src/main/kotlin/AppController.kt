@@ -45,7 +45,7 @@ class AppController(
 
     fun getEditorHalfLeftController(): EditorHalfState = editorC.leftTabs
     fun getEditorHalfRightController(): EditorHalfState = editorC.rightTabs
-    fun getSelectedNodes() = projectC.getSelectedNodes() //todo убрать?
+    fun getSelectedNodes() = projectC.getSelectedNodes()
     fun getNodes() = projectC.getNodes()
 
     fun clickNode(node: ProjectNode, typeClick: TypeClickNode) = projectC.clickNode(node, typeClick)
@@ -54,7 +54,7 @@ class AppController(
     fun createFileInSelected(name: String) = filesC.createFile(projectC.getSelectedNodes(), name)
     fun createDirectoryInSelected(name: String) = filesC.createDirectory(projectC.getSelectedNodes(), name)
     fun deleteSelected() = filesC.delete(projectC.getSelectedNodes())
-    fun move(src: ProjectNode, dst: ProjectNode) = filesC.move(src, dst) //todo сделать перемещение мышкой?
+    fun move(src: ProjectNode, dst: ProjectNode) = filesC.move(src, dst) //todo сделать перемещение мышкой
     fun copySelectedToClipboard(cut: Boolean) {
         val selected = projectC.getSelectedNodes()
         if(cut) selected.forEach { projectC.cutNoteMarkRecursive(it) }
