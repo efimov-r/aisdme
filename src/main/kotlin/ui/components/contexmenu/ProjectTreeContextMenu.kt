@@ -16,6 +16,7 @@ import non.era.aisdme.AppController
 import non.era.aisdme.Hotkeys
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.Log
+import non.era.aisdme.ui.components.custom.DialogableElement
 import non.era.aisdme.ui.components.dialogs.DeleteSelectedNodeDialog
 import non.era.aisdme.ui.components.dialogs.NewNodeDialog
 import non.era.aisdme.ui.components.dialogs.TypeNew
@@ -30,38 +31,37 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
     val app = LocalAppController.current
 
     val menuState = remember { ContextMenuState() }
-    var showDelDialog by remember { mutableStateOf(false) }
-    var showNewFileDialog by remember { mutableStateOf(false) }
-    var showNewDirectoryDialog by remember { mutableStateOf(false) }
 
-    Box(Modifier.pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                val event = awaitPointerEvent()
-                if (
-                    event.type == PointerEventType.Press &&
-                    event.buttons.isSecondaryPressed
-                ) {
-                    menuState.show(event.changes.first().position)
+    DialogableElement({ DeleteSelectedNodeDialog(app, it) }) { showDelDialog->
+        DialogableElement({NewNodeDialog(app, TypeNew.FILE, it)}){ showNewFileDialog->
+            DialogableElement({NewNodeDialog(app, TypeNew.DIRECTORY, it)}) {showNewDirectoryDialog->
+                Box(Modifier.pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            if (
+                                event.type == PointerEventType.Press &&
+                                event.buttons.isSecondaryPressed
+                            ) {
+                                menuState.show(event.changes.first().position)
+                            }
+                        }
+                    }
+                }) {
+                    content()
+
+                    if (menuState.isVisible) {
+                        TreeContextMenu(
+                            state = menuState,
+                            showDelDialog = { showDelDialog() },
+                            showNewFileDialog = { showNewFileDialog() },
+                            showNewDirectoryDialog = { showNewDirectoryDialog() },
+                            onDismiss = { menuState.hide() }
+                        )
+                    }
                 }
             }
         }
-    }) {
-        content()
-
-        if (menuState.isVisible) {
-            TreeContextMenu(
-                state = menuState,
-                showDelDialog = { showDelDialog = true },
-                showNewFileDialog = { showNewFileDialog = true },
-                showNewDirectoryDialog = { showNewDirectoryDialog = true },
-                onDismiss = { menuState.hide() }
-            )
-        }
-
-        if (showDelDialog) DeleteSelectedNodeDialog(app) { showDelDialog = false }
-        if (showNewFileDialog) NewNodeDialog(app, TypeNew.FILE) { showNewFileDialog = false }
-        if (showNewDirectoryDialog) NewNodeDialog(app, TypeNew.DIRECTORY) { showNewDirectoryDialog = false }
     }
 }
 

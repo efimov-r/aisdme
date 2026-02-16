@@ -1,18 +1,23 @@
 package non.era.aisdme.ui.project
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isPrimaryPressed
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.DragailableTreeElement
 import non.era.aisdme.ui.components.custom.ProjectNodeClick
+import non.era.aisdme.ui.components.over.SvgIcon
 
 @Composable
 fun ProjectTreeNode(
@@ -28,17 +33,10 @@ fun ProjectTreeNode(
         false
     }
 
-    val text = when(node) {
-        is DirNode -> {
-            if (node.expanded.value) "📂 ${node.getFileName()}" else "📁 ${node.getFileName()}"
-        }
-        is FileNode -> {
-            "📄 ${node.getFileName()}"
-        }
-        is LinkNode -> {
-            "L: ${node.getFileName()}"
-        }
-        else -> ""
+    val icon: String = when(node) {
+        is DirNode -> "folder"
+        is FileNode -> "anyType"
+        else -> "unknown"
     }
 
     DragailableTreeElement(app, node) {
@@ -60,10 +58,36 @@ fun ProjectTreeNode(
                             else -> Color.Transparent
                         }
                     )
-                    .padding(start = (node.depth * 16).dp)
+                    .padding(start = (node.depth * 20).dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
-                    text = text)
+                Box(Modifier
+                    .requiredWidth(24.dp)
+                    .pointerInput(node) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                if(event.type == PointerEventType.Press && event.buttons.isPrimaryPressed)
+                                    app.clickNode(node, TypeClickNode.CHEVRON)
+                            }
+                        }
+                    }
+                ) {
+                    if(node is DirNode && !node.expanded.value)
+                        SvgIcon("chevronRight", Modifier.padding(top = 2.dp).align(Alignment.CenterStart), 20.dp)
+                    if(node is DirNode && node.expanded.value)
+                        SvgIcon("chevronDown", Modifier.padding(top = 2.dp).align(Alignment.CenterStart), 20.dp)
+                }
+
+                SvgIcon(icon, Modifier.padding(top = 2.dp, end = 4.dp))
+
+                Text(
+                    color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
+                    text = "${node.getFileName()}",
+                    style = LocalTextStyle.current.copy(fontSize = 15.sp, lineHeight = 26.sp),
+                    maxLines = 1,
+                    softWrap = false,
+                )
             }
         }
     }

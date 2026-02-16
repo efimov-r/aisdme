@@ -1,11 +1,23 @@
 package non.era.aisdme.ui.project
 
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import non.era.aisdme.AppController
 import non.era.aisdme.Hotkeys
 import non.era.aisdme.ui.editor.Panels
 
-fun treeKeyFocusWork(
+fun Modifier.treeKeyEvent(app: AppController, showDelDialog: () -> Unit) =
+    onPreviewKeyEvent {
+    if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+        treeKeyFocusWork(it, app) {
+            showDelDialog()
+        }
+    }
+
+private fun treeKeyFocusWork(
     event: KeyEvent,
     app: AppController,
     showDelDialog: ()->Unit,

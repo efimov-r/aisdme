@@ -8,7 +8,7 @@ import java.io.File
 import java.nio.file.FileSystems
 
 enum class TypeClickNode{
-    LMB, DOWN, DLMB, RMB, CTRL_LMB, SHIFT_LMB
+    LMB, DOWN, DLMB, RMB, CTRL_LMB, SHIFT_LMB, CHEVRON
 }
 
 enum class TypeMovementOnTree{
@@ -51,31 +51,19 @@ class ProjectController(
         val selected = projectTree.getSelectedNodes()
         when(typeMovement) {
             TypeMovementOnTree.TOP -> {
-                if(selected.size == 1) {
-                    ProjectListBuilder
-                        .build(projectTree.getNodes(), selected)
-                        .lastOf(selected[0])
-                }
+                ProjectListLineHelper.last(projectTree.getNodes(), selected)
             }
             TypeMovementOnTree.SHIFT_TOP -> {
                 if(firstMovement == null) firstMovement = Movement.TOP
-                ProjectListBuilder
-                    .build(projectTree.getNodes(), selected)
-                    .shiftTop(firstMovement)
+                ProjectListLineHelper.shiftTop(projectTree.getNodes(), selected, firstMovement)
                 if(projectTree.getSelectedNodes().size <= 1) firstMovement = null
             }
             TypeMovementOnTree.BOTTOM -> {
-                if(selected.size == 1) {
-                    ProjectListBuilder
-                        .build(projectTree.getNodes(), selected)
-                        .nextOf(selected[0])
-                }
+                ProjectListLineHelper.next(projectTree.getNodes(), selected)
             }
             TypeMovementOnTree.SHIFT_BOTTOM -> {
                 if(firstMovement == null) firstMovement = Movement.BOTTOM
-                ProjectListBuilder
-                    .build(projectTree.getNodes(), selected)
-                    .shiftBottom(firstMovement)
+                ProjectListLineHelper.shiftBottom(projectTree.getNodes(), selected, firstMovement)
                 if(projectTree.getSelectedNodes().size <= 1) firstMovement = null
             }
         }
@@ -118,13 +106,18 @@ class ProjectController(
             }
             TypeClickNode.CTRL_LMB -> {
                 nodeClicked = node
-                projectTree.addSelectNode(node)
+                node.setSelected(!node.isSelected())
             }
             TypeClickNode.SHIFT_LMB -> {
                 nodeClicked = node
-                ProjectListBuilder
-                    .build(projectTree.getNodes(), selected)
-                    .fromAndTo(node)
+                ProjectListLineHelper.fromAndTo(projectTree.getNodes(), selected, node)
+            }
+            TypeClickNode.CHEVRON -> {
+                nodeClicked = node
+                if (node is DirNode) {
+                    projectTree.reselectNode(node)
+                    node.openOrClose()
+                }
             }
         }
     }

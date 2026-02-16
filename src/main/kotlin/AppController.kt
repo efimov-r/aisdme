@@ -8,6 +8,7 @@ import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.errors.GlobalMessage
+import non.era.aisdme.ui.project.DirNode
 import non.era.aisdme.ui.project.MoveController
 import non.era.aisdme.ui.project.TypeMovementOnTree
 import non.era.aisdme.ui.project.ProjectController
