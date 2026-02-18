@@ -3,11 +3,10 @@ package non.era.aisdme.ui
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.swing.Swing
-import non.era.aisdme.IControler
-import non.era.aisdme.Log
+import non.era.aisdme.utils.Log
 import non.era.aisdme.ui.errors.GlobalMessage
 
-abstract class UiController : IControler {
+abstract class UiController {
     protected val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val scopeFlow = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val _errors = MutableSharedFlow<GlobalMessage>(
@@ -76,7 +75,7 @@ abstract class UiController : IControler {
     open fun disposeBefore(){}
     open fun disposeAfter(){}
 
-    final override fun dispose() {
+    fun dispose() {
         disposeBefore()
         scopeFlow.cancel()
         scope.cancel()

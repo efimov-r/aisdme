@@ -2,10 +2,7 @@ package non.era.aisdme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme.colors
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -13,6 +10,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
+import non.era.aisdme.bus.AppEventBus
+import non.era.aisdme.bus.ProjectOpen
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
@@ -21,11 +20,13 @@ import non.era.aisdme.ui.components.custom.ResizableColumn
 import non.era.aisdme.ui.components.custom.ResizableRow
 import non.era.aisdme.ui.editor.Editor
 import non.era.aisdme.ui.editor.EditorController
-import non.era.aisdme.ui.errors.ErrorOverlay
-import non.era.aisdme.ui.project.MoveController
+import non.era.aisdme.ui.errors.view.ErrorOverlay
+import non.era.aisdme.ui.move.MoveController
 import non.era.aisdme.ui.project.ProjectController
-import non.era.aisdme.ui.project.ProjectTreeView
+import non.era.aisdme.ui.reload.TreeReloadWatcher
+import non.era.aisdme.ui.project.view.ProjectTreeView
 import non.era.aisdme.ui.win.AisDmeWindow
+import non.era.aisdme.utils.Log
 import java.io.File
 
 fun main() = application {
@@ -39,7 +40,7 @@ fun main() = application {
         }
 
         val projectController = remember {
-            ProjectController(projectRoot = File("/home/era/proj/os/aisdme/"), bus = bus)
+            ProjectController(bus = bus)
         }
 
         val filesController = remember {
@@ -50,11 +51,16 @@ fun main() = application {
             MoveController()
         }
 
+        val reloadWotcher = remember {
+            TreeReloadWatcher(bus = bus)
+        }
+
         val appController = remember {
             AppController(editorController,
                 projectController,
                 filesController,
-                moveController)
+                moveController,
+                reloadWotcher)
         }
 
         DisposableEffect(Unit) {
@@ -71,6 +77,8 @@ fun main() = application {
                 AisDmeContent()
             }
         }
+
+        bus.publish(ProjectOpen(File("/home/era/proj/os/aisdme/")))
     }
 
     Log.d("the end of main")

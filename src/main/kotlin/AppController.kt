@@ -8,11 +8,11 @@ import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.errors.GlobalMessage
-import non.era.aisdme.ui.project.DirNode
-import non.era.aisdme.ui.project.MoveController
+import non.era.aisdme.ui.move.MoveController
 import non.era.aisdme.ui.project.TypeMovementOnTree
 import non.era.aisdme.ui.project.ProjectController
-import non.era.aisdme.ui.project.ProjectNode
+import non.era.aisdme.ui.reload.TreeReloadWatcher
+import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.project.TypeClickNode
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
@@ -24,6 +24,7 @@ class AppController(
     private val projectC: ProjectController,
     private val filesC: FilesController,
     private val moveC: MoveController,
+    private val reloadWatcher: TreeReloadWatcher,
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
@@ -33,6 +34,7 @@ class AppController(
         projectC.subscriptionError { _globalMess += it }
         filesC.subscriptionError { _globalMess += it }
         moveC.subscriptionError { _globalMess += it }
+        reloadWatcher.subscriptionError { _globalMess += it }
     }
 
     fun getDragState() = moveC.getDragState()
@@ -62,7 +64,7 @@ class AppController(
     }
     fun pasteToSelectedNode() = filesC.pasteFromClipboard(projectC.getSelectedNodes())
 
-    fun reloadSelectedDeerFromDisk() = projectC.reloadDeerFromDisk()
+    fun reloadSelectedDeerFromDisk() = projectC.reloadDirFromDisk()
     fun openSelectedInFileManager() = FileDolphinOpener.openNodesInFileManager(projectC.getSelectedNodes())
 
     fun clearGlobalMess() {
@@ -78,5 +80,6 @@ class AppController(
         projectC.dispose()
         filesC.dispose()
         moveC.dispose()
+        reloadWatcher.dispose()
     }
 }

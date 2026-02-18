@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.project
+package non.era.aisdme.ui.project.data
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue

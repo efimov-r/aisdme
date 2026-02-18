@@ -1,30 +1,27 @@
-package non.era.aisdme.ui.components.contexmenu
+package non.era.aisdme.ui.components.contexmenu.realisation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import non.era.aisdme.AppController
-import non.era.aisdme.Hotkeys
+import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.LocalAppController
-import non.era.aisdme.Log
+import non.era.aisdme.ui.components.contexmenu.ContextMenu
+import non.era.aisdme.ui.components.contexmenu.ContextMenuState
+import non.era.aisdme.ui.components.contexmenu.MenuEntry
 import non.era.aisdme.ui.components.custom.DialogableElement
 import non.era.aisdme.ui.components.dialogs.DeleteSelectedNodeDialog
 import non.era.aisdme.ui.components.dialogs.NewNodeDialog
 import non.era.aisdme.ui.components.dialogs.TypeNew
 import non.era.aisdme.ui.editor.Panels
-import non.era.aisdme.ui.project.DirNode
-import non.era.aisdme.ui.project.FileNode
-import non.era.aisdme.ui.project.ProjectNode
-import javax.swing.JColorChooser.showDialog
+import non.era.aisdme.ui.project.data.DirNode
+import non.era.aisdme.ui.project.data.FileNode
+import non.era.aisdme.ui.project.data.ProjectNode
 
 @Composable
 fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {

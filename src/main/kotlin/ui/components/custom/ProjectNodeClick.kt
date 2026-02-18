@@ -12,7 +12,7 @@ import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import non.era.aisdme.AppController
-import non.era.aisdme.ui.project.ProjectNode
+import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.project.TypeClickNode
 
 @Composable

@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.project
+package non.era.aisdme.ui.project.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,6 +18,10 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.DragailableTreeElement
 import non.era.aisdme.ui.components.custom.ProjectNodeClick
 import non.era.aisdme.ui.components.over.SvgIcon
+import non.era.aisdme.ui.project.data.DirNode
+import non.era.aisdme.ui.project.data.FileNode
+import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.ui.project.TypeClickNode
 
 @Composable
 fun ProjectTreeNode(

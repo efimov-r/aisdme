@@ -15,7 +15,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.AppController
-import non.era.aisdme.ui.project.ProjectNode
+import non.era.aisdme.ui.project.data.ProjectNode
 import kotlin.collections.set
 
 @Composable

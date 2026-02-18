@@ -17,7 +17,6 @@ import non.era.aisdme.theme.aisDmeDialogProperties
 import non.era.aisdme.theme.dialogBorder
 import non.era.aisdme.ui.components.over.ButtonCancel
 import non.era.aisdme.ui.components.over.ButtonOk
-import non.era.aisdme.ui.project.DirNode
 
 enum class TypeNew {
     FILE, DIRECTORY

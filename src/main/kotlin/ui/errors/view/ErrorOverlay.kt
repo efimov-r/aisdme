@@ -1,7 +1,6 @@
-package non.era.aisdme.ui.errors
+package non.era.aisdme.ui.errors.view
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items

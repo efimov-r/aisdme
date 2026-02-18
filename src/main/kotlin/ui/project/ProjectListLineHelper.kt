@@ -1,5 +1,7 @@
 package non.era.aisdme.ui.project
 
+import non.era.aisdme.ui.project.data.DirNode
+import non.era.aisdme.ui.project.data.ProjectNode
 import kotlin.math.max
 import kotlin.math.min
 

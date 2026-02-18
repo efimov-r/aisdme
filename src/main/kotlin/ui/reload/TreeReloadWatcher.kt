@@ -1,29 +1,49 @@
-package non.era.aisdme.ui.project
+package non.era.aisdme.ui.reload
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import non.era.aisdme.Log
+import non.era.aisdme.bus.AppEventBus
+import non.era.aisdme.bus.FileOpened
+import non.era.aisdme.utils.Log
+import non.era.aisdme.bus.ProjectOpen
+import non.era.aisdme.bus.RebuilDirRiff
+import non.era.aisdme.ui.UiController
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardWatchEventKinds.ENTRY_CREATE
-import java.nio.file.StandardWatchEventKinds.ENTRY_DELETE
-import java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY
+import java.nio.file.StandardWatchEventKinds
 
 class TreeReloadWatcher(
-    val rebuildDir: suspend (dir: File) -> Unit
-) {
+    private val bus: AppEventBus
+) : UiController() {
+    //todo mutex in service
     private val watchService = FileSystems.getDefault().newWatchService()
     private val pendingDirs = mutableSetOf<File>()
     private val pandingMutex = Mutex()
     private val appliPandingMutex = Mutex()
 
-    fun watchLoop(scope: CoroutineScope) = scope.launch {
+    init{
+        watchLoop()
+        scope.launch {
+            bus.events.collect { event ->
+                when (event) {
+                    is FileOpened -> {}
+                    is RebuilDirRiff -> {}
+                    is ProjectOpen -> {
+                        scope.launch {
+                            registerRecursively(event.root.toPath())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun watchLoop() = scope.launch {
         while (isActive) {
             val key = runCatching { watchService.take() }.getOrNull() ?: break
 
@@ -38,7 +58,7 @@ class TreeReloadWatcher(
                     applyBatch()
                 }
 
-                if (event.kind() == ENTRY_CREATE && Files.isDirectory(fullPath)) { //новая директория
+                if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE && Files.isDirectory(fullPath)) { //новая директория
                     Log.d("new dir register recursively")
                     registerRecursively(fullPath)
                 }
@@ -51,10 +71,15 @@ class TreeReloadWatcher(
         }
     }
 
-    fun registerRecursively(root: Path) {
+    //todo смена проекта, нужно ли забывать
+    private fun registerRecursively(root: Path) {
         Log.d("registerRecursively")
         fun registerDir(path: Path) =
-            path.register(watchService,ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY)
+            path.register(watchService,
+                StandardWatchEventKinds.ENTRY_CREATE,
+                StandardWatchEventKinds.ENTRY_DELETE,
+                StandardWatchEventKinds.ENTRY_MODIFY
+            )
 
         Files.walk(root)
             .filter { Files.isDirectory(it) && !Files.isSymbolicLink(it) }
@@ -73,7 +98,7 @@ class TreeReloadWatcher(
             }
 
             for (dir in dirs) {
-                rebuildDir(dir)
+                bus.publish(RebuilDirRiff(dir))
             }
         } finally {
             appliPandingMutex.unlock()

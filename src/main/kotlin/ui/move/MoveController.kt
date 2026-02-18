@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.project
+package non.era.aisdme.ui.move
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -6,8 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import non.era.aisdme.Log
+import non.era.aisdme.utils.Log
 import non.era.aisdme.ui.UiController
+import non.era.aisdme.ui.project.data.ProjectNode
 
 class TreeDragState {
     var draggingNode by mutableStateOf(false)
@@ -18,6 +19,7 @@ class MoveController : UiController() {
     private val _dragState = TreeDragState()
     private val _nodeBounds = mutableStateMapOf<ProjectNode, Rect>()
 
+    //todo не гетить мутейблы бля
     fun getDragState() = _dragState
     fun getNodeBounds() = _nodeBounds
 

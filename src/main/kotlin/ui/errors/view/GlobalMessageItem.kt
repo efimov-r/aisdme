@@ -1,26 +1,20 @@
-package non.era.aisdme.ui.errors
+package non.era.aisdme.ui.errors.view
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.AisDmeShapes
-import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeButtonBorder
 import non.era.aisdme.ui.components.over.SvgIcon
+import non.era.aisdme.ui.errors.GlobalMessage
+import non.era.aisdme.ui.errors.TypeGlobalMessage
 
 @Composable
 fun GlobalMessageItem(
@@ -54,8 +48,6 @@ fun GlobalMessageItem(
                     SvgIcon("successDialog", Modifier.padding(iconPadding).size(iconSize))
             }
 
-//            Spacer(Modifier.width(12.dp))
-
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -82,7 +74,6 @@ fun GlobalMessageItem(
                     modifier = Modifier.padding(end = endAndBottomPadding, bottom = endAndBottomPadding),
                     text = mess.text,
                     style = LocalTextStyle.current.copy(fontSize = 14.sp, lineHeight = 16.sp),
-//                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

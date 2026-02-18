@@ -6,7 +6,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.PopupPositionProvider
-import non.era.aisdme.Log
+import non.era.aisdme.utils.Log
 
 class SmartMenuPositionProvider(
     private val clickPosition: Offset

@@ -2,10 +2,8 @@ package non.era.aisdme.files
 
 import kotlinx.coroutines.launch
 import non.era.aisdme.ui.UiController
-import non.era.aisdme.ui.project.DirNode
-import non.era.aisdme.ui.project.ProjectNode
-import java.io.File
-import java.nio.file.Path
+import non.era.aisdme.ui.project.data.DirNode
+import non.era.aisdme.ui.project.data.ProjectNode
 
 class FilesController : UiController(), IFileController {
     override fun createFile(nodes: List<ProjectNode>, name: String) {

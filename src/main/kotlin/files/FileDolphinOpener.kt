@@ -1,7 +1,7 @@
 package non.era.aisdme.files
 
-import non.era.aisdme.Log
-import non.era.aisdme.ui.project.ProjectNode
+import non.era.aisdme.utils.Log
+import non.era.aisdme.ui.project.data.ProjectNode
 import java.awt.Desktop
 import java.io.File
 import java.io.IOException

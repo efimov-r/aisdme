@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.project
+package non.era.aisdme.ui.project.view
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,11 +11,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import non.era.aisdme.LocalAppController
-import non.era.aisdme.ui.components.contexmenu.ProjectTreeContextMenu
+import non.era.aisdme.ui.components.contexmenu.realisation.ProjectTreeContextMenu
 import non.era.aisdme.ui.components.custom.BoxFocusedAfterClick
 import non.era.aisdme.ui.components.custom.DialogableElement
 import non.era.aisdme.ui.components.custom.ScrollableLazyContent
 import non.era.aisdme.ui.components.dialogs.DeleteSelectedNodeDialog
+import non.era.aisdme.ui.project.ProjectListLineHelper
 
 @Composable
 fun ProjectTreeView(modifier: Modifier = Modifier) {

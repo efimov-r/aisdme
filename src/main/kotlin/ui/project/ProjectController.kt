@@ -1,11 +1,15 @@
 package non.era.aisdme.ui.project
 
 import kotlinx.coroutines.*
-import non.era.aisdme.AppEventBus
-import non.era.aisdme.FileOpened
+import non.era.aisdme.bus.AppEventBus
+import non.era.aisdme.bus.FileOpened
+import non.era.aisdme.bus.ProjectOpen
+import non.era.aisdme.bus.RebuilDirRiff
 import non.era.aisdme.ui.UiController
-import java.io.File
-import java.nio.file.FileSystems
+import non.era.aisdme.ui.project.data.DirNode
+import non.era.aisdme.ui.project.data.FileNode
+import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.ui.project.ProjectTreeState
 
 enum class TypeClickNode{
     LMB, DOWN, DLMB, RMB, CTRL_LMB, SHIFT_LMB, CHEVRON
@@ -20,51 +24,55 @@ enum class Movement{
 }
 
 class ProjectController(
-    projectRoot: File,
     private val bus: AppEventBus
 ) : UiController() {
-    val root = projectRoot
-    private val watchService = FileSystems.getDefault().newWatchService()
 
-    private val projectTree = ProjectTreeController()
-    private val treeReloadWatcher = TreeReloadWatcher{ dir->
-        projectTree.rebuildDirDiff(dir)
-    }
+    private val treeState = ProjectTreeState()
 
     init {
         scope.launch {
-            projectTree.setRootProject(root)
-            projectTree.rebuildAllTree()
+            bus.events.collect { event ->
+                when (event) {
+                    is FileOpened -> {}
+                    is RebuilDirRiff -> {
+                        scope.launch {
+                            treeState.rebuildDirDiff(event.dir)
+                        }
+                    }
+                    is ProjectOpen -> {
+                        scope.launch {
+                            treeState.reselectRootProject(event.root)
+                        }
+                    }
+                }
+            }
         }
-        treeReloadWatcher.registerRecursively(root.toPath())
-        treeReloadWatcher.watchLoop(scope)
-        projectTree.subscriptionError { emitGlobalMessage(it) }
     }
 
-    fun cutNoteMarkRecursive(node: ProjectNode) = projectTree.cutNoteMarkRecursive(node)
-    fun reloadDeerFromDisk() = projectTree.reloadDirFromDisk()
-    fun getNodes() = projectTree.getNodes()
-    fun getSelectedNodes(): List<ProjectNode> = projectTree.getSelectedNodes()
+    fun getSelectedNodes() = treeState.getSelectedNodes()
+    fun getNodes() = treeState.getNodes()
+    fun cutNoteMarkRecursive(node: ProjectNode) = treeState.cutNoteMarkRecursive(node)
+    fun reloadDirFromDisk() = treeState.reloadDirFromDisk()
 
     private var firstMovement: Movement? = null
     fun movementOnTree(typeMovement: TypeMovementOnTree) {
-        val selected = projectTree.getSelectedNodes()
+        val selected = treeState.getSelectedNodes()
         when(typeMovement) {
             TypeMovementOnTree.TOP -> {
-                ProjectListLineHelper.last(projectTree.getNodes(), selected)
+                ProjectListLineHelper.last(treeState.getNodes(), selected)
             }
             TypeMovementOnTree.SHIFT_TOP -> {
                 if(firstMovement == null) firstMovement = Movement.TOP
-                ProjectListLineHelper.shiftTop(projectTree.getNodes(), selected, firstMovement)
-                if(projectTree.getSelectedNodes().size <= 1) firstMovement = null
+                ProjectListLineHelper.shiftTop(treeState.getNodes(), selected, firstMovement)
+                if(treeState.getSelectedNodes().size <= 1) firstMovement = null
             }
             TypeMovementOnTree.BOTTOM -> {
-                ProjectListLineHelper.next(projectTree.getNodes(), selected)
+                ProjectListLineHelper.next(treeState.getNodes(), selected)
             }
             TypeMovementOnTree.SHIFT_BOTTOM -> {
                 if(firstMovement == null) firstMovement = Movement.BOTTOM
-                ProjectListLineHelper.shiftBottom(projectTree.getNodes(), selected, firstMovement)
-                if(projectTree.getSelectedNodes().size <= 1) firstMovement = null
+                ProjectListLineHelper.shiftBottom(treeState.getNodes(), selected, firstMovement)
+                if(treeState.getSelectedNodes().size <= 1) firstMovement = null
             }
         }
     }
@@ -72,12 +80,12 @@ class ProjectController(
 
     private var nodeClicked: ProjectNode? = null
     fun clickNode(node: ProjectNode, typeClick: TypeClickNode) {
-        val selected = projectTree.getSelectedNodes()
+        val selected = treeState.getSelectedNodes()
         when (typeClick) {
             TypeClickNode.LMB -> {
                 if(selected.size <= 1){
                     nodeClicked = node
-                    projectTree.reselectNode(node)
+                    treeState.reselectNode(node)
                 }
             }
             TypeClickNode.DOWN -> {
@@ -85,7 +93,7 @@ class ProjectController(
                     if(nodeClicked?.equalsOf(node) == true) {
                         nodeClicked = null
                     } else {
-                        projectTree.reselectNode(node)
+                        treeState.reselectNode(node)
                     }
                 }
             }
@@ -99,7 +107,7 @@ class ProjectController(
             }
             TypeClickNode.RMB -> {
                 if(selected.size <= 1) {
-                    projectTree.reselectNode(node)
+                    treeState.reselectNode(node)
                 } else {
                     nodeClicked = node
                 }
@@ -110,20 +118,15 @@ class ProjectController(
             }
             TypeClickNode.SHIFT_LMB -> {
                 nodeClicked = node
-                ProjectListLineHelper.fromAndTo(projectTree.getNodes(), selected, node)
+                ProjectListLineHelper.fromAndTo(treeState.getNodes(), selected, node)
             }
             TypeClickNode.CHEVRON -> {
                 nodeClicked = node
                 if (node is DirNode) {
-                    projectTree.reselectNode(node)
+                    treeState.reselectNode(node)
                     node.openOrClose()
                 }
             }
         }
-    }
-
-    override fun disposeAfter() {
-        projectTree.dispose()
-        watchService.close()
     }
 }

@@ -1,7 +1,6 @@
 package non.era.aisdme.files
 
-import non.era.aisdme.ui.project.ProjectNode
-import java.nio.file.Path
+import non.era.aisdme.ui.project.data.ProjectNode
 
 interface IFileController {
     fun createFile(nodes: List<ProjectNode>, name: String)

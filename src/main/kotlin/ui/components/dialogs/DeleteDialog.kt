@@ -2,10 +2,9 @@ package non.era.aisdme.ui.components.dialogs
 
 import androidx.compose.runtime.Composable
 import non.era.aisdme.AppController
-import non.era.aisdme.ui.project.DirNode
-import non.era.aisdme.ui.project.FileNode
-import non.era.aisdme.ui.project.LinkNode
-import non.era.aisdme.ui.project.ProjectNode
+import non.era.aisdme.ui.project.data.DirNode
+import non.era.aisdme.ui.project.data.FileNode
+import non.era.aisdme.ui.project.data.LinkNode
 
 @Composable
 fun DeleteSelectedNodeDialog(app: AppController, onDismiss: () -> Unit) {

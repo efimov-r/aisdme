@@ -1,4 +1,4 @@
-package non.era.aisdme
+package non.era.aisdme.utils
 
 import java.text.SimpleDateFormat
 import java.util.Date

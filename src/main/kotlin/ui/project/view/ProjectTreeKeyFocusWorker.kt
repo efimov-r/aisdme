@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.project
+package non.era.aisdme.ui.project.view
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEvent
@@ -6,8 +6,11 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import non.era.aisdme.AppController
-import non.era.aisdme.Hotkeys
+import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.ui.editor.Panels
+import non.era.aisdme.ui.project.TypeMovementOnTree
+import non.era.aisdme.ui.project.data.DirNode
+import non.era.aisdme.ui.project.data.FileNode
 
 fun Modifier.treeKeyEvent(app: AppController, showDelDialog: () -> Unit) =
     onPreviewKeyEvent {

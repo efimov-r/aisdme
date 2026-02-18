@@ -1,11 +1,13 @@
 package non.era.aisdme.ui.editor
 
 import kotlinx.coroutines.launch
-import non.era.aisdme.AppEventBus
-import non.era.aisdme.FileOpened
+import non.era.aisdme.bus.AppEventBus
+import non.era.aisdme.bus.FileOpened
+import non.era.aisdme.bus.ProjectOpen
+import non.era.aisdme.bus.RebuilDirRiff
 import non.era.aisdme.ui.UiController
-import non.era.aisdme.ui.project.FileNode
-import non.era.aisdme.ui.project.ProjectNode
+import non.era.aisdme.ui.project.data.FileNode
+import non.era.aisdme.ui.project.data.ProjectNode
 import java.io.File
 
 enum class Panels{
@@ -26,6 +28,8 @@ class EditorController(
             bus.events.collect { event ->
                 when (event) {
                     is FileOpened -> openFile(event.file)
+                    is RebuilDirRiff -> {}
+                    is ProjectOpen -> {}
                 }
             }
         }
