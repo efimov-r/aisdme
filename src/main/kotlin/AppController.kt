@@ -2,6 +2,7 @@ package non.era.aisdme
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.staticCompositionLocalOf
+import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
@@ -25,6 +26,7 @@ class AppController(
     private val filesC: FilesController,
     private val moveC: MoveController,
     private val reloadWatcher: TreeReloadWatcher,
+    private val configC: ConfigController,
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
@@ -35,9 +37,11 @@ class AppController(
         filesC.subscriptionError { _globalMess += it }
         moveC.subscriptionError { _globalMess += it }
         reloadWatcher.subscriptionError { _globalMess += it }
+        configC.subscriptionError { _globalMess += it }
     }
 
     fun getMoveController() = moveC
+    fun getConfigController() = configC
 
     fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)
 
@@ -79,5 +83,6 @@ class AppController(
         filesC.dispose()
         moveC.dispose()
         reloadWatcher.dispose()
+        configC.dispose()
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.ProjectOpen
+import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
@@ -55,12 +56,17 @@ fun main() = application {
             TreeReloadWatcher(bus = bus)
         }
 
+        val configController = remember {
+            ConfigController(bus = bus)
+        }
+
         val appController = remember {
             AppController(editorController,
                 projectController,
                 filesController,
                 moveController,
-                reloadWotcher)
+                reloadWotcher,
+                configController)
         }
 
         DisposableEffect(Unit) {
