@@ -22,7 +22,7 @@ data class AisDmeColors(
 )
 
 val LightAisDmeColors = AisDmeColors(
-    primary = Color(0xFF3574F0),
+    primary = Color(0xFF35F074),
     onPrimary = Color(0xFFFFFFFF),
     primaryVariant = Color(0xFF3700B3),
     secondary = Color(0xFF03DAC6),
@@ -39,7 +39,7 @@ val LightAisDmeColors = AisDmeColors(
 )
 
 val DarkAisDmeColors = AisDmeColors(
-    primary = Color(0xFF3574F0),
+    primary = Color(0xFF35F074),
     onPrimary = Color(0xFFFFFFFF),
     primaryVariant = Color(0xFF3700B3),
     secondary = Color(0xFF03DAC6),
