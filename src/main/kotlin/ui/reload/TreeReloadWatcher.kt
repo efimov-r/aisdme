@@ -16,92 +16,118 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchKey
 
 class TreeReloadWatcher(
     private val bus: AppEventBus
 ) : UiController() {
-    //todo mutex in service
-    private val watchService = FileSystems.getDefault().newWatchService()
-    private val pendingDirs = mutableSetOf<File>()
-    private val pandingMutex = Mutex()
-    private val appliPandingMutex = Mutex()
 
-    init{
+    private val watchService = FileSystems.getDefault().newWatchService()
+    private val keys = mutableSetOf<WatchKey>()
+
+    private val pendingDirs = mutableSetOf<File>()
+    private val pendingMutex = Mutex()
+
+    private val applyMutex = Mutex()
+
+    init {
         watchLoop()
+
         scope.launch {
             bus.events.collect { event ->
                 when (event) {
-                    is FileOpened -> {}
-                    is RebuilDirRiff -> {}
-                    is ProjectOpen -> {
-                        scope.launch {
-                            registerRecursively(event.root.toPath())
-                        }
-                    }
+                    is ProjectOpen -> switchProject(event.root.toPath())
+                    else -> {}
                 }
             }
         }
     }
 
-    fun watchLoop() = scope.launch {
+    private fun watchLoop() = scope.launch {
         while (isActive) {
             val key = runCatching { watchService.take() }.getOrNull() ?: break
 
             for (event in key.pollEvents()) {
-                val fullPath = (key.watchable() as Path).resolve(event.context() as Path)
+                val dir = key.watchable() as Path
+                val fullPath = dir.resolve(event.context() as Path)
+
                 val parentDir = fullPath.parent?.toFile() ?: continue
-                pandingMutex.withLock {
-                    Log.d("new pendingDir ${parentDir.toString()}")
+
+                pendingMutex.withLock {
                     pendingDirs += parentDir
                 }
-                scope.launch {
-                    applyBatch()
-                }
 
-                if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE && Files.isDirectory(fullPath)) { //новая директория
-                    Log.d("new dir register recursively")
+                launch { applyBatch() }
+
+                if (
+                    event.kind() == StandardWatchEventKinds.ENTRY_CREATE &&
+                    Files.isDirectory(fullPath)
+                ) {
                     registerRecursively(fullPath)
                 }
             }
 
             if (!key.reset()) {
                 key.cancel()
-                continue
+                keys.remove(key)
             }
         }
     }
 
-    //todo смена проекта, нужно ли забывать
-    private fun registerRecursively(root: Path) {
-        Log.d("registerRecursively")
-        fun registerDir(path: Path) =
-            path.register(watchService,
-                StandardWatchEventKinds.ENTRY_CREATE,
-                StandardWatchEventKinds.ENTRY_DELETE,
-                StandardWatchEventKinds.ENTRY_MODIFY
-            )
+    private suspend fun switchProject(root: Path) {
+        // отменяем старые
+        keys.forEach { it.cancel() }
+        keys.clear()
 
-        Files.walk(root)
-            .filter { Files.isDirectory(it) && !Files.isSymbolicLink(it) }
-            .forEach { registerDir(it) }
+        pendingMutex.withLock { pendingDirs.clear() }
+
+        registerRecursively(root)
     }
 
-    suspend fun applyBatch() {
-        if (!appliPandingMutex.tryLock()) return
+    private fun registerRecursively(root: Path) {
+        fun registerDir(path: Path) {
+            try {
+                val key = path.register(
+                    watchService,
+                    StandardWatchEventKinds.ENTRY_CREATE,
+                    StandardWatchEventKinds.ENTRY_DELETE,
+                    StandardWatchEventKinds.ENTRY_MODIFY
+                )
+                keys += key
+            } catch (_: Exception) {
+                // директория могла исчезнуть — игнор
+            }
+        }
+
+        Files.walk(root).use { stream ->
+            stream
+                .filter { Files.isDirectory(it) && !Files.isSymbolicLink(it) }
+                .forEach { registerDir(it) }
+        }
+    }
+
+    private suspend fun applyBatch() {
+        if (!applyMutex.tryLock()) return
 
         try {
             delay(200)
-            val dirs = pandingMutex.withLock {
-                val dirs = pendingDirs.toList()
+
+            val dirs = pendingMutex.withLock {
+                val list = pendingDirs.toList()
                 pendingDirs.clear()
-                return@withLock dirs
+                list
             }
 
-            for (dir in dirs) {
-                bus.publish(RebuilDirRiff(dir))
-            }
+            dirs.forEach { bus.publish(RebuilDirRiff(it)) }
+
         } finally {
-            appliPandingMutex.unlock()
+            applyMutex.unlock()
         }
+    }
+
+    override fun disposeAfter() {
+        keys.forEach { it.cancel() }
+        keys.clear()
+        watchService.close()
     }
 }
