@@ -10,24 +10,44 @@ import non.era.aisdme.utils.Log
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.ProjectNode
 
-class TreeDragState {
-    var draggingNode by mutableStateOf(false)
-    var dragPosition by mutableStateOf(Offset.Zero)
-}
-
 class MoveController : UiController() {
-    private val _dragState = TreeDragState()
+    private var _draggingNode by mutableStateOf(false)
+    private var _dragPosition by mutableStateOf(Offset.Zero)
     private val _nodeBounds = mutableStateMapOf<ProjectNode, Rect>()
 
-    //todo не гетить мутейблы бля
-    fun getDragState() = _dragState
-    fun getNodeBounds() = _nodeBounds
+    fun disposeElement(node: ProjectNode) {
+        _nodeBounds.remove(node)
+    }
+
+    fun setNodeBounds(node: ProjectNode, rect: Rect) {
+        _nodeBounds[node] = rect
+    }
+
+    fun onDragStart(offset: Offset) {
+        _draggingNode = true
+        _dragPosition = offset
+    }
+
+    fun setDragPosition(position: Offset) {
+        _dragPosition = position
+    }
+
+    fun cancelDrag() {
+        _draggingNode = false
+    }
+
+    fun isDropTarget(node: ProjectNode) =
+        if(_draggingNode) {
+            _nodeBounds[node]?.contains(_dragPosition) == true
+        } else {
+            false
+        }
 
     fun finishDrop() {
-        if(!_dragState.draggingNode) return
-        val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragState.dragPosition) }?.key ?: return
+        if(!_draggingNode) return
+        val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key ?: return
         Log.d("move to: ${target.getFile()}")
-        _dragState.draggingNode = false
+        _draggingNode = false
     }
 
     private fun canMove(src: ProjectNode, dst: ProjectNode): Boolean {

@@ -31,11 +31,7 @@ fun ProjectTreeNode(
     val app = LocalAppController.current
     val isSelected = node.isSelected()
 
-    val isDropTarget = if(app.getDragState().draggingNode) {
-        app.getNodeBounds()[node]?.contains(app.getDragState().dragPosition) == true
-    } else {
-        false
-    }
+    val isDropTarget = app.getMoveController().isDropTarget(node)
 
     val icon: String = when(node) {
         is DirNode -> "folder"

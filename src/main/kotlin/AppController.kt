@@ -37,9 +37,10 @@ class AppController(
         reloadWatcher.subscriptionError { _globalMess += it }
     }
 
-    fun getDragState() = moveC.getDragState()
-    fun getNodeBounds() = moveC.getNodeBounds()
-    fun finishDrop() = moveC.finishDrop()
+//    fun getDragState() = moveC.getDragState()
+//    fun getNodeBounds() = moveC.getNodeBounds()
+//    fun finishDrop() = moveC.finishDrop()
+    fun getMoveController() = moveC
 
     fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)
 

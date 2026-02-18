@@ -22,38 +22,38 @@ import kotlin.collections.set
 fun DragailableTreeElement(app: AppController,
                            node: ProjectNode,
                            content: @Composable BoxScope.() -> Unit) {
+    val moveController = app.getMoveController()
     var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     DisposableEffect(node) {
         onDispose {
-            app.getNodeBounds().remove(node)
+            moveController.disposeElement(node)
         }
     }
 
     Box(modifier = Modifier
         .onGloballyPositioned {
             coords = it
-            app.getNodeBounds()[node] = it.boundsInWindow()
+            moveController.setNodeBounds(node, it.boundsInWindow())
         }
         .pointerInput(node) {
             detectDragGestures(
                 onDragStart = { offset ->
-                    app.getDragState().draggingNode = true
-                    app.getDragState().dragPosition = offset
+                    moveController.onDragStart(offset)
                 },
                 onDrag = { change, _ ->
                     change.consume()
 
                     coords?.let { layoutCoords ->
                         val windowPos = layoutCoords.localToWindow(change.position)
-                        app.getDragState().dragPosition = windowPos
+                        moveController.setDragPosition(windowPos)
                     }
                 },
                 onDragEnd = {
-                    app.finishDrop()
+                    moveController.finishDrop()
                 },
                 onDragCancel = {
-                    app.getDragState().draggingNode = false
+                    moveController.cancelDrag()
                 }
             )
         },
