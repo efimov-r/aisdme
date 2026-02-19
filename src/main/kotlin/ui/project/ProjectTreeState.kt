@@ -6,14 +6,14 @@ import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import non.era.aisdme.utils.Log
+import non.era.aisdme.configs.dataclass.child.TreeStateConfig
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.LinkNode
 import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.utils.Log
 import java.io.File
 import java.nio.file.Files
-import kotlin.collections.plusAssign
 
 class ProjectTreeState {
     private val _nodes = mutableStateListOf<ProjectNode>()
@@ -59,10 +59,10 @@ class ProjectTreeState {
         cutNodeMark(node)
     }
 
-    suspend fun reselectRootProject(root: File) =
+    suspend fun reselectRootProject(config: TreeStateConfig?,root: File) =
         rootMutex.withLock {
             rootProject = root
-            val newTree = buildProjectTree(rootProject!!)
+            val newTree = buildProjectTree(config, root)
             withContext(Dispatchers.Swing) {
                 _nodes.clear()
                 _nodes.addAll(newTree)
@@ -70,11 +70,14 @@ class ProjectTreeState {
         }
 
     //из контекстного меню обновление
-    fun reloadDirFromDisk() {
+    suspend fun reloadDirFromDisk(config: TreeStateConfig?) {
         getSelectedNodes().forEach { dirNode ->
             if(dirNode is DirNode) {
-                dirNode.children.clear()
-                dirNode.children.addAll(buildProjectTree(dirNode.getFile(), dirNode.depth + 1))
+                val elements = buildProjectTree(config, dirNode.getFile(), dirNode.depth + 1)
+                withContext(Dispatchers.Swing) {
+                    dirNode.children.clear()
+                    dirNode.children.addAll(elements)
+                }
             }
         }
     }
@@ -88,7 +91,11 @@ class ProjectTreeState {
                 Log.e("findDirNode is null, reload all")
                 withContext(Dispatchers.IO) {
                     rootProject?.let {
-                        reselectRootProject(it)
+                        val newTree = buildProjectTree(null, it)
+                        withContext(Dispatchers.Swing) {
+                            _nodes.clear()
+                            _nodes.addAll(newTree)
+                        }
                     } ?: Log.e("rootProject in project tree is null")
                 }
             }
@@ -96,7 +103,7 @@ class ProjectTreeState {
 
     private fun rebuildDirDiff(node: DirNode) {
         val old = node.children.associateBy { it.getFilePath() }
-        val fresh = buildProjectTree(node.getFile(), node.depth + 1)
+        val fresh = buildProjectTree(null, node.getFile(), node.depth + 1)
 
         val result = mutableListOf<ProjectNode>()
 
@@ -130,8 +137,9 @@ class ProjectTreeState {
         return null
     }
 
-
+//todo вынесть
     private fun buildProjectTree(
+        config: TreeStateConfig?,
         root: File,
         depth: Int = 0
     ): List<ProjectNode> {
@@ -144,7 +152,8 @@ class ProjectTreeState {
                     DirNode(
                         file = f,
                         depth = depth,
-                        children = buildProjectTree(f, depth + 1)
+                        children = buildProjectTree(config, f, depth + 1),
+                        expand = config?.treeState?.get(f.path)?.expanded ?: false
                     )
                 } else if(Files.isSymbolicLink(f.toPath())) {
                     LinkNode(

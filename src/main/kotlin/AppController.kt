@@ -10,11 +10,12 @@ import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.errors.GlobalMessage
 import non.era.aisdme.ui.move.MoveController
-import non.era.aisdme.ui.project.TypeMovementOnTree
 import non.era.aisdme.ui.project.ProjectController
-import non.era.aisdme.ui.reload.TreeReloadWatcher
-import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.project.TypeClickNode
+import non.era.aisdme.ui.project.TypeMovementOnTree
+import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.ui.reload.TreeReloadWatcher
+import java.io.File
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
@@ -38,6 +39,12 @@ class AppController(
         moveC.subscriptionError { _globalMess += it }
         reloadWatcher.subscriptionError { _globalMess += it }
         configC.subscriptionError { _globalMess += it }
+    }
+
+    fun reselectProject(root: File) { //открыть новый проект
+        configC.reselectProject(root) //первый всегда!
+        reloadWatcher.switchProject(root.toPath())
+        projectC.reselectRootProject(configC.getStore(), root)
     }
 
     fun getMoveController() = moveC
@@ -66,7 +73,7 @@ class AppController(
     }
     fun pasteToSelectedNode() = filesC.pasteFromClipboard(projectC.getSelectedNodes())
 
-    fun reloadSelectedDeerFromDisk() = projectC.reloadDirFromDisk()
+    fun reloadSelectedDeerFromDisk() = projectC.reloadDirFromDisk(configC.getStore())
     fun openSelectedInFileManager() = FileDolphinOpener.openNodesInFileManager(projectC.getSelectedNodes())
 
     fun clearGlobalMess() {

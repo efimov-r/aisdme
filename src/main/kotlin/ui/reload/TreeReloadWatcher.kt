@@ -6,21 +6,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.bus.AppEventBus
-import non.era.aisdme.bus.FileOpened
-import non.era.aisdme.utils.Log
-import non.era.aisdme.bus.ProjectOpen
 import non.era.aisdme.bus.RebuilDirRiff
 import non.era.aisdme.ui.UiController
 import java.io.File
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardWatchEventKinds
-import java.nio.file.WatchKey
+import java.nio.file.*
 
 class TreeReloadWatcher(
-    private val bus: AppEventBus,
-    initProject: File
+    private val bus: AppEventBus
 ) : UiController() {
 
     private val watchService = FileSystems.getDefault().newWatchService()
@@ -32,18 +24,7 @@ class TreeReloadWatcher(
     private val applyMutex = Mutex()
 
     init {
-        registerRecursively(initProject.toPath())
-
         watchLoop()
-
-        scope.launch {
-            bus.events.collect { event ->
-                when (event) {
-                    is ProjectOpen -> switchProject(event.root.toPath())
-                    else -> {}
-                }
-            }
-        }
     }
 
     private fun watchLoop() = scope.launch {
@@ -77,14 +58,15 @@ class TreeReloadWatcher(
         }
     }
 
-    private suspend fun switchProject(root: Path) {
-        // отменяем старые
-        keys.forEach { it.cancel() }
-        keys.clear()
+    fun switchProject(root: Path) {
+        scope.launch {
+            keys.forEach { it.cancel() }// отменяем старые
+            keys.clear()
 
-        pendingMutex.withLock { pendingDirs.clear() }
+            pendingMutex.withLock { pendingDirs.clear() }
 
-        registerRecursively(root)
+            registerRecursively(root)
+        }
     }
 
     private fun registerRecursively(root: Path) {

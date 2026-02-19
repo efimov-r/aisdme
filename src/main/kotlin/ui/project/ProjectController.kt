@@ -1,15 +1,15 @@
 package non.era.aisdme.ui.project
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
-import non.era.aisdme.bus.ProjectOpen
 import non.era.aisdme.bus.RebuilDirRiff
+import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.configs.store.ConfigStore
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
-import non.era.aisdme.ui.project.ProjectTreeState
 import java.io.File
 
 enum class TypeClickNode{
@@ -25,40 +25,38 @@ enum class Movement{
 }
 
 class ProjectController(
-    private val bus: AppEventBus,
-    initProject: File
+    private val bus: AppEventBus
 ) : UiController() {
 
     private val treeState = ProjectTreeState()
 
     init {
         scope.launch {
-            treeState.reselectRootProject(initProject)
-        }
-
-        scope.launch {
             bus.events.collect { event ->
                 when (event) {
-                    is FileOpened -> {}
                     is RebuilDirRiff -> {
                         scope.launch {
                             treeState.rebuildDirDiff(event.dir)
                         }
                     }
-                    is ProjectOpen -> {
-                        scope.launch {
-                            treeState.reselectRootProject(event.root)
-                        }
-                    }
+                    else ->{}
                 }
             }
         }
     }
 
+    fun reselectRootProject(config: ConfigStore<ProjectConfig>?, root: File) = scope.launch {
+        val treeStateConfig = config?.get()?.treeState
+        treeState.reselectRootProject(treeStateConfig, root)
+    }
+
     fun getSelectedNodes() = treeState.getSelectedNodes()
     fun getNodes() = treeState.getNodes()
     fun cutNoteMarkRecursive(node: ProjectNode) = treeState.cutNoteMarkRecursive(node)
-    fun reloadDirFromDisk() = treeState.reloadDirFromDisk()
+    fun reloadDirFromDisk(config: ConfigStore<ProjectConfig>?) = scope.launch {
+        val treeStateConfig = config?.get()?.treeState
+        treeState.reloadDirFromDisk(treeStateConfig)
+    }
 
     private var firstMovement: Movement? = null
     fun movementOnTree(typeMovement: TypeMovementOnTree) {

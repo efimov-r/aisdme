@@ -1,6 +1,5 @@
 package non.era.aisdme.ui.project.data
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,16 +32,17 @@ class DirNode(
     file: File,
     depth: Int,
     children: List<ProjectNode>,
-    val expanded: MutableState<Boolean> = mutableStateOf(true) //todo всегда развернутое при старте, хуйня
+    expand: Boolean = true
 ) : ProjectNode(file, depth) {
     val children: SnapshotStateList<ProjectNode> = mutableStateListOf()
+    var expanded by mutableStateOf(expand)
 
     init {
         this.children.addAll(children)
     }
 
     fun openOrClose() {
-        expanded.value = !expanded.value
+        expanded = !expanded
     }
 }
 

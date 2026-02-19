@@ -11,7 +11,7 @@ object ProjectListLineHelper {
         val result: MutableList<ProjectNode> = mutableListOf()
         fun visit(node: ProjectNode) {
             result += node
-            if (node is DirNode && node.expanded.value) {
+            if (node is DirNode && node.expanded) {
                 node.children.forEach { visit(it) }
             }
         }

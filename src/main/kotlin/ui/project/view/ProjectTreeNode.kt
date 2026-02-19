@@ -73,9 +73,9 @@ fun ProjectTreeNode(
                         }
                     }
                 ) {
-                    if(node is DirNode && !node.expanded.value)
+                    if(node is DirNode && !node.expanded)
                         SvgIcon("chevronRight", Modifier.padding(top = 2.dp).align(Alignment.CenterStart), 20.dp)
-                    if(node is DirNode && node.expanded.value)
+                    if(node is DirNode && node.expanded)
                         SvgIcon("chevronDown", Modifier.padding(top = 2.dp).align(Alignment.CenterStart), 20.dp)
                 }
 

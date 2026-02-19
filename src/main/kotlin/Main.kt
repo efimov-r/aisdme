@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import non.era.aisdme.bus.AppEventBus
-import non.era.aisdme.bus.ProjectOpen
 import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.theme.AisDmeShapes
@@ -24,11 +23,10 @@ import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.errors.view.ErrorOverlay
 import non.era.aisdme.ui.move.MoveController
 import non.era.aisdme.ui.project.ProjectController
-import non.era.aisdme.ui.reload.TreeReloadWatcher
 import non.era.aisdme.ui.project.view.ProjectTreeView
+import non.era.aisdme.ui.reload.TreeReloadWatcher
 import non.era.aisdme.ui.win.AisDmeWindow
 import non.era.aisdme.utils.Log
-import java.io.File
 
 fun main() = application {
     AisDmeWindow(onCloseRequest = ::exitApplication) { project->
@@ -41,7 +39,7 @@ fun main() = application {
         }
 
         val projectController = remember {
-            ProjectController(bus, project)
+            ProjectController(bus)
         }
 
         val filesController = remember {
@@ -53,11 +51,11 @@ fun main() = application {
         }
 
         val reloadWotcher = remember {
-            TreeReloadWatcher(bus, project)
+            TreeReloadWatcher(bus)
         }
 
         val configController = remember {
-            ConfigController(bus, project)
+            ConfigController(bus)
         }
 
         val appController = remember {
@@ -68,6 +66,8 @@ fun main() = application {
                 reloadWotcher,
                 configController)
         }
+
+        appController.reselectProject(project)
 
         DisposableEffect(Unit) {
             onDispose {
@@ -83,8 +83,6 @@ fun main() = application {
                 AisDmeContent()
             }
         }
-
-        bus.publish(ProjectOpen(project))
     }
 
     Log.d("the end of main")
