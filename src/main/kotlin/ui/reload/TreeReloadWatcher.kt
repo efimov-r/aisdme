@@ -19,7 +19,8 @@ import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchKey
 
 class TreeReloadWatcher(
-    private val bus: AppEventBus
+    private val bus: AppEventBus,
+    initProject: File
 ) : UiController() {
 
     private val watchService = FileSystems.getDefault().newWatchService()
@@ -31,6 +32,8 @@ class TreeReloadWatcher(
     private val applyMutex = Mutex()
 
     init {
+        registerRecursively(initProject.toPath())
+
         watchLoop()
 
         scope.launch {

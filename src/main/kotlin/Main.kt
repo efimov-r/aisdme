@@ -41,7 +41,7 @@ fun main() = application {
         }
 
         val projectController = remember {
-            ProjectController(bus = bus)
+            ProjectController(bus, project)
         }
 
         val filesController = remember {
@@ -53,11 +53,11 @@ fun main() = application {
         }
 
         val reloadWotcher = remember {
-            TreeReloadWatcher(bus = bus)
+            TreeReloadWatcher(bus, project)
         }
 
         val configController = remember {
-            ConfigController(bus = bus)
+            ConfigController(bus, project)
         }
 
         val appController = remember {

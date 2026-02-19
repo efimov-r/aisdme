@@ -50,23 +50,6 @@ class ConfigStore<T>(
             updated
         }
 
-
-//    fun updateDeffered(block: (T) -> T) {
-//        autosaveJob?.cancel()
-//        autosaveJob = scope.launch {
-//            delay(500)
-//            mutex.withLock {
-//                val current = cache ?: loadFromDisk()
-//                val updated = block(current)
-//
-//                atomicWrite(updated)
-//
-//                cache = updated
-//                updated
-//            }
-//        }
-//    }
-
     private fun ensureExists() {
         Files.createDirectories(file.parent)
 

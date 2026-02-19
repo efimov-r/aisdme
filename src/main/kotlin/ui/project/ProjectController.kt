@@ -10,6 +10,7 @@ import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.project.ProjectTreeState
+import java.io.File
 
 enum class TypeClickNode{
     LMB, DOWN, DLMB, RMB, CTRL_LMB, SHIFT_LMB, CHEVRON
@@ -24,12 +25,17 @@ enum class Movement{
 }
 
 class ProjectController(
-    private val bus: AppEventBus
+    private val bus: AppEventBus,
+    initProject: File
 ) : UiController() {
 
     private val treeState = ProjectTreeState()
 
     init {
+        scope.launch {
+            treeState.reselectRootProject(initProject)
+        }
+
         scope.launch {
             bus.events.collect { event ->
                 when (event) {
