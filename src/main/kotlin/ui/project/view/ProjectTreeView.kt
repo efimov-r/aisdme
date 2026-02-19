@@ -41,7 +41,7 @@ fun ListProjectNodes(scrollState: LazyListState, hasFocus: Boolean) {
 
     val visibleNodes by remember {
         derivedStateOf {
-            ProjectListLineHelper.buildLinearNodes(app.getNodes())
+            ProjectListLineHelper.buildLinearExpandedNodes(app.getNodes())
         }
     }
 

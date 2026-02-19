@@ -40,7 +40,7 @@ class ConfigStore<T>(
 
     suspend fun update(block: (T) -> T): T =
         mutex.withLock {
-            Log.i("config update")
+            Log.i("config ${file} update")
             val current = cache ?: loadFromDisk()
             val updated = block(current)
 

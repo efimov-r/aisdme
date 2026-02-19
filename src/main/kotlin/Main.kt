@@ -67,7 +67,9 @@ fun main() = application {
                 configController)
         }
 
-        appController.reselectProject(project)
+        val a = remember {
+            appController.reselectProject(project)
+        }
 
         DisposableEffect(Unit) {
             onDispose {

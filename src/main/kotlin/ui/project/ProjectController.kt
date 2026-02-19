@@ -1,6 +1,7 @@
 package non.era.aisdme.ui.project
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
 import non.era.aisdme.bus.RebuilDirRiff
@@ -56,6 +57,14 @@ class ProjectController(
     fun reloadDirFromDisk(config: ConfigStore<ProjectConfig>?) = scope.launch {
         val treeStateConfig = config?.get()?.treeState
         treeState.reloadDirFromDisk(treeStateConfig)
+    }
+    fun saveTreeStateToConfig(config: ConfigStore<ProjectConfig>?)  {
+        val st = treeState.getCashForConfig()
+        runBlocking {
+            scope.launch {
+                config?.update { it.copy(treeState = st) }
+            }.join()
+        }
     }
 
     private var firstMovement: Movement? = null

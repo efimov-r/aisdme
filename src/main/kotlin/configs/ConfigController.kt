@@ -1,7 +1,6 @@
 package non.era.aisdme.configs
 
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.store.ConfigPaths
@@ -15,10 +14,6 @@ class ConfigController(bus: AppEventBus) : UiController() {
     fun getStore() = project
 
     fun reselectProject(projectRoot: File) {
-        val oldProject = project
-        scope.launch {
-            oldProject?.update { it }
-        }
         project = ConfigStore(
             file = ConfigPaths.projectConfigFile(projectRoot.toPath()),
             serializer = ProjectConfig.serializer(),
@@ -33,12 +28,6 @@ class ConfigController(bus: AppEventBus) : UiController() {
                     )
                 }
             }
-        }
-    }
-
-    override fun disposeBefore() {
-        runBlocking {
-            project?.update { it }
         }
     }
 }

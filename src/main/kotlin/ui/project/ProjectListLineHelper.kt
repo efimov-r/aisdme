@@ -11,6 +11,18 @@ object ProjectListLineHelper {
         val result: MutableList<ProjectNode> = mutableListOf()
         fun visit(node: ProjectNode) {
             result += node
+            if (node is DirNode) {
+                node.children.forEach { visit(it) }
+            }
+        }
+        nodes.forEach { visit(it) }
+        return result
+    }
+
+    fun buildLinearExpandedNodes(nodes: List<ProjectNode>) : MutableList<ProjectNode> {
+        val result: MutableList<ProjectNode> = mutableListOf()
+        fun visit(node: ProjectNode) {
+            result += node
             if (node is DirNode && node.expanded) {
                 node.children.forEach { visit(it) }
             }
@@ -25,7 +37,7 @@ object ProjectListLineHelper {
     }
 
     fun next(nodes: List<ProjectNode>, selected: List<ProjectNode>) {
-        val r = getNextNodeOf(buildLinearNodes(nodes), selected.last())
+        val r = getNextNodeOf(buildLinearExpandedNodes(nodes), selected.last())
         selected.forEach { it.setSelected(false) }
         r.setSelected(true)
     }
@@ -36,7 +48,7 @@ object ProjectListLineHelper {
     }
 
     fun last(nodes: List<ProjectNode>, selected: List<ProjectNode>) {
-        val r = getLastNodeOf(buildLinearNodes(nodes), selected.first())
+        val r = getLastNodeOf(buildLinearExpandedNodes(nodes), selected.first())
         selected.forEach { it.setSelected(false) }
         r.setSelected(true)
     }
@@ -52,7 +64,7 @@ object ProjectListLineHelper {
         }
 
     fun fromAndTo(nodes: List<ProjectNode>, selected: List<ProjectNode>, to: ProjectNode) {
-        val linear = buildLinearNodes(nodes)
+        val linear = buildLinearExpandedNodes(nodes)
         val indexToObj = linear.withIndex().firstOrNull { it.value.equalsOf(to) }?.index ?: return
 
         val l = listPositionSelectedNodes(linear, selected)
@@ -77,7 +89,7 @@ object ProjectListLineHelper {
     fun shiftTop(nodes: List<ProjectNode>, selected: List<ProjectNode>, firstMovement: Movement?) {
         if(selected.isEmpty()) return
 
-        val linear = buildLinearNodes(nodes)
+        val linear = buildLinearExpandedNodes(nodes)
         if(selected.size == 1) {
             getLastNodeOf(linear, selected[0]).setSelected(true)
         } else {
@@ -99,7 +111,7 @@ object ProjectListLineHelper {
     fun shiftBottom(nodes: List<ProjectNode>, selected: List<ProjectNode>, firstMovement: Movement?) {
         if(selected.isEmpty()) return
 
-        val linear = buildLinearNodes(nodes)
+        val linear = buildLinearExpandedNodes(nodes)
         if(selected.size == 1) {
             getNextNodeOf(linear, selected[0]).setSelected(true)
         } else {

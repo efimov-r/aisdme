@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import non.era.aisdme.configs.dataclass.child.TreeStateConfig
+import non.era.aisdme.configs.dataclass.child.TreeStateElement
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.utils.Log
@@ -21,6 +22,16 @@ class ProjectTreeState {
 
     fun getSelectedNodes(): List<ProjectNode> {
         return ProjectTreeHelper.findSelectedNodes(_nodes)
+    }
+
+    fun getCashForConfig() : TreeStateConfig {
+        val line = ProjectListLineHelper.buildLinearNodes(_nodes).associate { node ->
+            val isDirNode = node is DirNode
+            val expanded = isDirNode && (node as DirNode).expanded
+            val path: String = node.getFile().path
+            path to TreeStateElement(isDirNode, expanded)
+        }
+        return TreeStateConfig(line)
     }
 
     fun reselectNode(node: ProjectNode) {
