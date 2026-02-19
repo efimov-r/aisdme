@@ -58,9 +58,9 @@ class ProjectController(
         val treeStateConfig = config?.get()?.treeState
         treeState.reloadDirFromDisk(treeStateConfig)
     }
-    fun saveTreeStateToConfig(config: ConfigStore<ProjectConfig>?)  {
+    fun saveTreeStateToConfig(config: ConfigStore<ProjectConfig>?)  { //todo добавить приоткрытии файла в редакторе
         val st = treeState.getCashForConfig()
-        runBlocking {
+        runBlocking { //todo из за мутекса когда нибудь вляпаешься
             scope.launch {
                 config?.update { it.copy(treeState = st) }
             }.join()

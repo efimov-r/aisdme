@@ -30,4 +30,12 @@ class ConfigController(bus: AppEventBus) : UiController() {
             }
         }
     }
+
+    fun updateKeyValue(key: String, value: String) = scope.launch {
+        project?.update {
+            it.copy(
+                keyValue = it.keyValue.toMutableMap().apply { this[key] = value }.toMap()
+            )
+        }
+    }
 }

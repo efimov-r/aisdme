@@ -7,4 +7,5 @@ import non.era.aisdme.configs.dataclass.child.TreeStateConfig
 data class ProjectConfig(
     val version: Int = 1,
     val treeState: TreeStateConfig? = null,
+    val keyValue: Map<String, String> = mapOf(),
 )
