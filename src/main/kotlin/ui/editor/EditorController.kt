@@ -28,8 +28,7 @@ class EditorController(
             bus.events.collect { event ->
                 when (event) {
                     is FileOpened -> openFile(event.file)
-                    is RebuilDirRiff -> {}
-                    is ProjectOpen -> {}
+                    else ->{}
                 }
             }
         }

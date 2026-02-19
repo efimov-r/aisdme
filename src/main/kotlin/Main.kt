@@ -31,7 +31,7 @@ import non.era.aisdme.utils.Log
 import java.io.File
 
 fun main() = application {
-    AisDmeWindow(onCloseRequest = ::exitApplication) {
+    AisDmeWindow(onCloseRequest = ::exitApplication) { project->
         val bus = remember {
             AppEventBus()
         }
@@ -84,7 +84,7 @@ fun main() = application {
             }
         }
 
-        bus.publish(ProjectOpen(File("/home/era/proj/os/aisdme/")))
+        bus.publish(ProjectOpen(project))
     }
 
     Log.d("the end of main")

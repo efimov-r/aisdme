@@ -5,6 +5,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import non.era.aisdme.utils.Log
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -39,6 +40,7 @@ class ConfigStore<T>(
 
     suspend fun update(block: (T) -> T): T =
         mutex.withLock {
+            Log.i("config update")
             val current = cache ?: loadFromDisk()
             val updated = block(current)
 

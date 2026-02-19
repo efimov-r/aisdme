@@ -21,6 +21,11 @@ class ConfigController(
             bus.events.collect { event ->
                 when (event) {
                     is ProjectOpen -> {
+                        GlobalConfig.store.update {
+                            it.copy(
+                                lastOpenProject = event.root.path
+                            )
+                        }
                         _project = ConfigStore(
                             file = ConfigPaths.projectConfigFile(event.root.toPath()),
                             serializer = ProjectConfig.serializer(),

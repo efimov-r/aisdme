@@ -26,34 +26,44 @@ import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.delay
 import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.AppConfig
+import java.io.File
 
 sealed interface AppStartState {
     object Loading : AppStartState
-    data class Ready(val config: AppConfig) : AppStartState
+    data class Ready(val config: AppConfig, val lastProject: File) : AppStartState
 }
 
 @Composable
 fun AisDmeWindow(onCloseRequest: () -> Unit,
-        content: @Composable FrameWindowScope.() -> Unit) {
+        content: @Composable FrameWindowScope.(project: File) -> Unit) {
     var startState by remember { mutableStateOf<AppStartState>(AppStartState.Loading) }
 
     LaunchedEffect(Unit) {
         val startTime = System.currentTimeMillis()
 
         val config = GlobalConfig.store.get()
+        var lastProject: File? = null
+
+        if(config.lastOpenProject!= null) {
+            val file = File(config.lastOpenProject)
+            if(file.exists()) {
+                lastProject = file
+            }
+        }
 
         val elapsed = System.currentTimeMillis() - startTime
         val delayLeft = (2000 - elapsed).coerceAtLeast(0)
 
         delay(delayLeft)
 
-        startState = AppStartState.Ready(config)
+        startState = AppStartState.Ready(config, lastProject!!)//todo окно открытия проетов
     }
 
     when (val state = startState) {
         is AppStartState.Loading -> SplashWindow()
         is AppStartState.Ready -> MainWindow(state.config,
             onCloseRequest,
+            state.lastProject,
             content)
     }
 }
@@ -61,14 +71,15 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
 @Composable
 fun MainWindow(config: AppConfig,
                onCloseRequest: () -> Unit,
-               content: @Composable FrameWindowScope.() -> Unit) {
+               project: File,
+               content: @Composable FrameWindowScope.(project: File) -> Unit) {
     Window(
         onCloseRequest = onCloseRequest,
         title = "AisDme",
         state = rememberPersistentWindowState(config, GlobalConfig.store),
         icon = painterResource("logos/AisDme.png")
     ) {
-        content()
+        content(project)
     }
 }
 
