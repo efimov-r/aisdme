@@ -2,7 +2,6 @@ package non.era.aisdme.ui.components.custom
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,18 +13,19 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.debounce
 import java.awt.Cursor
 
-
-//todo сохранение в настройки!!!
 @Composable
 fun ResizableColumn(
     modifier: Modifier,
+    initialBottomHeightPx: Float, //250f
+    onHeightChangedDebounced: (Float) -> Unit,
     topContent: @Composable () -> Unit,
     bottomContent: @Composable () -> Unit
 ) {
     val density = LocalDensity.current
-    var bottomHeightPx by remember { mutableStateOf(250f) }
+    var bottomHeightPx by remember { mutableStateOf(initialBottomHeightPx) }
     var heightColumn by remember { mutableStateOf(0f) }
 
     val minTopPx = with(density) { 10.dp.toPx() }
@@ -39,6 +39,12 @@ fun ResizableColumn(
                 bottomHeightPx = maxTopPx.coerceAtLeast(minTopPx)
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { bottomHeightPx }
+            .debounce(1000)
+            .collect { onHeightChangedDebounced(it) }
     }
 
     Column(modifier

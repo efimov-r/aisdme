@@ -3,6 +3,7 @@ package non.era.aisdme
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import non.era.aisdme.configs.ConfigController
+import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.editor.EditorController
@@ -41,15 +42,17 @@ class AppController(
         configC.subscriptionError { _globalMess += it }
     }
 
-    fun reselectProject(root: File) { //открыть новый проект
+    fun reselectProject(root: File): ProjectConfig? { //открыть новый проект
         projectC.saveTreeStateToConfig(configC.getStore())
-        configC.reselectProject(root) //первый всегда!
+        val res = configC.reselectProject(root) //первый всегда!
         reloadWatcher.switchProject(root.toPath())
         projectC.reselectRootProject(configC.getStore(), root)
+        return res
     }
 
     fun getMoveController() = moveC
     fun getConfigController() = configC
+    fun updateKeyValueProjectConfig(key: String, value: String) = configC.updateKeyValue(key, value)
 
     fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)
 

@@ -15,12 +15,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
+import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 import non.era.aisdme.ui.components.custom.ScrollableContent
+import kotlin.text.toFloat
 
 @Composable
-fun Editor(modifier: Modifier = Modifier) {
+fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
     val app = LocalAppController.current
+    val leftRiteConfig = "ResizableProporcialRowEditorLeftAndRight"
 
     if(app.getEditorHalfLeftController().countTabs() == 0 && app.getEditorHalfRightController().countTabs() > 0){
         app.rightToLeftHalf()
@@ -30,6 +33,8 @@ fun Editor(modifier: Modifier = Modifier) {
         EditorHalf(app.getEditorHalfLeftController(), modifier.fillMaxSize())
     } else if(app.getEditorHalfLeftController().countTabs() > 0 && app.getEditorHalfRightController().countTabs() > 0) {
         ResizableProporcialRow(Modifier.fillMaxSize(),
+            conf?.keyValue?.get(leftRiteConfig)?.toFloat() ?: 0.5f,
+            { app.updateKeyValueProjectConfig(leftRiteConfig, it.toString()) },
             {
                 EditorHalf(app.getEditorHalfLeftController(),
                     modifier.fillMaxSize())

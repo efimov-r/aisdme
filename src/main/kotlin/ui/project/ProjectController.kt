@@ -60,10 +60,8 @@ class ProjectController(
     }
     fun saveTreeStateToConfig(config: ConfigStore<ProjectConfig>?)  { //todo добавить приоткрытии файла в редакторе
         val st = treeState.getCashForConfig()
-        runBlocking { //todo из за мутекса когда нибудь вляпаешься
-            scope.launch {
-                config?.update { it.copy(treeState = st) }
-            }.join()
+        runBlocking {
+            config?.update { it.copy(treeState = st) }
         }
     }
 

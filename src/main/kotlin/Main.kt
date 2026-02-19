@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.configs.ConfigController
+import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
@@ -67,7 +68,7 @@ fun main() = application {
                 configController)
         }
 
-        val a = remember {
+        val configStart = remember {
             appController.reselectProject(project)
         }
 
@@ -82,7 +83,7 @@ fun main() = application {
             LocalAppController provides appController
         ) {
             AisDmeTheme(false) { //todo переключатель
-                AisDmeContent()
+                AisDmeContent(configStart)
             }
         }
     }
@@ -91,16 +92,23 @@ fun main() = application {
 }
 
 @Composable
-fun AisDmeContent() {
+fun AisDmeContent(conf: ProjectConfig?) {
+    val colName = "ResizableColumnMainTerminalAndOther"
+    val rowName = "ResizableRowMainTreeAndEditor"
+    val app = LocalAppController.current
     Row(Modifier.fillMaxSize().background(colors.background).padding(AisDmeSpacing.s)) {
         ResizableColumn(Modifier.fillMaxHeight().weight(1f),
+             conf?.keyValue?.get(colName)?.toFloat() ?: 250f,
+            { app.updateKeyValueProjectConfig(colName, it.toString()) },
             {
                 ResizableRow(Modifier.fillMaxSize(),
+                    conf?.keyValue?.get(rowName)?.toFloat() ?: 250f,
+                    { app.updateKeyValueProjectConfig(rowName, it.toString()) },
                     {
                         ProjectTreeView(Modifier.fillMaxSize().panel())
                     },
                     {
-                        Editor(Modifier.panel())
+                        Editor(conf, Modifier.panel())
                     })
             },
             {

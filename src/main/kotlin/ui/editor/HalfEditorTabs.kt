@@ -120,7 +120,7 @@ class HalfEditorTabs(
     }
 
     fun saveAll() {
-        runBlocking {
+        runBlocking {//todo че за поеботина
             files.values.map { ta ->
                 eScope.launch {
                     ta.autosaveJob?.cancel()

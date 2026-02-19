@@ -10,17 +10,20 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.debounce
 import java.awt.Cursor
 
-//todo сохранение в настройки!!!
 @Composable
 fun ResizableRow(
     modifier: Modifier,
+    initialLeftWidthPx: Float, //250f
+    onWidthChangedDebounced: (Float) -> Unit,
     leftContent: @Composable () -> Unit,
     rightContent: @Composable () -> Unit
 ) {
     val density = LocalDensity.current
-    var leftWidthPx by remember { mutableStateOf(250f) }
+
+    var leftWidthPx by remember { mutableStateOf(initialLeftWidthPx) }
     var widthRow by remember { mutableStateOf(0f) }
 
     val minLeftPx = with(density) { 10.dp.toPx() }
@@ -37,14 +40,19 @@ fun ResizableRow(
         }
     }
 
+    LaunchedEffect(Unit) {
+        snapshotFlow { leftWidthPx }
+            .debounce(1000)
+            .collect { onWidthChangedDebounced(it) }
+    }
+
     Row(
-        modifier
-            .onGloballyPositioned { layoutCoordinates ->
-                widthRow = layoutCoordinates.size.width.toFloat()
-            })
-    {
+        modifier.onGloballyPositioned {
+            widthRow = it.size.width.toFloat()
+        }
+    ) {
         Box(
-            modifier = Modifier
+            Modifier
                 .width(with(density) { leftWidthPx.toDp() })
                 .fillMaxHeight()
         ) {
@@ -52,21 +60,21 @@ fun ResizableRow(
         }
 
         Box(
-            modifier = Modifier
+            Modifier
+                .width(6.dp)
                 .fillMaxHeight()
-                .width(6.dp) // делаем шире для удобства
                 .cursorForHorizontalResize()
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
 
                         leftWidthPx = (leftWidthPx + dragAmount.x)
-                            .coerceIn(minLeftPx, (widthRow - minRightPx))
+                            .coerceIn(minLeftPx, widthRow - minRightPx)
                     }
                 }
         )
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize()) {
             rightContent()
         }
     }
