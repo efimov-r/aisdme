@@ -37,7 +37,11 @@ class ProjectController(
                 when (event) {
                     is RebuilDirRiff -> {
                         scope.launch {
-                            treeState.rebuildDirDiff(event.dir)
+                            treeState.rebuildDirDiff(event.dir) {
+                                scope.launch {
+                                    newGlobalError("The directory ${event.dir} was not found during the update.")
+                                }
+                            }
                         }
                     }
                     else ->{}

@@ -81,18 +81,20 @@ class ProjectTreeState {
         }
     }
 
-    suspend fun rebuildDirDiff(deer: File) =
+    suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit) =
         withContext(Dispatchers.Swing) {
-           ProjectTreeHelper.findDirParentNode(_nodes, deer)?.let {
+            Log.d("rebuildDirDiff: ${deer.path}")
+           ProjectTreeHelper.findDirNode(_nodes, deer)?.let {
                ProjectTreeHelper.rebuildDirDiff(it)
            } ?: run {
+               notFoundErr()
                Log.e("findDirNode is null, reload all")
                val newTree = withContext(Dispatchers.IO) {
                    rootProject?.let {
                        ProjectTreeHelper.buildProjectTree(null, it)
                    } ?: run {
                        Log.e("rootProject in project tree is null")
-                       emptyList<ProjectNode>()
+                       emptyList()
                    }
                }
                withContext(Dispatchers.Swing) {

@@ -41,16 +41,14 @@ object ProjectTreeHelper {
             } ?: emptyList()
     }
 
-    fun findDirParentNode(
+    fun findDirNode(
         nodes: List<ProjectNode>,
         dir: File
     ): DirNode? {
         for (node in nodes) {
             if (node is DirNode) {
-                node.children.forEach { ch->
-                    if (ch.getFile() == dir) return node
-                }
-                findDirParentNode(node.children, dir)?.let { return it }
+                if(node.getFile() == dir) return node
+                findDirNode(node.children, dir)?.let { return it }
             }
         }
         return null

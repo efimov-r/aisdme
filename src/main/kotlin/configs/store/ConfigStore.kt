@@ -34,6 +34,8 @@ class ConfigStore<T>(
         cache ?: loadFromDisk().also { cache = it }
     }
 
+    fun getFromCashe(): T? = cache //безопасно, из ui можно дергат
+
     suspend fun reload(): T = mutex.withLock {
         loadFromDisk().also { cache = it }
     }
