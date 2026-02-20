@@ -5,12 +5,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
@@ -18,10 +23,10 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.DragailableTreeElement
 import non.era.aisdme.ui.components.custom.ProjectNodeClick
 import non.era.aisdme.ui.components.over.SvgIcon
+import non.era.aisdme.ui.project.TypeClickNode
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
-import non.era.aisdme.ui.project.TypeClickNode
 
 @Composable
 fun ProjectTreeNode(
@@ -78,7 +83,15 @@ fun ProjectTreeNode(
                     if(node is DirNode && node.expanded)
                         SvgIcon("chevronDown", Modifier.padding(top = 2.dp).align(Alignment.CenterStart), 20.dp)
                 }
-
+                Box(Modifier.background(Color.Red)
+                    .width(1.dp).height(1.dp)
+                    .onGloballyPositioned { coords ->
+                        val position = coords.boundsInWindow()
+                        node.globPos = Offset(
+                            position.left,
+                            position.bottom
+                        )
+                    })
                 SvgIcon(icon, Modifier.padding(top = 2.dp, end = 4.dp))
 
                 Text(

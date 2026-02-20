@@ -36,7 +36,6 @@ sealed class MenuEntry {
     object Divider : MenuEntry()
 }
 
-//todo контекстное меню без мыши
 @Composable
 fun ContextMenu(
     entries: List<MenuEntry>,
