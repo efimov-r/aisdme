@@ -35,7 +35,7 @@ sealed interface AppStartState {
 
 @Composable
 fun AisDmeWindow(onCloseRequest: () -> Unit,
-        content: @Composable FrameWindowScope.(project: File) -> Unit) {
+        content: @Composable FrameWindowScope.(globalConf: AppConfig, project: File) -> Unit) {
     var startState by remember { mutableStateOf<AppStartState>(AppStartState.Loading) }
 
     LaunchedEffect(Unit) {
@@ -69,17 +69,17 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
 }
 
 @Composable
-fun MainWindow(config: AppConfig,
+fun MainWindow(globalConf: AppConfig,
                onCloseRequest: () -> Unit,
                project: File,
-               content: @Composable FrameWindowScope.(project: File) -> Unit) {
+               content: @Composable FrameWindowScope.(config: AppConfig, project: File) -> Unit) {
     Window(
         onCloseRequest = onCloseRequest,
         title = "AisDme",
-        state = rememberPersistentWindowState(config, GlobalConfig.store),
+        state = rememberPersistentWindowState(globalConf, GlobalConfig.store),
         icon = painterResource("logos/AisDme.png")
     ) {
-        content(project)
+        content(globalConf, project)
     }
 }
 

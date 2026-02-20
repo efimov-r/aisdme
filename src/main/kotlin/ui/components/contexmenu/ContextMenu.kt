@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import non.era.aisdme.settings.Hotkeys
+import non.era.aisdme.theme.AisDmeColors
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.dialogBorder
@@ -51,7 +52,7 @@ fun ContextMenu(
             modifier = Modifier
                 .width(300.dp)
                 .background(
-                    color = colors.surface,
+                    color = LocalAisDmeColors.current.surface,
                     shape = AisDmeShapes.medium
                 )
                 .dialogBorder()
@@ -94,7 +95,7 @@ private fun MenuItem(
         Text(
             text = item.title,
             modifier = Modifier.weight(1f).padding(bottom = 4.dp),
-            color = colors.onSurface,
+            color = LocalAisDmeColors.current.onSurface,
             fontSize = 13.sp
         )
 
@@ -103,7 +104,7 @@ private fun MenuItem(
             Text(
                 modifier = Modifier.padding(bottom = 4.dp),
                 text = it.vis,
-                color = colors.onSurface.copy(alpha = 0.5f),
+                color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
                 fontSize = 12.sp
             )
         }

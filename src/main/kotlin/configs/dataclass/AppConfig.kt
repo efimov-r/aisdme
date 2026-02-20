@@ -11,6 +11,8 @@ data class AppConfig(
     val y: Float? = null,
     val placement: String = "Floating",
 
+    val isDarkTheme: Boolean = false,
+
     val lastOpenProject: String? = null,
 
     val recentProjects: List<String> = emptyList(),

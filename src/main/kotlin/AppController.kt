@@ -1,8 +1,13 @@
 package non.era.aisdme
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import non.era.aisdme.configs.ConfigController
+import non.era.aisdme.configs.GlobalConfig
+import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
@@ -22,6 +27,8 @@ val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
 }
 
+
+//todo попробовать другую структуру
 class AppController(
     private val editorC: EditorController,
     private val projectC: ProjectController,
@@ -29,9 +36,11 @@ class AppController(
     private val moveC: MoveController,
     private val reloadWatcher: TreeReloadWatcher,
     private val configC: ConfigController,
+    private val startGlobalConfig: AppConfig
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
+    var isDarkTheme by mutableStateOf(startGlobalConfig.isDarkTheme)
 
     init {
         editorC.subscriptionError { _globalMess += it }

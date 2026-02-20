@@ -82,7 +82,7 @@ fun ProjectTreeNode(
                 SvgIcon(icon, Modifier.padding(top = 2.dp, end = 4.dp))
 
                 Text(
-                    color = if(node.isCutted) LocalAisDmeColors.current.cutted else Color.Unspecified,
+                    color = if(node.isCutted) LocalAisDmeColors.current.cutted else LocalAisDmeColors.current.onSurface,
                     text = "${node.getFileName()}",
                     style = LocalTextStyle.current.copy(fontSize = 15.sp, lineHeight = 26.sp),
                     maxLines = 1,

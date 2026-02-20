@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 import non.era.aisdme.ui.components.custom.ScrollableContent
 import kotlin.text.toFloat
@@ -96,7 +97,7 @@ fun EditField(
                 if (loadState) {
                     Text(
                         text = "Load ... ",
-                        color = colors.onBackground,
+                        color = LocalAisDmeColors.current.onBackground,
                         fontSize = 14.sp
                     )
                 } else {
@@ -106,7 +107,7 @@ fun EditField(
                             readOnly = readOnly,
                             onValueChange = onTextChange,
                             textStyle = TextStyle(
-                                color = colors.onSurface,
+                                color = LocalAisDmeColors.current.onSurface,
                                 fontSize = 14.sp
                             ),
                             modifier = Modifier

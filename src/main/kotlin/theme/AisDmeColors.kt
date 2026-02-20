@@ -39,12 +39,12 @@ val LightAisDmeColors = AisDmeColors(
 )
 
 val DarkAisDmeColors = AisDmeColors(
-    primary = Color(0xFF35F074),
+    primary = Color(0xFF00B034),
     onPrimary = Color(0xFFFFFFFF),
     primaryVariant = Color(0xFF3700B3),
     secondary = Color(0xFF03DAC6),
-    background = Color(0xFF121212), // Основной фон
-    surface = Color(0xFF1E1E1E),    // Поверхности (карточки, панели)
+    background = Color(0xFF373129), // Основной фон
+    surface = Color(0xFF191A1C),    // Поверхности (карточки, панели)
     onBackground = Color.White,     // Текст на фоне
     onSurface = Color.White,         // Текст на поверхностях
     surfaceBorder = Color(0xFFf0f0f0), //рамка карточек
