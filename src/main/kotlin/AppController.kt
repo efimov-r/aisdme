@@ -51,7 +51,6 @@ class AppController(
     }
 
     fun getMoveController() = moveC
-    fun getConfigController() = configC
     fun updateKeyValueProjectConfig(key: String, value: String) = configC.updateKeyValue(key, value)
 
     fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)

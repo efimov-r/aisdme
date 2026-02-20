@@ -41,7 +41,7 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
     LaunchedEffect(Unit) {
         val startTime = System.currentTimeMillis()
 
-        val config = GlobalConfig.store.get() //todo как так тут syspend дергается?
+        val config = GlobalConfig.store.get()
         var lastProject: File? = null
 
         if(config.lastOpenProject!= null) {
