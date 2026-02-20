@@ -8,6 +8,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import non.era.aisdme.BuildConfig
 import java.io.File
 
 class HalfEditorTabs(
@@ -51,7 +52,9 @@ class HalfEditorTabs(
             activeTabId_ = tabEmpty.id
             eScope.async {
                 runCatching {
-                    delay(300) //todo debug!!
+                    if(BuildConfig.DEBUG) {
+                        delay(300)
+                    }
                     val text = if (file.exists()) file.readText() else ""
                     withContext(Dispatchers.Swing) {
                         listMutex.withLock {

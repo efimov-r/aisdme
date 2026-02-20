@@ -42,6 +42,10 @@ import non.era.aisdme.ui.win.AisDmeWindow
 import non.era.aisdme.utils.Log
 
 fun main() = application {
+    if(BuildConfig.DEBUG) {
+        Log.d("Debug!!!!")
+    }
+
     AisDmeWindow(onCloseRequest = ::exitApplication) { globalConf, project->
         val bus = remember {
             AppEventBus()

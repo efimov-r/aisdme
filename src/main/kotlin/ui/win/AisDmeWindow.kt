@@ -24,8 +24,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.delay
+import non.era.aisdme.BuildConfig
 import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.AppConfig
+import non.era.aisdme.utils.Log
 import java.io.File
 
 sealed interface AppStartState {
@@ -50,9 +52,9 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
                 lastProject = file
             }
         }
-
+        val del = if(BuildConfig.DEBUG) 0 else 2000
         val elapsed = System.currentTimeMillis() - startTime
-        val delayLeft = (2000 - elapsed).coerceAtLeast(0)
+        val delayLeft = (del - elapsed).coerceAtLeast(0)
 
         delay(delayLeft)
 
