@@ -3,6 +3,7 @@ package non.era.aisdme.ui.components.contexmenu
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.TabRowDefaults.Divider
@@ -10,10 +11,19 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,17 +34,7 @@ import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.dialogBorder
 import non.era.aisdme.ui.components.over.SvgIcon
-
-sealed class MenuEntry {
-    data class Item(
-        val title: String,
-        val icon: String? = null,
-        val shortcut: Hotkeys? = null,
-        val onClick: () -> Unit
-    ) : MenuEntry()
-
-    object Divider : MenuEntry()
-}
+import non.era.aisdme.utils.Log
 
 @Composable
 fun ContextMenu(
@@ -42,6 +42,12 @@ fun ContextMenu(
     state: ContextMenuState,
     onDismiss: () -> Unit
 ) {
+    val items = remember { entries.filterIsInstance<MenuEntry.Item>() }
+    var selectedIndex by remember { mutableStateOf(-1) }
+
+    var isPopupReady by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+
     Popup(
         popupPositionProvider = SmartMenuPositionProvider(state.position),
         onDismissRequest = onDismiss,
@@ -49,6 +55,42 @@ fun ContextMenu(
     ) {
         Column(
             modifier = Modifier
+                .focusRequester(focusRequester)
+                .focusable()
+                .onGloballyPositioned {
+                    isPopupReady = true
+                }
+                .onPreviewKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+
+                    when (event.key) {
+                        Key.DirectionDown -> {
+                            selectedIndex = (selectedIndex + 1) % items.size
+                            true
+                        }
+
+                        Key.DirectionUp -> {
+                            selectedIndex =
+                                if (selectedIndex <= 0) items.lastIndex else selectedIndex - 1
+                            true
+                        }
+
+                        Key.Enter -> {
+                            if(selectedIndex != -1) {
+                                items[selectedIndex].onClick()
+                                onDismiss()
+                            }
+                            true
+                        }
+
+                        Key.Escape -> {
+                            onDismiss()
+                            true
+                        }
+
+                        else -> false
+                    }
+                }
                 .width(300.dp)
                 .background(
                     color = LocalAisDmeColors.current.surface,
@@ -57,64 +99,35 @@ fun ContextMenu(
                 .dialogBorder()
                 .padding(vertical = 6.dp)
         ) {
-            entries.forEach { entry ->
-                when (entry) {
-                    is MenuEntry.Item -> MenuItem(entry, onDismiss)
-                    MenuEntry.Divider -> MenuDivider()
-                }
-            }
+            MenuItems(entries, selectedIndex, onDismiss)
         }
+    }
+
+    LaunchedEffect(isPopupReady) {
+        if(isPopupReady) focusRequester.requestFocus()
     }
 }
 
 @Composable
-private fun MenuItem(
-    item: MenuEntry.Item,
+private fun MenuItems(
+    entries: List<MenuEntry>,
+    selectedIndex: Int,
     onDismiss: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(28.dp)
-            .clickable {
-                onDismiss()
-                item.onClick()
+    var itemIndex = 0
+
+    entries.forEach { entry ->
+        when (entry) {
+            is MenuEntry.Item -> {
+                MenuItem(
+                    entry,
+                    itemIndex == selectedIndex,
+                    onDismiss
+                )
+                itemIndex++
             }
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
 
-        item.icon?.let {
-            SvgIcon(it, Modifier.size(16.dp))
-        }
-
-        Spacer(Modifier.width(10.dp))
-
-        // Название
-        Text(
-            text = item.title,
-            modifier = Modifier.weight(1f).padding(bottom = 4.dp),
-            color = LocalAisDmeColors.current.onSurface,
-            fontSize = 13.sp
-        )
-
-        // Хоткей
-        item.shortcut?.let {
-            Text(
-                modifier = Modifier.padding(bottom = 4.dp),
-                text = it.vis,
-                color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
-                fontSize = 12.sp
-            )
+            MenuEntry.Divider -> MenuDivider()
         }
     }
-}
-
-@Composable
-private fun MenuDivider() {
-    Divider(
-        modifier = Modifier.padding(vertical = 6.dp),
-        thickness = 1.dp,
-        color = LocalAisDmeColors.current.surfaceBorder.copy(alpha = 0.4f)
-    )
 }

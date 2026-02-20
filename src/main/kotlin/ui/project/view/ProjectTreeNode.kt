@@ -83,7 +83,7 @@ fun ProjectTreeNode(
                     if(node is DirNode && node.expanded)
                         SvgIcon("chevronDown", Modifier.padding(top = 2.dp).align(Alignment.CenterStart), 20.dp)
                 }
-                Box(Modifier.background(Color.Red)
+                Box(Modifier
                     .width(1.dp).height(1.dp)
                     .onGloballyPositioned { coords ->
                         val position = coords.boundsInWindow()
