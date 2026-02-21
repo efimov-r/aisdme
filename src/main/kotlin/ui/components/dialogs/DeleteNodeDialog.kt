@@ -24,12 +24,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import non.era.aisdme.AppController
+import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.dialogs.elements.DialogNode
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 
 @Composable
-fun DeleteSelectedNodeDialog(app: AppController, onDismiss: () -> Unit) {
+fun DeleteSelectedNodeDialog(onDismiss: () -> Unit) {
+    val app = LocalAppController.current
     val nodes = app.getSelectedNodes()
     val title = "Delete object${if(nodes.size > 1) "s" else ""}?"
     val scrollState = rememberLazyListState()

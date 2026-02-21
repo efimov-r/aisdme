@@ -4,33 +4,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.configs.GlobalConfig
-import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.FilesController
-import non.era.aisdme.theme.AisDmeColors
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
 import non.era.aisdme.theme.AisDmeTheme
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableColumn
 import non.era.aisdme.ui.components.custom.ResizableRow
+import non.era.aisdme.ui.components.dialogs.DialogsController
+import non.era.aisdme.ui.components.dialogs.UiDialog
+import non.era.aisdme.ui.components.dialogs.elements.DialogsStarter
 import non.era.aisdme.ui.editor.Editor
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.errors.view.ErrorOverlay
@@ -75,6 +70,10 @@ fun main() = application {
             ConfigController(bus)
         }
 
+        val dialogController = remember {
+            DialogsController()
+        }
+
         val appController = remember {
             AppController(editorController,
                 projectController,
@@ -82,12 +81,16 @@ fun main() = application {
                 moveController,
                 reloadWotcher,
                 configController,
+                dialogController,
                 globalConf)
         }
 
         val configProjectStart = remember {
             appController.reselectProject(project)
         }
+
+        var activeDialog by remember { mutableStateOf<UiDialog?>(null) }
+        LaunchedEffect(Unit) { dialogController.effects.collect { activeDialog = it } }
 
         DisposableEffect(Unit) {
             onDispose {
@@ -101,6 +104,7 @@ fun main() = application {
         ) {
             AisDmeTheme(appController.isDarkTheme) {
                 AisDmeContent(configProjectStart)
+                DialogsStarter(activeDialog) { activeDialog = null }
             }
         }
     }

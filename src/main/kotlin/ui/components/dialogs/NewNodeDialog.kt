@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.AppController
+import non.era.aisdme.LocalAppController
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.over.ErrorableTextField
 
@@ -15,10 +16,11 @@ enum class TypeNew {
 
 @Composable
 fun NewNodeDialog(
-    app: AppController,
     typeNew: TypeNew,
     onDismiss: () -> Unit
-) = when(typeNew) {
+) {
+    val app = LocalAppController.current
+    when (typeNew) {
         TypeNew.FILE -> {
             FileNodeDialog(
                 title = "Create new File",
@@ -27,6 +29,7 @@ fun NewNodeDialog(
                 onDismiss = onDismiss
             )
         }
+
         TypeNew.DIRECTORY -> {
             FileNodeDialog(
                 title = "Create new Directory",
@@ -36,6 +39,7 @@ fun NewNodeDialog(
             )
         }
     }
+}
 
 @Composable
 private fun FileNodeDialog(

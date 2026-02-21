@@ -1,16 +1,13 @@
 package non.era.aisdme
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.*
 import non.era.aisdme.configs.ConfigController
-import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
+import non.era.aisdme.ui.components.dialogs.DialogsController
+import non.era.aisdme.ui.components.dialogs.UiDialog
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
@@ -36,6 +33,7 @@ class AppController(
     private val moveC: MoveController,
     private val reloadWatcher: TreeReloadWatcher,
     private val configC: ConfigController,
+    private val dialogC: DialogsController,
     private val startGlobalConfig: AppConfig
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
@@ -49,6 +47,7 @@ class AppController(
         moveC.subscriptionError { _globalMess += it }
         reloadWatcher.subscriptionError { _globalMess += it }
         configC.subscriptionError { _globalMess += it }
+        dialogC.subscriptionError { _globalMess += it }
     }
 
     fun reselectProject(root: File): ProjectConfig? { //открыть новый проект
@@ -59,6 +58,7 @@ class AppController(
         return res
     }
 
+    fun requestDialog(dialog: UiDialog) = dialogC.requestDialog(dialog)
     fun getMoveController() = moveC
     fun updateKeyValueProjectConfig(key: String, value: String) = configC.updateKeyValue(key, value)
 
@@ -104,5 +104,6 @@ class AppController(
         moveC.dispose()
         reloadWatcher.dispose()
         configC.dispose()
+        dialogC.dispose()
     }
 }
