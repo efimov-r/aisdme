@@ -1,8 +1,12 @@
 package non.era.aisdme.ui.components.dialogs
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.unit.dp
 import non.era.aisdme.AppController
+import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.over.ErrorableTextField
 
 enum class TypeNew {
@@ -50,6 +54,7 @@ private fun FileNodeDialog(
         onDismiss = onDismiss
     ) {
         ErrorableTextField(
+            Modifier.padding(16.dp),
             initial,
             text,
             { text = it },

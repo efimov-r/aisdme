@@ -17,13 +17,14 @@ import non.era.aisdme.theme.LocalAisDmeColors
 
 @Composable
 fun ErrorableTextField(
+    modifier: Modifier = Modifier,
     initial: String = "",
     value: String,
     onValueChange: (String) -> Unit,
     error: String?,
     focusRequester: FocusRequester,
 ) {
-    Column(modifier = Modifier
+    Column(modifier = modifier
         .fillMaxWidth()
         .height(90.dp)) {
         TextField(

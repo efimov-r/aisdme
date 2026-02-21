@@ -22,6 +22,7 @@ import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.DragailableTreeElement
 import non.era.aisdme.ui.components.custom.ProjectNodeClick
+import non.era.aisdme.ui.components.over.NodeIcon
 import non.era.aisdme.ui.components.over.SvgIcon
 import non.era.aisdme.ui.project.TypeClickNode
 import non.era.aisdme.ui.project.data.DirNode
@@ -37,12 +38,6 @@ fun ProjectTreeNode(
     val isSelected = node.isSelected()
 
     val isDropTarget = app.getMoveController().isDropTarget(node)
-
-    val icon: String = when(node) {
-        is DirNode -> "folder"
-        is FileNode -> "anyType"
-        else -> "unknown"
-    }
 
     DragailableTreeElement(app, node) {
         ProjectNodeClick(node, app) {
@@ -92,7 +87,7 @@ fun ProjectTreeNode(
                             position.bottom
                         )
                     })
-                SvgIcon(icon, Modifier.padding(top = 2.dp, end = 4.dp))
+                NodeIcon(Modifier.padding(top = 2.dp, end = 4.dp), node)
 
                 Text(
                     color = if(node.isCutted) LocalAisDmeColors.current.cutted else LocalAisDmeColors.current.onSurface,
