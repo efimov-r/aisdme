@@ -24,43 +24,16 @@ fun ConfirmDialog(
 ) {
     val focusRequester = remember { FocusRequester() }
 
-    AlertDialog(
+    DualButtonDialog(
         modifier = Modifier
-            .dialogBorder()
             .focusRequester(focusRequester)
-            .focusable()
-            .onPreviewKeyEvent {
-                if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-
-                when (it.key) {
-                    Key.Enter, Key.NumPadEnter -> {
-                        onConfirm()
-                        onDismiss()
-                        true
-                    }
-                    Key.Escape -> {
-                        onDismiss()
-                        true
-                    }
-                    else -> false
-                }
-            },
-        onDismissRequest = onDismiss,
-        properties = aisDmeDialogProperties(),
-        title = { Text(title) },
-        text = { Text(message) },
-        confirmButton = {
-            ButtonOk {
-                onConfirm()
-                onDismiss()
-            }
-        },
-        dismissButton = {
-            ButtonCancel {
-                onDismiss()
-            }
-        }
-    )
+            .focusable(),
+        title = title,
+        onConfirm = onConfirm,
+        onDismiss = onDismiss
+    ) {
+        Text(message)
+    }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
