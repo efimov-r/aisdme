@@ -137,7 +137,7 @@ private fun pasteItem(app: AppController) = MenuEntry.Item(
     title = "Paste",
     icon = "paste",
     shortcut = Hotkeys.PASTE
-) { app.pasteToSelectedNode() }
+) { app.requestDialog(UiDialog.ShowPasteDialog) }
 
 private fun copyItem(app: AppController) = MenuEntry.Item(
     title = "Copy",

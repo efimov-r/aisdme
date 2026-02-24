@@ -3,9 +3,8 @@ package non.era.aisdme.ui.components.dialogs
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import non.era.aisdme.AppController
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.over.ErrorableTextField
@@ -24,7 +23,7 @@ fun NewNodeDialog(
         TypeNew.FILE -> {
             FileNodeDialog(
                 title = "Create new File",
-                initial = "filename",
+                placeholder = "filename",
                 onConfirm = { app.createFileInSelected(it) },
                 onDismiss = onDismiss
             )
@@ -33,7 +32,7 @@ fun NewNodeDialog(
         TypeNew.DIRECTORY -> {
             FileNodeDialog(
                 title = "Create new Directory",
-                initial = "name directory",
+                placeholder = "name directory",
                 onConfirm = { app.createDirectoryInSelected(it) },
                 onDismiss = onDismiss
             )
@@ -44,31 +43,25 @@ fun NewNodeDialog(
 @Composable
 private fun FileNodeDialog(
     title: String,
-    initial: String = "",
+    placeholder: String = "",
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var text by remember { mutableStateOf("") }
-    val error = remember(key1 = text) { validateFileName(text) }
-    val focusRequester = remember { FocusRequester() }
+    var textState by remember { mutableStateOf(TextFieldValue("")) }
+    val error = remember(key1 = textState) { validateFileName(textState.text) }
 
     DualButtonDialog(
         title = title,
-        onConfirm = { onConfirm(text.trim()) },
+        onConfirm = { onConfirm(textState.text.trim()) },
         onDismiss = onDismiss
     ) {
         ErrorableTextField(
             Modifier.padding(16.dp),
-            initial,
-            text,
-            { text = it },
+            placeholder,
+            textState,
+            { textState = it },
             error,
-            focusRequester
         )
-    }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
     }
 }
 

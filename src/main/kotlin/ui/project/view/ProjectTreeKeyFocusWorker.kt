@@ -7,6 +7,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import non.era.aisdme.AppController
 import non.era.aisdme.settings.Hotkeys
+import non.era.aisdme.ui.components.dialogs.UiDialog
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.TypeMovementOnTree
 import non.era.aisdme.ui.project.data.DirNode
@@ -37,7 +38,7 @@ private fun treeKeyFocusWork(
         }
 
         Hotkeys.PASTE.ifDu(event) -> {
-            app.pasteToSelectedNode()
+            app.requestDialog(UiDialog.ShowPasteDialog)
             return true
         }
 

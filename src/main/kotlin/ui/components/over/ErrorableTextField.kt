@@ -8,9 +8,12 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.LocalAisDmeColors
@@ -18,21 +21,24 @@ import non.era.aisdme.theme.LocalAisDmeColors
 @Composable
 fun ErrorableTextField(
     modifier: Modifier = Modifier,
-    initial: String = "",
-    value: String,
-    onValueChange: (String) -> Unit,
+    placeholder: String = "",
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     error: String?,
-    focusRequester: FocusRequester,
 ) {
+    val focusRequester = remember { FocusRequester() }
+
     Column(modifier = modifier
         .fillMaxWidth()
         .height(90.dp)) {
         TextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = {
+                onValueChange(it)
+            },
             isError = error != null,
             singleLine = true,
-            placeholder = { Text(initial) }, // Вместо label используем placeholder
+            placeholder = { Text(placeholder) }, // Вместо label используем placeholder
             modifier = Modifier
                 .fillMaxWidth()
                 .focusRequester(focusRequester),
@@ -43,7 +49,8 @@ fun ErrorableTextField(
                 errorIndicatorColor = LocalAisDmeColors.current.error, // Цвет черты при ошибке
                 cursorColor = LocalAisDmeColors.current.primary, // Цвет курсора
                 backgroundColor = LocalAisDmeColors.current.transparent // Прозрачный фон
-            )
+            ),
+            textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
         )
 
         if (error != null) {
@@ -53,5 +60,9 @@ fun ErrorableTextField(
                 style = LocalTextStyle.current.copy(fontSize = 12.sp, lineHeight = 20.sp)
             )
         }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 }

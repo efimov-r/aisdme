@@ -7,6 +7,7 @@ import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.components.dialogs.DialogsController
+import non.era.aisdme.ui.components.dialogs.GlobalMessageReq
 import non.era.aisdme.ui.components.dialogs.UiDialog
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
@@ -19,6 +20,7 @@ import non.era.aisdme.ui.project.TypeMovementOnTree
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.reload.TreeReloadWatcher
 import java.io.File
+import java.nio.file.Path
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
@@ -59,6 +61,7 @@ class AppController(
     }
 
     fun requestDialog(dialog: UiDialog) = dialogC.requestDialog(dialog)
+    fun requestGlobalMessage(mess: GlobalMessageReq) = dialogC.requestGlobalMessage(mess)
     fun getMoveController() = moveC
     fun updateKeyValueProjectConfig(key: String, value: String) = configC.updateKeyValue(key, value)
 
@@ -83,7 +86,7 @@ class AppController(
         if(cut) selected.forEach { projectC.cutNoteMarkRecursive(it) }
         filesC.copyToClipboard(selected, cut)
     }
-    fun pasteToSelectedNode() = filesC.pasteFromClipboard(projectC.getSelectedNodes())
+    fun pasteFromClipboard(targer: Path) = filesC.pasteFromClipboard(targer)
 
     fun reloadSelectedDeerFromDisk() = projectC.reloadDirFromDisk(configC.getStore())
     fun openSelectedInFileManager() = FileDolphinOpener.openNodesInFileManager(projectC.getSelectedNodes())

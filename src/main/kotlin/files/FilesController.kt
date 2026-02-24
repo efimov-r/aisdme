@@ -4,6 +4,7 @@ import kotlinx.coroutines.launch
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
+import java.nio.file.Path
 
 class FilesController : UiController(), IFileController {
     override fun createFile(nodes: List<ProjectNode>, name: String) {
@@ -96,28 +97,9 @@ class FilesController : UiController(), IFileController {
         FilesExecutor.copyToClipboard(nodes.map{it.getFilePath()}, cut)
     }
 
-    override fun pasteFromClipboard(targetNode: List<ProjectNode>) {
-        if(targetNode.isEmpty()) {
-            scope.launch {
-                newGlobalError("Directory for paste is not selected")
-            }
-            return
-        }
-        if(targetNode.size != 1) {
-            scope.launch {
-                newGlobalError("Pasting is only available in one directory.")
-            }
-            return
-        }
-        val node = targetNode[0]
-        if(node !is DirNode) {
-            scope.launch {
-                newGlobalError("Pasting is only available in directory.")
-            }
-            return
-        }
+    override fun pasteFromClipboard(target: Path) {
         safeLaunch {
-            FilesExecutor.pasteFromClipboard(node.getFilePath())
+            FilesExecutor.pasteFromClipboard(target)
         }
     }
 
