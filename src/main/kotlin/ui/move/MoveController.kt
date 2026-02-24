@@ -6,14 +6,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import non.era.aisdme.utils.Log
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.ProjectNode
+import java.io.File
 
 class MoveController : UiController() {
     private var _draggingNode by mutableStateOf(false)
     private var _dragPosition by mutableStateOf(Offset.Zero)
     private val _nodeBounds = mutableStateMapOf<ProjectNode, Rect>()
+    private var _selectedNodeOnStart: List<ProjectNode>? = null
 
     fun disposeElement(node: ProjectNode) {
         _nodeBounds.remove(node)
@@ -23,9 +24,10 @@ class MoveController : UiController() {
         _nodeBounds[node] = rect
     }
 
-    fun onDragStart(offset: Offset) {
+    fun onDragStart(offset: Offset, selectedNode: List<ProjectNode>) {
         _draggingNode = true
         _dragPosition = offset
+        _selectedNodeOnStart = selectedNode
     }
 
     fun setDragPosition(position: Offset) {
@@ -43,18 +45,17 @@ class MoveController : UiController() {
             false
         }
 
-    fun finishDrop() {
+    fun finishDrop(resultDrop: (src: List<ProjectNode>, file: File) -> Unit) {
         if(!_draggingNode) return
-        val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key ?: return
-        Log.d("move to: ${target.getFile()}")
         _draggingNode = false
-    }
+        val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key ?: return
 
-    private fun canMove(src: ProjectNode, dst: ProjectNode): Boolean {
-//        if (!dst.isDirectory) return false
-//        if (dst == src) return false
-//        if (dst.isChildOf(src)) return false
-        return true
-    }
+        if(!target.getFile().isDirectory) return
+        if(_selectedNodeOnStart == null) return
+        _selectedNodeOnStart!!.forEach { node ->
+            if(node.getFile() == target.getFile()) return@finishDrop
+        }
 
+        resultDrop(_selectedNodeOnStart!!, target.getFile())
+    }
 }

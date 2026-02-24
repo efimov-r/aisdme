@@ -4,11 +4,14 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import non.era.aisdme.ui.UiController
+import non.era.aisdme.ui.project.data.ProjectNode
+import java.io.File
 
 sealed interface UiDialog {
     object ShowDeleteDialog : UiDialog
     data class ShowCreateObjDialog(val typeNew: TypeNew) : UiDialog
     object ShowPasteDialog : UiDialog
+    data class ShowMoveDialog(val src: List<ProjectNode>, val target: File) : UiDialog
 }
 
 sealed interface GlobalMessageReq {

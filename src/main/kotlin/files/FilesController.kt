@@ -4,6 +4,7 @@ import kotlinx.coroutines.launch
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
+import java.io.File
 import java.nio.file.Path
 
 class FilesController : UiController(), IFileController {
@@ -103,9 +104,11 @@ class FilesController : UiController(), IFileController {
         }
     }
 
-    override fun move(src: ProjectNode, dst: ProjectNode) {
-        safeLaunch {
-            FilesExecutor.move(src.getFilePath(), dst.getFilePath())
+    override fun move(src: List<ProjectNode>, dst: File) {
+        src.forEach {
+            safeLaunch {
+                FilesExecutor.move(it.getFilePath(), dst.toPath())
+            }
         }
     }
 

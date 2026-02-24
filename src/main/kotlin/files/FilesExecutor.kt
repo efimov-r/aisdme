@@ -1,5 +1,6 @@
 package non.era.aisdme.files
 
+import non.era.aisdme.utils.Log
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.io.File
@@ -150,13 +151,30 @@ object FilesExecutor {
         return files to isCut
     }
 
-
     fun move(src: Path, dst: Path) {
-        Files.move(
-            src,
-            dst,
-            StandardCopyOption.REPLACE_EXISTING
-        )
+        Log.d("move, src=$src, dst=$dst")
+        val target = if (Files.isDirectory(dst)) {
+            dst.resolve(src.fileName)
+        } else {
+            dst
+        }
+
+        try {
+            Files.move(
+                src,
+                target,
+                StandardCopyOption.REPLACE_EXISTING
+            )
+        } catch (e: AtomicMoveNotSupportedException) {
+            // fallback: copy + delete
+            if (Files.isDirectory(src)) {
+                copyRecursive(src, target)
+                deleteRecursive(src)
+            } else {
+                Files.copy(src, target, StandardCopyOption.REPLACE_EXISTING)
+                Files.delete(src)
+            }
+        }
     }
 
 //    fun copy(src: Path, dst: Path) {

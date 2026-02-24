@@ -15,8 +15,8 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.AppController
+import non.era.aisdme.ui.components.dialogs.UiDialog
 import non.era.aisdme.ui.project.data.ProjectNode
-import kotlin.collections.set
 
 @Composable
 fun DragailableTreeElement(app: AppController,
@@ -39,7 +39,7 @@ fun DragailableTreeElement(app: AppController,
         .pointerInput(node) {
             detectDragGestures(
                 onDragStart = { offset ->
-                    moveController.onDragStart(offset)
+                    moveController.onDragStart(offset, app.getSelectedNodes())
                 },
                 onDrag = { change, _ ->
                     change.consume()
@@ -50,7 +50,9 @@ fun DragailableTreeElement(app: AppController,
                     }
                 },
                 onDragEnd = {
-                    moveController.finishDrop()
+                    moveController.finishDrop{ src, f->
+                        app.requestDialog(UiDialog.ShowMoveDialog(src, f))
+                    }
                 },
                 onDragCancel = {
                     moveController.cancelDrag()

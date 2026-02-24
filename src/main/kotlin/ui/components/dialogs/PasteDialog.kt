@@ -15,7 +15,7 @@ import java.io.File
 @Composable
 fun PasteDialog(onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val selected = app.getSelectedNodes()
+    val selected = remember { app.getSelectedNodes() }
 
 
     if(selected.isEmpty()) {
@@ -39,7 +39,7 @@ fun PasteDialog(onDismiss: () -> Unit) {
         TextFieldValue(text = node.getFile().path, selection = TextRange(node.getFile().path.length))
     ) }
     val error = remember(key1 = textState) {
-        pathForPasteValidate(textState.text)
+        pasteDialogTargetDirValidate(textState.text)
     }
 
     DualButtonDialog(
@@ -59,7 +59,7 @@ fun PasteDialog(onDismiss: () -> Unit) {
     }
 }
 
-private fun pathForPasteValidate(text: String): String? {
+private fun pasteDialogTargetDirValidate(text: String): String? {
     try{
         val f = File(text)
         if(!f.exists()) return "not found"

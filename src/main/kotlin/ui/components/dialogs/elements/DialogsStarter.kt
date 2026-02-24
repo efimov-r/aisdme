@@ -1,11 +1,7 @@
 package non.era.aisdme.ui.components.dialogs.elements
 
 import androidx.compose.runtime.Composable
-import non.era.aisdme.LocalAppController
-import non.era.aisdme.ui.components.dialogs.DeleteSelectedNodeDialog
-import non.era.aisdme.ui.components.dialogs.NewNodeDialog
-import non.era.aisdme.ui.components.dialogs.PasteDialog
-import non.era.aisdme.ui.components.dialogs.UiDialog
+import non.era.aisdme.ui.components.dialogs.*
 
 @Composable
 fun DialogsStarter(activeDialog: UiDialog?, onDismiss: () -> Unit) {
@@ -14,6 +10,7 @@ fun DialogsStarter(activeDialog: UiDialog?, onDismiss: () -> Unit) {
             is UiDialog.ShowDeleteDialog -> DeleteSelectedNodeDialog(onDismiss)
             is UiDialog.ShowCreateObjDialog -> NewNodeDialog(dialog.typeNew, onDismiss)
             is UiDialog.ShowPasteDialog -> PasteDialog(onDismiss)
+            is UiDialog.ShowMoveDialog -> MoveDialog(dialog.src, dialog.target, onDismiss)
         }
     }
 }

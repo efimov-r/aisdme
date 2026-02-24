@@ -80,7 +80,7 @@ class AppController(
     fun createFileInSelected(name: String) = filesC.createFile(projectC.getSelectedNodes(), name)
     fun createDirectoryInSelected(name: String) = filesC.createDirectory(projectC.getSelectedNodes(), name)
     fun deleteSelected() = filesC.delete(projectC.getSelectedNodes())
-    fun move(src: ProjectNode, dst: ProjectNode) = filesC.move(src, dst) //todo сделать перемещение мышкой
+    fun move(src: List<ProjectNode>, dst: File) = filesC.move(src, dst)
     fun copySelectedToClipboard(cut: Boolean) {
         val selected = projectC.getSelectedNodes()
         if(cut) selected.forEach { projectC.cutNoteMarkRecursive(it) }

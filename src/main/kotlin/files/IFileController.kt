@@ -1,6 +1,7 @@
 package non.era.aisdme.files
 
 import non.era.aisdme.ui.project.data.ProjectNode
+import java.io.File
 import java.nio.file.Path
 
 interface IFileController {
@@ -9,7 +10,7 @@ interface IFileController {
     fun delete(nodes: List<ProjectNode>)
     fun copyToClipboard(nodes: List<ProjectNode>, cut: Boolean)
     fun pasteFromClipboard(target: Path)
-    fun move(src: ProjectNode, dst: ProjectNode)
+    fun move(src: List<ProjectNode>, dst: File)
 
 //    fun copy(src: Path, dst: Path)
 }
