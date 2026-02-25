@@ -84,13 +84,18 @@ class MoveController : UiController() {
         _autoScrollJob?.cancel()
         val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key ?: return
 
-        if(!target.getFile().isDirectory) return
         if(_selectedNodeOnStart == null) return
         _selectedNodeOnStart!!.forEach { node ->
             if(node.getFile() == target.getFile()) return@finishDrop
         }
 
-        resultDrop(_selectedNodeOnStart!!, target.getFile())
+        val tergetFile = if(target.getFile().isDirectory) {
+            target.getFile()
+        } else {
+            target.getFile().parentFile
+        }
+
+        resultDrop(_selectedNodeOnStart!!, tergetFile)
     }
 
     private fun checkAutoScroll() {

@@ -8,4 +8,4 @@
 
 Кастомная title bar
 
-autoscroll при drag к краю
+autoscroll при drag к краю останавливается при конце прокрутки
