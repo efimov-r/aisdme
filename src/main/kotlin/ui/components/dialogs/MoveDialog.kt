@@ -32,9 +32,10 @@ fun MoveDialog(src: List<ProjectNode>, target: File, onDismiss: () -> Unit) {
     DualButtonDialog(
         title = "Move",
         onConfirm = {
-            if(error == null) app.move(src, File(textState.text))
+            app.move(src, File(textState.text))
         },
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        enterActive = { error == null }
     ) {
         ErrorableTextField(
             Modifier.padding(16.dp),

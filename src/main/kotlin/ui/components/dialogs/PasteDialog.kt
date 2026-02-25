@@ -46,9 +46,10 @@ fun PasteDialog(onDismiss: () -> Unit) {
     DualButtonDialog(
         title = "Paste",
         onConfirm = {
-            if(error == null) app.pasteFromClipboard(File(textState.text).toPath() )
+            app.pasteFromClipboard(File(textState.text).toPath() )
         },
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        enterActive = { error == null }
     ) {
         ErrorableTextField(
             Modifier.padding(16.dp),

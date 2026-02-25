@@ -19,6 +19,7 @@ fun DualButtonDialog(
     title: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
+    enterActive: () -> Boolean,
     content: @Composable (() -> Unit)
 ) {
     Dialog(onDismissRequest = onDismiss) {
@@ -28,8 +29,10 @@ fun DualButtonDialog(
 
                 when (it.key) {
                     Key.Enter, Key.NumPadEnter -> {
-                        onConfirm()
-                        onDismiss()
+                        if(enterActive()) {
+                            onConfirm()
+                            onDismiss()
+                        }
                         true
                     }
                     Key.Escape -> {
@@ -56,7 +59,12 @@ fun DualButtonDialog(
                 Row(Modifier.align(Alignment.End)) {
                     ButtonCancel { onDismiss() }
                     Spacer(Modifier.width(8.dp))
-                    ButtonOk { onConfirm(); onDismiss() }
+                    ButtonOk {
+                        if(enterActive()) {
+                            onConfirm()
+                            onDismiss()
+                        }
+                    }
                     Spacer(Modifier.width(16.dp))
                 }
             }

@@ -49,7 +49,8 @@ fun DeleteSelectedNodeDialog(onDismiss: () -> Unit) {
         Modifier.focusRequester(focusRequester).focusable(),
         title,
         { app.deleteSelected() },
-        onDismiss
+        onDismiss,
+        enterActive = { true }
     ) {
         if (needScroll)
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(LocalAisDmeColors.current.surfaceBorder))

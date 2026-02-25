@@ -13,18 +13,17 @@ import non.era.aisdme.ui.project.TypeMovementOnTree
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 
-fun Modifier.treeKeyEvent(app: AppController, showDelDialog: () -> Unit) =
+fun Modifier.treeKeyEvent(app: AppController, showDelDialog: () -> Unit, showRenameDialog: () -> Unit) =
     onPreviewKeyEvent {
     if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-        treeKeyFocusWork(it, app) {
-            showDelDialog()
-        }
+        treeKeyFocusWork(it, app, showDelDialog, showRenameDialog)
     }
 
 private fun treeKeyFocusWork(
     event: KeyEvent,
     app: AppController,
     showDelDialog: ()->Unit,
+    showRenameDialog: ()->Unit
 ): Boolean {
     when {
         Hotkeys.COPY.ifDu(event) -> {
@@ -44,6 +43,11 @@ private fun treeKeyFocusWork(
 
         Hotkeys.DELETE.ifDu(event) -> {
             showDelDialog()
+            return true
+        }
+
+        Hotkeys.RENAME.ifDu(event) -> {
+            showRenameDialog()
             return true
         }
 

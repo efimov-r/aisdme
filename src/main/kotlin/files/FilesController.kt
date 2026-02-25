@@ -112,6 +112,12 @@ class FilesController : UiController(), IFileController {
         }
     }
 
+    override fun renemae(src: Path, newName: String) {
+        safeLaunch {
+            FilesExecutor.rename(src, newName)
+        }
+    }
+
 //    override fun copy(src: Path, dst: Path) = safeLaunch {
 //        FilesExecutor.copy(src, dst)
 //    }

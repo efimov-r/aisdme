@@ -64,6 +64,7 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
             TreeContextMenu(
                 state = menuState,
                 showDelDialog = { app.requestDialog(UiDialog.ShowDeleteDialog) },
+                showRenameDialog = { app.requestDialog(UiDialog.ShowRenameDialog) },
                 showNewFileDialog = { app.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.FILE)) },
                 showNewDirectoryDialog = { app.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY)) },
                 onDismiss = { menuState.hide() }
@@ -76,6 +77,7 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
 private fun TreeContextMenu(
     state: ContextMenuState,
     showDelDialog: () -> Unit,
+    showRenameDialog: () -> Unit,
     showNewFileDialog: () -> Unit,
     showNewDirectoryDialog: () -> Unit,
     onDismiss: () -> Unit) {
@@ -98,6 +100,11 @@ private fun TreeContextMenu(
         add( deleteItem {
             showDelDialog()
         } )
+        if(isSingle(selected)) {
+            add( renameItem {
+                showRenameDialog()
+            } )
+        }
         add(divider())
 
         if(isOnlyFile(selected)) {
@@ -158,6 +165,13 @@ private fun deleteItem(onClick: () -> Unit) = MenuEntry.Item(
     onClick = onClick
 )
 
+private fun renameItem(onClick: () -> Unit) = MenuEntry.Item(
+    title = "Rename",
+    icon = null,
+    shortcut = Hotkeys.RENAME,
+    onClick = onClick
+)
+
 private fun openInLeftItem(app: AppController) = MenuEntry.Item(
     title = "Open in Left",
     icon = "applyNotConflictsRight",
@@ -183,6 +197,7 @@ private fun reloadDiskItem(app: AppController) = MenuEntry.Item(
 
 private fun divider() = MenuEntry.Divider
 
+private fun isSingle(selected: List<ProjectNode>) = selected.size == 1
 private fun isSingleDirectory(selected: List<ProjectNode>) = selected.size == 1 && selected[0] is DirNode
 private fun isSingleFile(selected: List<ProjectNode>) = selected.size == 1 && selected[0] is FileNode
 private fun isOnlyFile(selected: List<ProjectNode>) = selected.filterNot { it is FileNode }.isEmpty()

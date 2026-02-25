@@ -7,6 +7,7 @@ import non.era.aisdme.ui.components.dialogs.*
 fun DialogsStarter(activeDialog: UiDialog?, onDismiss: () -> Unit) {
     activeDialog?.let { dialog ->
         when (dialog) {
+            is UiDialog.ShowRenameDialog -> RenameNodeDialog(onDismiss)
             is UiDialog.ShowDeleteDialog -> DeleteSelectedNodeDialog(onDismiss)
             is UiDialog.ShowCreateObjDialog -> NewNodeDialog(dialog.typeNew, onDismiss)
             is UiDialog.ShowPasteDialog -> PasteDialog(onDismiss)

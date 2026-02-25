@@ -14,6 +14,7 @@ import java.io.File
 
 sealed interface UiDialog {
     object ShowDeleteDialog : UiDialog
+    object ShowRenameDialog : UiDialog
     data class ShowCreateObjDialog(val typeNew: TypeNew) : UiDialog
     object ShowPasteDialog : UiDialog
     data class ShowMoveDialog(val src: List<ProjectNode>, val target: File) : UiDialog

@@ -51,7 +51,9 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
         ScrollableLazyContent { scrollState->
             ProjectTreeContextMenu {
                 Box(modifier = Modifier
-                    .treeKeyEvent(app, { app.requestDialog(UiDialog.ShowDeleteDialog) })
+                    .treeKeyEvent(app,
+                        { app.requestDialog(UiDialog.ShowDeleteDialog) },
+                        { app.requestDialog(UiDialog.ShowRenameDialog) })
                 ) {
                     BoxFocusedAfterClick{ hasFocus->
                         ListProjectNodes(scrollState, hasFocus)
