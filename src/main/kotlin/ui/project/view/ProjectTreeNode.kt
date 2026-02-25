@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -15,7 +14,6 @@ import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
@@ -26,7 +24,6 @@ import non.era.aisdme.ui.components.over.NodeIcon
 import non.era.aisdme.ui.components.over.SvgIcon
 import non.era.aisdme.ui.project.TypeClickNode
 import non.era.aisdme.ui.project.data.DirNode
-import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 
 @Composable
@@ -74,9 +71,9 @@ fun ProjectTreeNode(
                     }
                 ) {
                     if(node is DirNode && !node.expanded)
-                        SvgIcon("chevronRight", Modifier.padding(top = 2.dp).align(Alignment.CenterStart), 20.dp)
+                        SvgIcon("chevronRight", Modifier.padding(top = 2.dp).align(Alignment.CenterStart).requiredSize(20.dp))
                     if(node is DirNode && node.expanded)
-                        SvgIcon("chevronDown", Modifier.padding(top = 2.dp).align(Alignment.CenterStart), 20.dp)
+                        SvgIcon("chevronDown", Modifier.padding(top = 2.dp).align(Alignment.CenterStart).requiredSize(20.dp))
                 }
                 Box(Modifier
                     .width(1.dp).height(1.dp)

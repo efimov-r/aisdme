@@ -53,8 +53,10 @@ fun MenuItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        item.icon?.let {
-            SvgIcon(it, Modifier.size(16.dp))
+        if (item.icon != null) {
+            SvgIcon(item.icon, Modifier.size(16.dp))
+        } else {
+            Spacer(Modifier.width(16.dp))
         }
 
         Spacer(Modifier.width(10.dp))

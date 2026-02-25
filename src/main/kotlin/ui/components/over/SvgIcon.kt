@@ -21,7 +21,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.loadSvgPainter
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.theme.AisDmeShapes
@@ -105,8 +104,7 @@ fun SvgButton(
 @Composable
 fun SvgIcon(
     baseName: String,
-    modifier: Modifier = Modifier,
-    size: Dp = 16.dp
+    modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
     val path = themedIconPath(baseName)
@@ -119,7 +117,7 @@ fun SvgIcon(
         Icon(
             painter = painter,
             contentDescription = null,
-            modifier = modifier.requiredSize(size),
+            modifier = modifier,
             tint = Color.Unspecified // ❗ ВАЖНО
         )
     }
