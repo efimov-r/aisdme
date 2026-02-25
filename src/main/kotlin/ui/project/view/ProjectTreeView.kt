@@ -40,10 +40,10 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
                 //todo realisation
             }
             SvgButton("expandAll", "Expand selected", Modifier.padding(buttonPadding)) {
-
+                app.expandSelected()
             }
             SvgButton("collapseAll", "Collapse all", Modifier.padding(buttonPadding)) {
-
+                app.collapseAll()
             }
             Spacer(modifier = Modifier.width(8.dp))
         }

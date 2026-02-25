@@ -24,6 +24,30 @@ class ProjectTreeState {
         return ProjectTreeHelper.findSelectedNodes(_nodes)
     }
 
+    fun expandSelected() {
+        fun exp(node: DirNode) {
+            node.expanded = true
+            node.children.forEach {
+                if (it is DirNode) exp(it)
+            }
+        }
+        ProjectTreeHelper.findSelectedNodes(_nodes).forEach { node->
+            if(node is DirNode) exp(node)
+        }
+    }
+
+    fun collapseAll() {
+        fun col(node: DirNode) {
+            node.expanded = false
+            node.children.forEach {
+                if (it is DirNode) col(it)
+            }
+        }
+        _nodes.forEach { node->
+            if(node is DirNode) col(node)
+        }
+    }
+
     fun getCashForConfig() : TreeStateConfig {
         val line = ProjectListLineHelper.buildLinearNodes(_nodes).associate { node ->
             val isDirNode = node is DirNode

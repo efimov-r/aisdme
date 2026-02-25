@@ -70,6 +70,9 @@ class AppController(
 
     fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)
 
+    fun expandSelected() = projectC.expandSelected()
+    fun collapseAll() = projectC.collapseAll()
+
     fun rightToLeftHalf() = editorC.rightToLeftHalf()
 
     fun getEditorHalfLeftController(): EditorHalfState = editorC.leftTabs

@@ -55,6 +55,8 @@ class ProjectController(
         treeState.reselectRootProject(treeStateConfig, root)
     }
 
+    fun expandSelected() = treeState.expandSelected()
+    fun collapseAll() = treeState.collapseAll()
     fun getSelectedNodes() = treeState.getSelectedNodes()
     fun getNodes() = treeState.getNodes()
     fun cutNoteMarkRecursive(node: ProjectNode) = treeState.cutNoteMarkRecursive(node)
