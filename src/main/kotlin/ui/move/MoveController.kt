@@ -1,13 +1,23 @@
 package non.era.aisdme.ui.move
 
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable.isActive
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.utils.Log
 import java.io.File
 
 class MoveController : UiController() {
@@ -15,6 +25,18 @@ class MoveController : UiController() {
     private var _dragPosition by mutableStateOf(Offset.Zero)
     private val _nodeBounds = mutableStateMapOf<ProjectNode, Rect>()
     private var _selectedNodeOnStart: List<ProjectNode>? = null
+
+    private var _listBounds: Rect? = null
+    private var _autoScrollJob: Job? = null
+    private var _scrollState: LazyListState? = null
+
+    fun setListBounds(listBounds: Rect) {
+        _listBounds = listBounds
+    }
+
+    fun setScrollState(newScrollState: LazyListState) {
+        _scrollState = newScrollState
+    }
 
     fun disposeElement(node: ProjectNode) {
         _nodeBounds.remove(node)
@@ -32,10 +54,20 @@ class MoveController : UiController() {
 
     fun setDragPosition(position: Offset) {
         _dragPosition = position
+        checkAutoScroll()
     }
 
     fun cancelDrag() {
+        Log.d("cancel drop")
         _draggingNode = false
+        _autoScrollJob?.cancel()
+    }
+
+    fun forceFinish() {
+        if(!_draggingNode) return
+        Log.d("force finish drop")
+        _draggingNode = false
+        _autoScrollJob?.cancel()
     }
 
     fun isDropTarget(node: ProjectNode) =
@@ -46,8 +78,10 @@ class MoveController : UiController() {
         }
 
     fun finishDrop(resultDrop: (src: List<ProjectNode>, file: File) -> Unit) {
+        Log.d("finish drop")
         if(!_draggingNode) return
         _draggingNode = false
+        _autoScrollJob?.cancel()
         val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key ?: return
 
         if(!target.getFile().isDirectory) return
@@ -57,5 +91,40 @@ class MoveController : UiController() {
         }
 
         resultDrop(_selectedNodeOnStart!!, target.getFile())
+    }
+
+    private fun checkAutoScroll() {
+        val bounds = _listBounds ?: return
+        val pos = _dragPosition
+
+        val edge = 50f // зона активации
+
+        val scrollDir = when {
+            pos.y < bounds.top + edge -> -1
+            pos.y > bounds.bottom - edge -> 1
+            else -> 0
+        }
+
+        if (scrollDir == 0) {
+            _autoScrollJob?.cancel()
+            return
+        }
+
+        if (_autoScrollJob?.isActive == true) return
+
+        _autoScrollJob = scope.launch {
+            autoScrollLoop(scrollDir)
+        }
+    }
+
+    private suspend fun autoScrollLoop(dir: Int) {
+        val state = _scrollState ?: return
+
+        while (isActive) {
+            withContext(Dispatchers.Swing) {
+                state.scrollBy(dir * 5f) // скорость
+            }
+            delay(16) // ~60 FPS
+        }
     }
 }

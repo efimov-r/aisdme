@@ -10,6 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.ui.components.contexmenu.realisation.ProjectTreeContextMenu
 import non.era.aisdme.ui.components.custom.BoxFocusedAfterClick
@@ -37,6 +39,8 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
 @Composable
 fun ListProjectNodes(scrollState: LazyListState, hasFocus: Boolean) {
     val app = LocalAppController.current
+    val moveController = app.getMoveController()
+    moveController.setScrollState(scrollState)
 
     val visibleNodes by remember {
         derivedStateOf {
@@ -46,7 +50,11 @@ fun ListProjectNodes(scrollState: LazyListState, hasFocus: Boolean) {
 
     LazyColumn(
         state = scrollState,
-        modifier = Modifier.clipToBounds()
+        modifier = Modifier
+            .clipToBounds()
+            .onGloballyPositioned {
+                moveController.setListBounds(it.boundsInWindow())
+            }
     ) {
         items(
             visibleNodes,

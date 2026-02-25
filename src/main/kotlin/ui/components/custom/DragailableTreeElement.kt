@@ -3,12 +3,7 @@ package non.era.aisdme.ui.components.custom
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -35,6 +30,19 @@ fun DragailableTreeElement(app: AppController,
         .onGloballyPositioned {
             coords = it
             moveController.setNodeBounds(node, it.boundsInWindow())
+        }
+        .pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+
+                    val anyPressed = event.changes.any { it.pressed }
+
+                    if (!anyPressed) {
+                        moveController.forceFinish()
+                    }
+                }
+            }
         }
         .pointerInput(node) {
             detectDragGestures(
