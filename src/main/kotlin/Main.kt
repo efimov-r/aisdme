@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import kotlinx.coroutines.launch
@@ -159,5 +160,5 @@ fun AisDmeContent(configProjectStart: ProjectConfig?) {
 
 @Composable
 fun Modifier.panel(): Modifier {
-    return background(LocalAisDmeColors.current.surface, AisDmeShapes.large)
+    return clip(AisDmeShapes.large).background(LocalAisDmeColors.current.surface)
 }
