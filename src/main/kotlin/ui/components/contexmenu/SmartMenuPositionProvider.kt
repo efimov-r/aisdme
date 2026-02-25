@@ -6,10 +6,10 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.PopupPositionProvider
-import non.era.aisdme.utils.Log
 
 class SmartMenuPositionProvider(
-    private val clickPosition: Offset
+    private val clickPosition: Offset,
+    private val bias: Int = 0
 ) : PopupPositionProvider {
 
     override fun calculatePosition(
@@ -22,22 +22,16 @@ class SmartMenuPositionProvider(
         var x = clickPosition.x.toInt()
         var y = clickPosition.y.toInt()
 
-        // Проверяем правый край
         if (x + popupContentSize.width > windowSize.width) {
-            Log.d("1")
             x -= popupContentSize.width
         }
 
-        // Проверяем нижний край
         if (y + popupContentSize.height > windowSize.height) {
-            Log.d("2")
-            y -= popupContentSize.height
+            y -= popupContentSize.height - bias
+        } else {
+            y += bias
         }
 
-        // Защита от отрицательных координат
-        x = maxOf(0, x)
-        y = maxOf(0, y)
-
-        return IntOffset(x, y)
+        return IntOffset(maxOf(0, x), maxOf(0, y))
     }
 }

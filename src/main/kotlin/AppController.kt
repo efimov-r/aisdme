@@ -1,14 +1,15 @@
 package non.era.aisdme
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.geometry.Offset
 import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
-import non.era.aisdme.ui.components.dialogs.DialogsController
-import non.era.aisdme.ui.components.dialogs.GlobalMessageReq
-import non.era.aisdme.ui.components.dialogs.UiDialog
+import non.era.aisdme.ui.components.dialogs.elements.DialogsController
+import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
+import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.EditorHalfState
 import non.era.aisdme.ui.editor.Panels
@@ -60,6 +61,8 @@ class AppController(
         return res
     }
 
+    fun tolltipShow(text: String, position: Offset) = dialogC.tolltipShow(text, position)
+    fun tolltipClose() = dialogC.tolltipClose()
     fun requestDialog(dialog: UiDialog) = dialogC.requestDialog(dialog)
     fun requestGlobalMessage(mess: GlobalMessageReq) = dialogC.requestGlobalMessage(mess)
     fun getMoveController() = moveC

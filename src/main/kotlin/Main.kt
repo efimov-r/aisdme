@@ -24,9 +24,10 @@ import non.era.aisdme.theme.AisDmeTheme
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableColumn
 import non.era.aisdme.ui.components.custom.ResizableRow
-import non.era.aisdme.ui.components.dialogs.DialogsController
-import non.era.aisdme.ui.components.dialogs.UiDialog
+import non.era.aisdme.ui.components.dialogs.elements.DialogsController
+import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.components.dialogs.elements.DialogsStarter
+import non.era.aisdme.ui.components.dialogs.elements.TooltipStarter
 import non.era.aisdme.ui.editor.Editor
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.errors.view.ErrorOverlay
@@ -106,6 +107,7 @@ fun main() = application {
             AisDmeTheme(appController.isDarkTheme) {
                 AisDmeContent(configProjectStart)
                 DialogsStarter(activeDialog) { activeDialog = null }
+                TooltipStarter(dialogController.tolltipState)
             }
         }
     }

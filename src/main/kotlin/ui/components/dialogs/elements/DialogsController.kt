@@ -1,9 +1,14 @@
-package non.era.aisdme.ui.components.dialogs
+package non.era.aisdme.ui.components.dialogs.elements
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import non.era.aisdme.ui.UiController
+import non.era.aisdme.ui.components.dialogs.TypeNew
 import non.era.aisdme.ui.project.data.ProjectNode
 import java.io.File
 
@@ -22,9 +27,26 @@ sealed interface GlobalMessageReq {
     data class ShowGlobalError(val text: String): GlobalMessageReq
 }
 
+data class TolltipState (
+    var show: Boolean = false,
+    var text: String = "",
+    var position: Offset = Offset.Zero
+)
+
 class DialogsController : UiController() {
     private val _effects = Channel<UiDialog>()
     val effects = _effects.receiveAsFlow()
+
+    var tolltipState by mutableStateOf(TolltipState())
+
+    fun tolltipShow(text: String, position: Offset) {
+        tolltipState = tolltipState.copy(show = true, text = text, position = position)
+    }
+
+    fun tolltipClose() {
+        tolltipState = TolltipState(show = false)
+    }
+
 
     fun requestDialog(dialog: UiDialog) {
         scope.launch {

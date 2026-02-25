@@ -1,15 +1,7 @@
 package non.era.aisdme.ui.project.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -20,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
@@ -29,9 +20,8 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.realisation.ProjectTreeContextMenu
 import non.era.aisdme.ui.components.custom.BoxFocusedAfterClick
 import non.era.aisdme.ui.components.custom.ScrollableLazyContent
-import non.era.aisdme.ui.components.dialogs.UiDialog
+import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.components.over.SvgButton
-import non.era.aisdme.ui.components.over.SvgIcon
 import non.era.aisdme.ui.project.ProjectListLineHelper
 
 @Composable
@@ -46,13 +36,13 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
             val buttonPadding = 2.dp
 
             Spacer(modifier = Modifier.weight(1f))
-            SvgButton("locate", "asdadsasd", Modifier.padding(buttonPadding)) {
+            SvgButton("locate", "Selected Opened File", Modifier.padding(buttonPadding)) {
                 //todo realisation
             }
-            SvgButton("expandAll", "asdadsasd", Modifier.padding(buttonPadding)) {
+            SvgButton("expandAll", "Expand selected", Modifier.padding(buttonPadding)) {
 
             }
-            SvgButton("collapseAll", "asdadsasd", Modifier.padding(buttonPadding)) {
+            SvgButton("collapseAll", "Collapse all", Modifier.padding(buttonPadding)) {
 
             }
             Spacer(modifier = Modifier.width(8.dp))
