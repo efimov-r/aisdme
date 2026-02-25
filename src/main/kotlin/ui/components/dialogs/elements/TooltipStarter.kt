@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import non.era.aisdme.theme.AisDmeColors
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.SmartMenuPositionProvider
@@ -30,7 +31,8 @@ fun TooltipStarter(state: TolltipState) {
                 Text(
                     text = state.text,
                     modifier = Modifier.padding(horizontal = 12.dp).padding(top = 4.dp, bottom = 6.dp),
-                    fontSize = 12.sp
+                    fontSize = 12.sp,
+                    color = LocalAisDmeColors.current.onSurface
                 )
             }
         }
