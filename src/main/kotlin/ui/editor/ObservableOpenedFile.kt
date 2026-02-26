@@ -82,27 +82,31 @@ class ObservableOpenedFile private constructor(
 
         autosaveJob = scope.launch {
             delay(2000)
-            if (_text == _savedText) return@launch
+            saveNow()
+        }
+    }
 
-            if(!_file.exists()) {
-                writeStatus(WriteStatus.ERROR)
-                return@launch
-            }
+    suspend fun saveNow() {
+        if (_text == _savedText) return
 
-            if(!Files.isWritable(_file.toPath())) {
-                writeStatus(WriteStatus.READ_ONLY_FS)
-                return@launch
-            }
+        if(!_file.exists()) {
+            writeStatus(WriteStatus.ERROR)
+            return
+        }
 
-            try{
-                saveMutex.withLock {
-                    _file.writeText(_text)
-                    _savedText = _text
-                }
-                writeStatus(WriteStatus.WRITABLE)
-            } catch (_: Throwable) {
-                writeStatus(WriteStatus.LOCKED)
+        if(!Files.isWritable(_file.toPath())) {
+            writeStatus(WriteStatus.READ_ONLY_FS)
+            return
+        }
+
+        try{
+            saveMutex.withLock {
+                _file.writeText(_text)
+                _savedText = _text
             }
+            writeStatus(WriteStatus.WRITABLE)
+        } catch (_: Throwable) {
+            writeStatus(WriteStatus.LOCKED)
         }
     }
 

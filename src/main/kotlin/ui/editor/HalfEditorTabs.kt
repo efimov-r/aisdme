@@ -7,21 +7,23 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
 
 class HalfEditorTabs(
-    private var files: MutableMap<Int, ObservableOpenedFile>,
+    private var files: Map<Int, ObservableOpenedFile>,
     private val eScope: CoroutineScope //todo хуйня
 ) : EditorHalfState {
-    private var listTabs = mutableStateListOf<Int>()
+    private var _listTabs = mutableStateListOf<Int>()
+    val listTabs: List<Int> get() = _listTabs.toList()
+
     private var _activeTabId by mutableStateOf<Int?>(null)
 
     override fun getTabs() : List<ObservableOpenedFile> {
-        return listTabs.mapNotNull { tId->
+        return _listTabs.mapNotNull { tId->
             files[tId]
         }
     }
 
     override fun getActiveTabId(): Int? {
         return _activeTabId ?: run {
-            _activeTabId = listTabs.lastOrNull()
+            _activeTabId = _listTabs.lastOrNull()
             _activeTabId
         }
     }
@@ -31,23 +33,23 @@ class HalfEditorTabs(
     }
 
     override fun activateTab(tabId: Int) {
-        if (!listTabs.contains(tabId)) listTabs.add(tabId)
+        if (!_listTabs.contains(tabId)) _listTabs.add(tabId)
         _activeTabId = tabId
     }
 
-    override fun countTabs(): Int = listTabs.size
+    override fun countTabs(): Int = _listTabs.size
 
     override fun updateText(newText: String) {
         files[_activeTabId]?.updateTextAndAutosave(newText, eScope)
     }
 
     override fun closeTab(id: Int) {
-        listTabs.remove(id)
-        if (_activeTabId == id) _activeTabId = listTabs.lastOrNull()
+        _listTabs.remove(id)
+        if (_activeTabId == id) _activeTabId = _listTabs.lastOrNull()
     }
 
     fun closeAllTabs() {
         _activeTabId = null
-        listTabs.removeAll{ true }
+        _listTabs.removeAll{ true }
     }
 }

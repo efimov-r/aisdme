@@ -1,6 +1,7 @@
 package non.era.aisdme.ui.editor
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
@@ -25,7 +26,11 @@ class EditorController(
         scope.launch {
             bus.events.collect { event ->
                 when (event) {
-                    is FileOpened -> openFile(event.file)
+                    is FileOpened -> {
+                        withContext(Dispatchers.Swing) {
+                            openFile(event.file)
+                        }
+                    }
                     else -> {}
                 }
             }
@@ -48,19 +53,36 @@ class EditorController(
         files.values.find { it.compareFile(file) }?.id?.let { tabMapId ->
             activateTab(tabMapId, panel)
         } ?: run {
-            val tabEmpty = ObservableOpenedFile.createEmpty(file = file)
+            val tabEmpty = ObservableOpenedFile.createEmpty(file)
             files[tabEmpty.id] = tabEmpty
             activateTab(tabEmpty.id, panel)
             scope.launch {
                 tabEmpty.openFile()
             }
         }
+        removeOldFiles()
     }
 
     fun rightToLeftHalf() {
         leftTabs.closeAllTabs()
         leftTabs = rightTabs
         rightTabs = HalfEditorTabs(files, scope)
+        removeOldFiles()
+    }
+
+    private fun removeOldFiles() {
+        files.mapNotNull {
+            if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key))
+                return@mapNotNull it.key
+            return@mapNotNull null
+        }.forEach { fid->
+            scope.launch {
+                files[fid]?.saveNow()
+                withContext(Dispatchers.Swing) {
+                    files.remove(fid)
+                }
+            }
+        }
     }
 
     override fun disposeBefore() {
