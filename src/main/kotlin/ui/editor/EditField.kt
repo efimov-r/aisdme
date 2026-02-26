@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,7 +23,7 @@ import kotlin.text.toFloat
 @Composable
 fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
     val app = LocalAppController.current
-    val leftRiteConfig = "ResizableProporcialRowEditorLeftAndRight"
+    val leftRightConfig = "ResizableProporcialRowEditorLeftAndRight"
 
     if(app.getEditorHalfLeftController().countTabs() == 0 && app.getEditorHalfRightController().countTabs() > 0){
         app.rightToLeftHalf()
@@ -34,8 +33,8 @@ fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
         EditorHalf(app.getEditorHalfLeftController(), modifier.fillMaxSize())
     } else if(app.getEditorHalfLeftController().countTabs() > 0 && app.getEditorHalfRightController().countTabs() > 0) {
         ResizableProporcialRow(Modifier.fillMaxSize(),
-            conf?.keyValue?.get(leftRiteConfig)?.toFloat() ?: 0.5f,
-            { app.updateKeyValueProjectConfig(leftRiteConfig, it.toString()) },
+            conf?.keyValue?.get(leftRightConfig)?.toFloat() ?: 0.5f,
+            { app.updateKeyValueProjectConfig(leftRightConfig, it.toString()) },
             {
                 EditorHalf(app.getEditorHalfLeftController(),
                     modifier.fillMaxSize())
@@ -61,7 +60,7 @@ fun EditorHalf(listTab: EditorHalfState, modifier: Modifier = Modifier){
 
         listTab.getActiveTab()?.let { tab ->
             EditField(
-                text = tab.getText(),
+                text = tab.text,
                 error = tab.error,
                 readOnly = tab.readOnly,
                 loadState = tab.loadState,

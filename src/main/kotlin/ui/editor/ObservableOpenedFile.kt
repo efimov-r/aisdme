@@ -20,44 +20,34 @@ enum class WriteStatus {
 
 class ObservableOpenedFile private constructor(
     val id: Int,
-    val file: File,
-    textIn: String,
-    savedTextIn: String,
-    errorIn: String? = null,
-    loadStateNow: Boolean
+    val file: File
 ) { //todo readOnly
-    private val saveMutex: Mutex = Mutex()
     var autosaveJob: Job? = null
-    var error by mutableStateOf(errorIn)
+    var error: String? by mutableStateOf(null)
     var readOnly by mutableStateOf(true)
     var writeStatus by mutableStateOf(WriteStatus.WRITABLE)
-    var loadState by mutableStateOf(loadStateNow)
-    private var text_ by mutableStateOf(textIn)
-    private var savedText_ by mutableStateOf(savedTextIn)
+    var loadState by mutableStateOf(true)
+    var text by mutableStateOf("")
     var title by mutableStateOf(recomputeTitle())
 
-    val isModified: Boolean
-        get() = text_ != savedText_
+    private var _savedText by mutableStateOf("")
+    private val saveMutex: Mutex = Mutex()
 
-    private fun recomputeTitle() = (file?.name ?: "Untitled") + if (isModified) "*" else ""
+    val isModified: Boolean
+        get() = text != _savedText
+
+    private fun recomputeTitle() = (file.name ?: "Untitled") + if (isModified) "*" else ""
 
     fun setSavedText(savedTextIn: String, scope: CoroutineScope) {
-        this.savedText_ = savedTextIn
+        this._savedText = savedTextIn
         scope.launch(Dispatchers.Default) {
-            val newTitle = recomputeTitle()
-            withContext(Dispatchers.Swing) {
-                title = newTitle
-            }
+            updateTitle()
         }
     }
 
     fun initText(savedTextIn: String) {
-        this.savedText_ = savedTextIn
-        this.text_ = savedTextIn
-    }
-
-    fun setText(textIn: String) {
-        this.text_ = textIn
+        this._savedText = savedTextIn
+        this.text = savedTextIn
     }
 
     suspend fun updateTitle() {
@@ -67,28 +57,19 @@ class ObservableOpenedFile private constructor(
         }
     }
 
-    fun getText() = text_
-
-    fun fileNotCanWrite() = !file.canWrite()
-
     suspend fun writeTextToFile() {
         saveMutex.withLock {
-            file.writeText(text_)
+            file.writeText(text)
         }
     }
 
     companion object {
         private var nextTabId = AtomicInteger(0)
 
-        fun createEmpty(file: File, loadStateNow: Boolean): ObservableOpenedFile{
-            val t = ""
+        fun createEmpty(file: File): ObservableOpenedFile{
             return ObservableOpenedFile(
                 id = nextTabId.getAndIncrement(),
                 file = file,
-                textIn = t,
-                savedTextIn = t,
-                errorIn = null,
-                loadStateNow = loadStateNow
             )
         }
     }

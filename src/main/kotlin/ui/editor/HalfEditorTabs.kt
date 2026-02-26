@@ -13,7 +13,6 @@ import java.io.File
 
 class HalfEditorTabs(
     private var files: MutableMap<Int, ObservableOpenedFile>,
-    private val autosaveDelayMs: Long,
     private val eScope: CoroutineScope
 ) : EditorHalfState {
     private val listMutex: Mutex = Mutex()
@@ -28,7 +27,10 @@ class HalfEditorTabs(
     }
 
     override fun getActiveTabId(): Int? {
-        return activeTabId_ ?: listTabs.lastOrNull()
+        return activeTabId_ ?: run {
+            activeTabId_ = listTabs.lastOrNull()
+            activeTabId_
+        }
     }
 
     override fun getActiveTab(): ObservableOpenedFile? {
@@ -36,47 +38,15 @@ class HalfEditorTabs(
     }
 
     override fun activateTab(tabId: Int) {
+        if (!listTabs.contains(tabId)) listTabs.add(tabId)
         activeTabId_ = tabId
     }
 
     override fun countTabs(): Int = listTabs.size
 
-    fun openFile(file: File) {
-        files.values.find { it.file == file }?.id?.let { tabMapId ->
-            if (!listTabs.contains(tabMapId)) listTabs.add(tabMapId)
-            activeTabId_ = tabMapId
-        } ?: run {
-            val tabEmpty = ObservableOpenedFile.createEmpty(file = file, loadStateNow = true)
-            files[tabEmpty.id] = tabEmpty
-            listTabs.add(tabEmpty.id)
-            activeTabId_ = tabEmpty.id
-            eScope.async {
-                runCatching {
-                    if(BuildConfig.DEBUG) {
-                        delay(300)
-                    }
-                    val text = if (file.exists()) file.readText() else ""
-                    withContext(Dispatchers.Swing) {
-                        listMutex.withLock {
-                            tabEmpty.initText(text)
-                            tabEmpty.readOnly = false
-                            tabEmpty.loadState = false
-                        }
-                    }
-                }.getOrElse {
-                    withContext(Dispatchers.Swing) {
-                        listMutex.withLock {
-                            tabEmpty.error = it.message
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     override fun updateText(newText: String) {
         val activTabLocal = files[activeTabId_]
-        activTabLocal?.setText(newText)
+        activTabLocal?.let{it.text = newText}
         eScope.launch {
             activTabLocal?.updateTitle()
         }
@@ -84,15 +54,15 @@ class HalfEditorTabs(
             tab.autosaveJob?.cancel()
 
             tab.autosaveJob = eScope.launch {
-                delay(autosaveDelayMs)
+                delay(2000)
                 if (!tab.isModified) return@launch
-                if (tab.fileNotCanWrite()) return@launch
+                if (!tab.file.canWrite()) return@launch
 
                 runCatching {
                     tab.writeTextToFile()
                     withContext(Dispatchers.Swing){
                         tab.error = null
-                        tab.setSavedText(tab.getText(), eScope)
+                        tab.setSavedText(tab.text, eScope)
                     }
 
                 }.getOrElse {
@@ -113,30 +83,7 @@ class HalfEditorTabs(
     }
 
     fun closeAllTabs() {
-        listTabs.forEach { id->
-            listTabs.remove(id)
-
-            if (activeTabId_ == id) {
-                activeTabId_ = listTabs.lastOrNull()
-            }
-        }
-    }
-
-    fun saveAll() {
-        runBlocking {//todo че за поеботина
-            files.values.map { ta ->
-                eScope.launch {
-                    ta.autosaveJob?.cancel()
-                    if (ta.fileNotCanWrite()) return@launch
-                    runCatching {
-                        ta.writeTextToFile()
-                    }
-                    listMutex.withLock {
-                        files.remove(ta.id)
-                        listTabs.remove(ta.id)
-                    }
-                }
-            }.joinAll()
-        }
+        activeTabId_ = null
+        listTabs.removeAll{ true }
     }
 }
