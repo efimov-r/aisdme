@@ -35,6 +35,9 @@ class ObservableOpenedFile private constructor(
     private var _title by mutableStateOf(_file.name ?: "Untitled")
     val title get() = _title
 
+    private var _path by mutableStateOf(_file.path ?: "")
+    val path get() = _path
+
     private var autosaveJob: Job? = null
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()

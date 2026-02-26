@@ -8,7 +8,7 @@ import kotlinx.coroutines.*
 
 class HalfEditorTabs(
     private var files: MutableMap<Int, ObservableOpenedFile>,
-    private val eScope: CoroutineScope
+    private val eScope: CoroutineScope //todo хуйня
 ) : EditorHalfState {
     private var listTabs = mutableStateListOf<Int>()
     private var _activeTabId by mutableStateOf<Int?>(null)
@@ -43,10 +43,7 @@ class HalfEditorTabs(
 
     override fun closeTab(id: Int) {
         listTabs.remove(id)
-
-        if (_activeTabId == id) {
-            _activeTabId = listTabs.lastOrNull()
-        }
+        if (_activeTabId == id) _activeTabId = listTabs.lastOrNull()
     }
 
     fun closeAllTabs() {

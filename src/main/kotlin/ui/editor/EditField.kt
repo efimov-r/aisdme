@@ -10,7 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
@@ -61,6 +64,7 @@ fun EditorHalf(listTab: EditorHalfState, modifier: Modifier = Modifier){
         listTab.getActiveTab()?.let { tab ->
             EditField(
                 text = tab.text,
+                path = tab.path,
                 writeStatus = tab.writeStatus,
                 onTextChange = { listTab.updateText(it) }
             )
@@ -71,6 +75,7 @@ fun EditorHalf(listTab: EditorHalfState, modifier: Modifier = Modifier){
 @Composable
 fun EditField(
     text: String,
+    path: String,
     writeStatus: WriteStatus,
     onTextChange: (String) -> Unit
 ) {
@@ -110,13 +115,39 @@ fun EditField(
 
         }
         Spacer(Modifier.fillMaxWidth().height(1.dp).background(LocalAisDmeColors.current.surfaceBorder))
-        Row(modifier = Modifier.fillMaxWidth().height(36.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Spacer(Modifier.weight(1f))
-            WriteStatus(writeStatus)
-            Spacer(Modifier.width(4.dp))
-        }
+        BottomPanel(path, writeStatus)
+    }
+}
+
+@Composable
+private fun BottomPanel(path: String, writeStatus: WriteStatus,) {
+    Row(modifier = Modifier.fillMaxWidth().height(36.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(Modifier.width(4.dp))
+        Path(path)
+        Spacer(Modifier.weight(1f))
+        WriteStatus(writeStatus)
+        Spacer(Modifier.width(4.dp))
+    }
+}
+
+@Composable
+private fun Path(path: String) {
+    Box(modifier = Modifier.height(24.dp)
+        .clip(AisDmeShapes.large)
+        .background(LocalAisDmeColors.current.surface)
+        .border(1.dp, LocalAisDmeColors.current.surfaceBorder, AisDmeShapes.large),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = path,
+            modifier = Modifier.padding(bottom = 1.dp).padding(horizontal = 16.dp),
+            fontSize = 11.sp,
+            lineHeight = 12.sp,
+            maxLines = 1,
+            color = LocalAisDmeColors.current.onSurface
+        )
     }
 }
 
