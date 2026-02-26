@@ -3,6 +3,7 @@ package non.era.aisdme.configs
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import non.era.aisdme.bus.AppEventBus
+import non.era.aisdme.bus.SaveSnapshotEditor
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.store.ConfigPaths
 import non.era.aisdme.configs.store.ConfigStore
@@ -10,6 +11,23 @@ import non.era.aisdme.ui.UiController
 import java.io.File
 
 class ConfigController(bus: AppEventBus) : UiController() {
+
+    init {
+        scope.launch {
+            bus.events.collect { event ->
+                when (event) {
+                    is SaveSnapshotEditor -> {
+                        project?.update {
+                            it.copy(
+                                snapshotEditor = event.snapshot
+                            )
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
 
     private var project: ConfigStore<ProjectConfig>? = null
     fun getStore() = project

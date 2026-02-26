@@ -42,6 +42,7 @@ class ObservableOpenedFile private constructor(
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()
 
+    fun getFilePath() = _file.toPath().toString()
     fun compareFile(file: File) = (_file == file)
 
     suspend fun saveTextOnDispose() {
@@ -117,6 +118,16 @@ class ObservableOpenedFile private constructor(
             return ObservableOpenedFile(
                 id = nextTabId.getAndIncrement(),
                 _file = file,
+            )
+        }
+
+        fun createFromConfig(id: Int, filePath: String): ObservableOpenedFile{
+            if(id >= nextTabId.get()){
+                nextTabId.set(id+1)
+            }
+            return ObservableOpenedFile(
+                id = id,
+                _file = File(filePath),
             )
         }
     }

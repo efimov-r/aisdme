@@ -31,25 +31,25 @@ class ConfigStore<T>(
     }
 
     suspend fun get(): T = mutex.withLock {
-        cache ?: loadFromDisk().also { cache = it }
+        cache ?: (loadFromDisk() ?: default()).also { cache = it }
     }
 
     fun getFromCashe(): T? = cache //безопасно, из ui можно дергат
 
     suspend fun reload(): T = mutex.withLock {
-        loadFromDisk().also { cache = it }
+        (loadFromDisk() ?: default()).also { cache = it }
     }
 
-    suspend fun update(block: (T) -> T): T =
+    suspend fun update(block: (T) -> T) =
         mutex.withLock {
             Log.i("config ${file} update")
-            val current = cache ?: loadFromDisk()
+            val current = cache ?: loadFromDisk() ?: default()
             val updated = block(current)
 
-            atomicWrite(updated)
-
-            cache = updated
-            updated
+            updated?.let {
+                atomicWrite(it)
+                cache = it
+            }
         }
 
     private fun ensureExists() {
@@ -60,9 +60,14 @@ class ConfigStore<T>(
         }
     }
 
-    private fun loadFromDisk(): T {
-        val text = Files.readString(file)
-        return json.decodeFromString(serializer, text)
+    private fun loadFromDisk(): T? {
+        try {
+            val text = Files.readString(file)
+            return json.decodeFromString(serializer, text)
+        } catch (_: Throwable) {
+            //todo обработать
+            return null
+        }
     }
 
     private fun atomicWrite(data: T) {

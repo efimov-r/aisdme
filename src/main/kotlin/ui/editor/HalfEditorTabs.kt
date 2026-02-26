@@ -15,6 +15,12 @@ class HalfEditorTabs(
 
     private var _activeTabId by mutableStateOf<Int?>(null)
 
+    fun reselectProject(tabs: List<Int>?, tabSelect: Int?) {
+        _listTabs.clear()
+        tabs?.let { _listTabs.addAll(it) }
+        _activeTabId = tabSelect
+    }
+
     override fun getTabs() : List<ObservableOpenedFile> {
         return _listTabs.mapNotNull { tId->
             files[tId]

@@ -2,9 +2,9 @@ package non.era.aisdme.ui.editor
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import kotlinx.coroutines.sync.Mutex
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
+import non.era.aisdme.bus.SaveSnapshotEditor
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
@@ -37,6 +37,20 @@ class EditorController(
         }
     }
 
+    fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
+        files.clear()
+        snapshot?.let {snap->
+            snap.files.forEach { id, filePath ->
+                val fileState = ObservableOpenedFile.createFromConfig(id, filePath)
+                files[id] = fileState
+                scope.launch {
+                    fileState.openFile()
+                }
+            }
+        }
+        leftTabs.reselectProject(snapshot?.leftTabs, snapshot?.leftTabsSelect)
+        rightTabs.reselectProject(snapshot?.rightTabs, snapshot?.rightTabsSelect)
+    }
 
     fun openNodes(nodes: List<ProjectNode>, panel: Panels = Panels.LEFT) {
         nodes.forEach { node->
@@ -60,28 +74,37 @@ class EditorController(
                 tabEmpty.openFile()
             }
         }
-        removeOldFiles()
+        removeOldFilesAndCreateSnapshot()
     }
 
     fun rightToLeftHalf() {
         leftTabs.closeAllTabs()
         leftTabs = rightTabs
         rightTabs = HalfEditorTabs(files, scope)
-        removeOldFiles()
+        removeOldFilesAndCreateSnapshot()
     }
 
-    private fun removeOldFiles() {
-        files.mapNotNull {
-            if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key))
+    private fun removeOldFilesAndCreateSnapshot() {
+        val idsToDel = files.mapNotNull {
+            if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {
                 return@mapNotNull it.key
-            return@mapNotNull null
-        }.forEach { fid->
-            scope.launch {
-                files[fid]?.saveNow()
-                withContext(Dispatchers.Swing) {
-                    files.remove(fid)
-                }
             }
+            return@mapNotNull null
+        }
+
+        scope.launch {
+            idsToDel.map { fid->
+                scope.launch {
+                    files[fid]?.saveNow()
+                    withContext(Dispatchers.Swing) {
+                        files.remove(fid)
+                    }
+                }
+            }.joinAll()
+            val snapshot = withContext(Dispatchers.Swing) {
+                SnapshotEditor.createSnapshot(files, leftTabs, rightTabs)
+            }
+            bus.publish(SaveSnapshotEditor(snapshot))
         }
     }
 

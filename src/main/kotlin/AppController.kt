@@ -37,11 +37,11 @@ class AppController(
     private val reloadWatcher: TreeReloadWatcher,
     private val configC: ConfigController,
     private val dialogC: DialogsController,
-    private val startGlobalConfig: AppConfig
+    private val startGlobalConfig: AppConfig?
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
-    var isDarkTheme by mutableStateOf(startGlobalConfig.isDarkTheme)
+    var isDarkTheme by mutableStateOf(startGlobalConfig?.isDarkTheme ?: false)
 
     init {
         editorC.subscriptionError { _globalMess += it }
@@ -58,6 +58,7 @@ class AppController(
         val res = configC.reselectProject(root) //первый всегда!
         reloadWatcher.switchProject(root.toPath())
         projectC.reselectRootProject(configC.getStore(), root)
+        editorC.reselectProject(res?.snapshotEditor)
         return res
     }
 
