@@ -1,10 +1,7 @@
 package non.era.aisdme.ui.editor
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import non.era.aisdme.BuildConfig
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
 import non.era.aisdme.ui.UiController
@@ -47,35 +44,15 @@ class EditorController(
         Panels.LEFT -> leftTabs.activateTab(id)
     }
 
-    private val listMutex: Mutex = Mutex() //todo нннаада?
-
     private fun openFile(file: File, panel: Panels = Panels.LEFT) {
-        files.values.find { it.file == file }?.id?.let { tabMapId ->
+        files.values.find { it.compareFile(file) }?.id?.let { tabMapId ->
             activateTab(tabMapId, panel)
         } ?: run {
             val tabEmpty = ObservableOpenedFile.createEmpty(file = file)
             files[tabEmpty.id] = tabEmpty
             activateTab(tabEmpty.id, panel)
-            scope.async {
-                runCatching {
-                    if(BuildConfig.DEBUG) {
-                        delay(300)
-                    }
-                    val text = if (file.exists()) file.readText() else ""
-                    withContext(Dispatchers.Swing) {
-                        listMutex.withLock {
-                            tabEmpty.initText(text)
-                            tabEmpty.readOnly = false
-                            tabEmpty.loadState = false
-                        }
-                    }
-                }.getOrElse {
-                    withContext(Dispatchers.Swing) {
-                        listMutex.withLock {
-                            tabEmpty.error = it.message
-                        }
-                    }
-                }
+            scope.launch {
+                tabEmpty.openFile()
             }
         }
     }
@@ -90,11 +67,7 @@ class EditorController(
         runBlocking {
             files.values.map { ta ->
                 scope.launch {
-                    ta.autosaveJob?.cancel()
-                    if (!ta.file.canWrite()) return@launch
-                    runCatching {
-                        ta.writeTextToFile()
-                    }
+                    ta.saveTextOnDispose()
                 }
             }.joinAll()
         }
