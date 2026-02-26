@@ -3,55 +3,41 @@ package non.era.aisdme.ui.editor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.BuildConfig
 import java.io.File
+import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
 
-enum class WriteStatus {
-    LOAD,
-    WRITABLE,
-    READ_ONLY_FS, //!Files.isWritable(getFilepath())
-    LOCKED,//error write
-    ERROR //!file.exists()
+enum class WriteStatus(val text: String, val back: Color, val te: Color) {
+    LOAD("load", Color(0xFFaca700), Color.Black),
+    NOT_SAVE("save not", Color(0xFFffc908), Color.Black),
+    WRITABLE("writable", Color(0xFF06c000), Color.Black),
+    READ_ONLY_FS("read only", Color(0xFFffc908), Color.Black), //!Files.isWritable(getFilepath())
+    LOCKED("locked", Color(0xFFf38100), Color.Black),//error write
+    ERROR("error", Color(0xFFe20300), Color.Black) //!file.exists()
 }
 
 class ObservableOpenedFile private constructor(
     val id: Int,
     private val _file: File
-) { //todo readOnly
-    var error: String? by mutableStateOf(null)
-    var readOnly by mutableStateOf(true)
-    var writeStatus by mutableStateOf(WriteStatus.WRITABLE)
-    var loadState by mutableStateOf(true)
-    var title by mutableStateOf(recomputeTitle())
-
+) {
     private var _text by mutableStateOf("")
     val text get() = _text
 
+    private var _writeStatus by mutableStateOf(WriteStatus.LOAD)
+    val writeStatus get() = _writeStatus
+
+    private var _title by mutableStateOf(_file.name ?: "Untitled")
+    val title get() = _title
 
     private var autosaveJob: Job? = null
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()
-
-    private fun recomputeTitle() = (_file.name ?: "Untitled") + if (_text != _savedText) "*" else ""
-
-    private fun setSavedText(savedTextIn: String, scope: CoroutineScope) {
-        this._savedText = savedTextIn
-        scope.launch(Dispatchers.Default) {
-            updateTitle()
-        }
-    }
-
-    private suspend fun updateTitle() {
-        val newTitle = recomputeTitle()
-        withContext(Dispatchers.Swing) {
-            title = newTitle
-        }
-    }
 
     fun compareFile(file: File) = (_file == file)
 
@@ -59,59 +45,60 @@ class ObservableOpenedFile private constructor(
         autosaveJob?.cancel()
         saveMutex.withLock {
             runCatching {
-                if(_file.canWrite()) {
-                    _file.writeText(_text)
-                }
+                _file.writeText(_text)
             }
         }
     }
 
     suspend fun openFile() {
-        runCatching {
-            if(BuildConfig.DEBUG) delay(300)
+        if(BuildConfig.DEBUG) delay(300)
 
-            val textInit = if (_file.exists()) _file.readText() else ""
+        if(!_file.exists()) {
+            writeStatus(WriteStatus.ERROR)
+            return
+        }
+
+        try {
+            val textIn = _file.readText()
             withContext(Dispatchers.Swing) {
-                _savedText = textInit
-                _text = textInit
-                readOnly = false
-                loadState = false
+                _writeStatus =
+                    if(!Files.isWritable(_file.toPath()))  WriteStatus.READ_ONLY_FS else WriteStatus.WRITABLE
+                _savedText = textIn
+                _text = textIn
             }
-        }.getOrElse {
-            withContext(Dispatchers.Swing) {
-                error = it.message
-            }
+        } catch(_: Throwable) {
+            writeStatus(WriteStatus.LOCKED)
         }
     }
 
     fun updateTextAndAutosave(newText: String, scope: CoroutineScope) {
         _text = newText
-        scope.launch {
-            updateTitle()
-        }
+        _writeStatus = WriteStatus.NOT_SAVE
 
         autosaveJob?.cancel()
 
         autosaveJob = scope.launch {
             delay(2000)
             if (_text == _savedText) return@launch
-            if (!_file.canWrite()) return@launch
 
-            runCatching {
+            if(!_file.exists()) {
+                writeStatus(WriteStatus.ERROR)
+                return@launch
+            }
+
+            if(!Files.isWritable(_file.toPath())) {
+                writeStatus(WriteStatus.READ_ONLY_FS)
+                return@launch
+            }
+
+            try{
                 saveMutex.withLock {
-                    if(_file.canWrite()) {
-                        _file.writeText(_text)
-                    }
+                    _file.writeText(_text)
+                    _savedText = _text
                 }
-                withContext(Dispatchers.Swing){
-                    error = null
-                    setSavedText(_text, scope)
-                }
-
-            }.getOrElse {
-                withContext(Dispatchers.Swing){
-                    error = it.message
-                }
+                writeStatus(WriteStatus.WRITABLE)
+            } catch (_: Throwable) {
+                writeStatus(WriteStatus.LOCKED)
             }
         }
     }
@@ -124,6 +111,12 @@ class ObservableOpenedFile private constructor(
                 id = nextTabId.getAndIncrement(),
                 _file = file,
             )
+        }
+    }
+
+    private suspend fun writeStatus(status: WriteStatus) {
+        withContext(Dispatchers.Swing) {
+            _writeStatus = status
         }
     }
 }
