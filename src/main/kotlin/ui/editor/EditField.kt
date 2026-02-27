@@ -49,22 +49,19 @@ fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun EditorHalf(listTab: EditorHalfState, modifier: Modifier = Modifier){
+fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
     Column (modifier) {
         TabsBar(
+            half = half,
             modifier = Modifier.height(44.dp).fillMaxWidth(),
-            tabs = listTab.getTabs(),
-            activeId = listTab.getActiveTabId(),
-            onSelect = { listTab.activateTab(it) },
-            onClose = { listTab.closeTab(it) }
         )
         Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
-        listTab.getActiveTab()?.let { tab ->
+        half.getActiveTab()?.let { tab ->
             EditField(
                 text = tab.text,
                 path = tab.path,
                 writeStatus = tab.writeStatus,
-                onTextChange = { listTab.updateText(it) }
+                onTextChange = { half.updateText(it) }
             )
         }
     }

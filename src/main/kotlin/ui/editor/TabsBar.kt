@@ -1,6 +1,8 @@
 package non.era.aisdme.ui.editor
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -8,29 +10,42 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import non.era.aisdme.LocalAppController
+import non.era.aisdme.utils.Log
 
 @Composable
 fun TabsBar(
+    half: HalfEditorTabs,
     modifier: Modifier = Modifier,
-    tabs: List<ObservableOpenedFile>,
-    activeId: Int?,
-    onSelect: (Int) -> Unit,
-    onClose: (Int) -> Unit
 ) {
+    val editor = LocalAppController.current.getEditorController()
     val listState = rememberLazyListState()
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.BottomStart
     ) {
+        val tabs by remember {
+            derivedStateOf {
+                half.mutableListTabs.mapNotNull { tId -> editor.getFile(tId) }.toList()
+            }
+        }
+
+        val overlap = 12.dp
+
         LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(-overlap),
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
@@ -52,21 +67,15 @@ fun TabsBar(
                 },
             userScrollEnabled = true
         ) {
-            itemsIndexed(
-                tabs,
-                key = { _, tab -> tab.id }
-            ) { index, tab ->
-
-                val isActive = tab.id == activeId
+            itemsIndexed(tabs, key = { _, tab -> tab.id }) { index, tab ->
 
                 EditorTab(
                     tab,
-                    isActive,
-                    onSelect,
-                    onClose,
+                    tab.id == half.getActiveTabId(),
+                    { half.activateTab(it) },
+                    { half.closeTab(it) },
                     modifier = Modifier
-                        .offset(x = (-index * 12).dp) // overlap
-                        .zIndex(if (isActive) 100f else index.toFloat())
+                        .zIndex(if (tab.id == half.getActiveTabId()) 100f else index.toFloat())
                 )
             }
         }

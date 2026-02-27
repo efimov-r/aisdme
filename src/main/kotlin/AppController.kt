@@ -11,7 +11,7 @@ import non.era.aisdme.ui.components.dialogs.elements.DialogsController
 import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
 import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.editor.EditorController
-import non.era.aisdme.ui.editor.EditorHalfState
+import non.era.aisdme.ui.editor.HalfEditorTabs
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.errors.GlobalMessage
 import non.era.aisdme.ui.move.MoveController
@@ -62,6 +62,8 @@ class AppController(
         return res
     }
 
+    fun getEditorController() = editorC
+//todo убрать все проксирование
     fun tolltipShow(text: String, position: Offset) = dialogC.tolltipShow(text, position)
     fun tolltipClose() = dialogC.tolltipClose()
     fun requestDialog(dialog: UiDialog) = dialogC.requestDialog(dialog)
@@ -76,8 +78,8 @@ class AppController(
 
     fun rightToLeftHalf() = editorC.rightToLeftHalf()
 
-    fun getEditorHalfLeftController(): EditorHalfState = editorC.leftTabs
-    fun getEditorHalfRightController(): EditorHalfState = editorC.rightTabs
+    fun getEditorHalfLeftController(): HalfEditorTabs = editorC.leftTabs
+    fun getEditorHalfRightController(): HalfEditorTabs = editorC.rightTabs
     fun getSelectedNodes() = projectC.getSelectedNodes()
     fun getNodes() = projectC.getNodes()
 

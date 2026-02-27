@@ -37,6 +37,8 @@ class EditorController(
         }
     }
 
+    fun getFile(id: Int) = files[id]
+
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
         files.clear()
         snapshot?.let {snap->
