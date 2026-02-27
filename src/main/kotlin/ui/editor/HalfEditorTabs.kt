@@ -21,6 +21,7 @@ class HalfEditorTabs(
         _activeTabId = tabSelect
     }
 
+    //todo не обновляется налету
     override fun getTabs() : List<ObservableOpenedFile> {
         return _listTabs.mapNotNull { tId->
             files[tId]

@@ -19,6 +19,9 @@ data class AisDmeColors(
     val cutted: Color,
     val transparent: Color,
     val error: Color,
+    val selectAndFocus: Color,
+    val selectAndNotFocus: Color,
+    val dropTargetElement: Color,
 )
 
 val LightAisDmeColors = AisDmeColors(
@@ -36,6 +39,9 @@ val LightAisDmeColors = AisDmeColors(
     cutted = Color(0xFF858585),
     transparent = Color(0x00000000),
     error = Color.Red,
+    selectAndFocus = Color(0xFF9AF8BA),
+    selectAndNotFocus = Color(0xFFEAEAEA),
+    dropTargetElement = Color(0xFFD2F3DD),
 )
 
 val DarkAisDmeColors = AisDmeColors(
@@ -53,6 +59,9 @@ val DarkAisDmeColors = AisDmeColors(
     cutted = Color(0xFF858585),
     transparent = Color(0x00000000),
     error = Color.Red,
+    selectAndFocus = Color(0xFF1B783A),
+    selectAndNotFocus = Color(0xFF6A6A6A),
+    dropTargetElement = Color(0xFF0A3017),
     )
 
 //!!!! Пример

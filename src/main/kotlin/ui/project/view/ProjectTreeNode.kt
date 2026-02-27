@@ -44,10 +44,10 @@ fun ProjectTreeNode(
                     .background(
                         when {
                             isSelected && hasFocus ->
-                                LocalAisDmeColors.current.primary.copy(alpha = 0.5f)
+                                LocalAisDmeColors.current.selectAndFocus
 
                             isSelected && !hasFocus ->
-                                LocalAisDmeColors.current.selectedRow.copy(alpha = 0.5f)
+                                LocalAisDmeColors.current.selectAndNotFocus
 
                             isDropTarget ->
                                 LocalAisDmeColors.current.primary.copy(alpha = 0.2f)

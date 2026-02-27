@@ -29,16 +29,17 @@ fun EditorTab(
     tab: ObservableOpenedFile,
     isActive: Boolean,
     onSelect: (Int) -> Unit,
-    onClose: (Int) -> Unit
+    onClose: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = LocalAisDmeColors.current
     val colorSurfaceBorder = colors.surfaceBorder
     val colorBack = remember(colors, isActive) {
-        if (isActive) colors.primary.copy(alpha = 0.5f) else colors.surface
+        if (isActive) colors.selectAndFocus else colors.surface
     }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(0.dp) //между элементами
             .clip(TrapezoidBottomShape())
             .background(colorBack)
