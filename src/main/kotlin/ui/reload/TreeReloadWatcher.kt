@@ -1,8 +1,11 @@
 package non.era.aisdme.ui.reload
 
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.bus.AppEventBus
@@ -16,6 +19,7 @@ class TreeReloadWatcher(
 ) : UiController() {
 
     private val watchService = FileSystems.getDefault().newWatchService()
+    private val keysMutex = Mutex()
     private val keys = mutableSetOf<WatchKey>()
 
     private val pendingDirs = mutableSetOf<File>()
@@ -53,15 +57,19 @@ class TreeReloadWatcher(
 
             if (!key.reset()) {
                 key.cancel()
-                keys.remove(key)
+                keysMutex.withLock {
+                    keys.remove(key)
+                }
             }
         }
     }
 
     fun switchProject(root: Path) {
         scope.launch {
-            keys.forEach { it.cancel() }// отменяем старые
-            keys.clear()
+            keysMutex.withLock {
+                keys.forEach { it.cancel() }// отменяем старые
+                keys.clear()
+            }
 
             pendingMutex.withLock { pendingDirs.clear() }
 
@@ -69,25 +77,23 @@ class TreeReloadWatcher(
         }
     }
 
-    private fun registerRecursively(root: Path) {
-        fun registerDir(path: Path) {
-            try {
-                val key = path.register(
-                    watchService,
-                    StandardWatchEventKinds.ENTRY_CREATE,
-                    StandardWatchEventKinds.ENTRY_DELETE,
-                    StandardWatchEventKinds.ENTRY_MODIFY
-                )
-                keys += key
-            } catch (_: Exception) {
-                // директория могла исчезнуть — игнор
-            }
-        }
-
+    private suspend fun registerRecursively(root: Path) = coroutineScope {
         Files.walk(root).use { stream ->
-            stream
-                .filter { Files.isDirectory(it) && !Files.isSymbolicLink(it) }
-                .forEach { registerDir(it) }
+            val dirs = stream.filter { Files.isDirectory(it) && !Files.isSymbolicLink(it) }
+                .toList() // materialize list
+            dirs.map { dir ->
+                launch {
+                    runCatching {
+                        val key = dir.register(
+                            watchService,
+                            StandardWatchEventKinds.ENTRY_CREATE,
+                            StandardWatchEventKinds.ENTRY_DELETE,
+                            StandardWatchEventKinds.ENTRY_MODIFY
+                        )
+                        keysMutex.withLock { keys += key }
+                    }
+                }
+            }.joinAll()
         }
     }
 
@@ -111,8 +117,12 @@ class TreeReloadWatcher(
     }
 
     override fun disposeAfter() {
-        keys.forEach { it.cancel() } //todo Exception in thread "main" java.util.ConcurrentModificationException
-        keys.clear()
+        runBlocking {
+            keysMutex.withLock {
+                keys.forEach { it.cancel() }
+                keys.clear()
+            }
+        }
         watchService.close()
     }
 }
