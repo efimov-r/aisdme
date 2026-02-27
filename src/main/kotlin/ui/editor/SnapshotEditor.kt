@@ -24,19 +24,19 @@ data class SnapshotEditor(
             val leftTabsFinish = leftTabs.listTabs.toMutableList()
             leftTabsFinish.removeAll(notSaveIds)
 
-            val leftTabsSelectFinish = if(notSaveIds.contains(leftTabs.getActiveTabId())) {
+            val leftTabsSelectFinish = if(notSaveIds.contains(leftTabs.activeTabId)) {
                 leftTabsFinish.lastOrNull()
             } else {
-                leftTabs.getActiveTabId()
+                leftTabs.activeTabId
             }
 
             val rightTabsFinish = rightTabs.listTabs.toMutableList()
             rightTabsFinish.removeAll(notSaveIds)
 
-            val rightTabsSelectFinish = if(notSaveIds.contains(rightTabs.getActiveTabId())) {
+            val rightTabsSelectFinish = if(notSaveIds.contains(rightTabs.activeTabId)) {
                 rightTabsFinish.lastOrNull()
             } else {
-                rightTabs.getActiveTabId()
+                rightTabs.activeTabId
             }
 
             return SnapshotEditor(

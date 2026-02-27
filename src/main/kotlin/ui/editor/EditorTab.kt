@@ -79,7 +79,6 @@ fun EditorTab(
         Spacer(Modifier.width(4.dp))
         SvgButton(
             baseName = "close",
-            tooltip = "Close tab",
             modifier = Modifier.padding(top = 5.dp)
         ){
             onClose(tab.id)

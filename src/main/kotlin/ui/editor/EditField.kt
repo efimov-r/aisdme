@@ -7,6 +7,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,18 +53,26 @@ fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
 
 @Composable
 fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
+    val editor = LocalAppController.current.getEditorController()
+    val activeTab by remember {
+        derivedStateOf {
+            half.activeTabId?.let { editor.getFile(it)}
+        }
+    }
     Column (modifier) {
         TabsBar(
             half = half,
             modifier = Modifier.height(44.dp).fillMaxWidth(),
         )
         Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
-        half.getActiveTab()?.let { tab ->
+        activeTab?.let { tab -> //todo а если ничо не открыто?
             EditField(
                 text = tab.text,
                 path = tab.path,
                 writeStatus = tab.writeStatus,
-                onTextChange = { half.updateText(it) }
+                onTextChange = { newText->
+                    half.activeTabId?.let{ editor.updateTextAndAutosafeFile(it, newText) }
+                }
             )
         }
     }

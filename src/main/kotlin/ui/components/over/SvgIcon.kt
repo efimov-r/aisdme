@@ -61,7 +61,7 @@ fun themedIconPath(base: String): String {
 @Composable
 fun SvgButton(
     baseName: String,
-    tooltip: String,
+    tooltip: String? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -86,9 +86,11 @@ fun SvgButton(
                     windowOffset = coordinates.localToWindow(Offset.Zero)
                 }
                 .clickable(onClick = onClick)
-                .onPointerEvent(PointerEventType.Enter) { event->
-                    isHovered = true
-                    app.tolltipShow(tooltip, windowOffset)
+                .onPointerEvent(PointerEventType.Enter) {
+                    if(tooltip != null) {
+                        isHovered = true
+                        app.tolltipShow(tooltip, windowOffset)
+                    }
                 }
                 .onPointerEvent(PointerEventType.Exit) {
                     isHovered = false

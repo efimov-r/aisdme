@@ -19,8 +19,8 @@ class EditorController(
 ) : UiController() {
     private var files: MutableMap<Int, ObservableOpenedFile> = mutableMapOf()
 
-    var leftTabs = HalfEditorTabs(files, scope)
-    var rightTabs = HalfEditorTabs(files, scope)
+    var leftTabs = HalfEditorTabs()
+    var rightTabs = HalfEditorTabs()
 
     init {
         scope.launch {
@@ -38,6 +38,10 @@ class EditorController(
     }
 
     fun getFile(id: Int) = files[id]
+
+    fun updateTextAndAutosafeFile(id: Int, newText: String) {
+        files[id]?.updateTextAndAutosave(newText, scope)
+    }
 
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
         files.clear()
@@ -82,7 +86,7 @@ class EditorController(
     fun rightToLeftHalf() {
         leftTabs.closeAllTabs()
         leftTabs = rightTabs
-        rightTabs = HalfEditorTabs(files, scope)
+        rightTabs = HalfEditorTabs()
         removeOldFilesAndCreateSnapshot()
     }
 

@@ -1,11 +1,9 @@
 package non.era.aisdme.ui.editor
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -15,14 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import non.era.aisdme.LocalAppController
-import non.era.aisdme.utils.Log
 
 @Composable
 fun TabsBar(
@@ -38,7 +34,7 @@ fun TabsBar(
     ) {
         val tabs by remember {
             derivedStateOf {
-                half.mutableListTabs.mapNotNull { tId -> editor.getFile(tId) }.toList()
+                half.listTabs.mapNotNull { tId -> editor.getFile(tId) }.toList()
             }
         }
 
@@ -71,11 +67,11 @@ fun TabsBar(
 
                 EditorTab(
                     tab,
-                    tab.id == half.getActiveTabId(),
+                    tab.id == half.activeTabId,
                     { half.activateTab(it) },
                     { half.closeTab(it) },
                     modifier = Modifier
-                        .zIndex(if (tab.id == half.getActiveTabId()) 100f else index.toFloat())
+                        .zIndex(if (tab.id == half.activeTabId) 100f else index.toFloat())
                 )
             }
         }

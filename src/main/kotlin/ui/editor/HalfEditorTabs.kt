@@ -4,33 +4,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.*
 
-class HalfEditorTabs(
-    private var files: Map<Int, ObservableOpenedFile>, //todo убрать отсудова нахер
-    private val eScope: CoroutineScope //todo хуйня
-) {
+class HalfEditorTabs {
     private var _listTabs = mutableStateListOf<Int>()
-    val listTabs: List<Int> get() = _listTabs.toList()
-    val mutableListTabs get() = _listTabs
+    val listTabs get() = _listTabs
 
     private var _activeTabId by mutableStateOf<Int?>(null)
+    val activeTabId get() = _activeTabId
 
+    //загрузка из конфига
     fun reselectProject(tabs: List<Int>?, tabSelect: Int?) {
         _listTabs.clear()
         tabs?.let { _listTabs.addAll(it) }
         _activeTabId = tabSelect
-    }
-
-    fun getActiveTabId(): Int? {
-        return _activeTabId ?: run {
-            _activeTabId = _listTabs.lastOrNull()
-            _activeTabId
-        }
-    }
-
-    fun getActiveTab(): ObservableOpenedFile? {
-        return files[_activeTabId]
+        if(_activeTabId == null) _activeTabId = _listTabs.lastOrNull()
     }
 
     fun activateTab(tabId: Int) {
@@ -39,10 +26,6 @@ class HalfEditorTabs(
     }
 
     fun countTabs(): Int = _listTabs.size
-
-    fun updateText(newText: String) {
-        files[_activeTabId]?.updateTextAndAutosave(newText, eScope)
-    }
 
     fun closeTab(id: Int) {
         _listTabs.remove(id)
