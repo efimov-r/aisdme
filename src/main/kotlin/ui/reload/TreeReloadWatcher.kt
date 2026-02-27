@@ -111,7 +111,7 @@ class TreeReloadWatcher(
     }
 
     override fun disposeAfter() {
-        keys.forEach { it.cancel() }
+        keys.forEach { it.cancel() } //todo Exception in thread "main" java.util.ConcurrentModificationException
         keys.clear()
         watchService.close()
     }

@@ -10,10 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.LocalAppController
@@ -55,12 +52,13 @@ fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
 fun EditorHalf(listTab: EditorHalfState, modifier: Modifier = Modifier){
     Column (modifier) {
         TabsBar(
+            modifier = Modifier.height(44.dp).fillMaxWidth(),
             tabs = listTab.getTabs(),
             activeId = listTab.getActiveTabId(),
             onSelect = { listTab.activateTab(it) },
             onClose = { listTab.closeTab(it) }
         )
-
+        Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
         listTab.getActiveTab()?.let { tab ->
             EditField(
                 text = tab.text,

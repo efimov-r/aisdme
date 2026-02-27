@@ -108,7 +108,7 @@ class ProjectTreeState {
     suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit) =
         withContext(Dispatchers.Swing) {
             Log.d("rebuildDirDiff: ${deer.path}")
-           ProjectTreeHelper.findDirNode(_nodes, deer)?.let {
+           ProjectTreeHelper.findDirNode(_nodes, deer)?.let { //todo файл в корне не ищется
                ProjectTreeHelper.rebuildDirDiff(it)
            } ?: run {
                notFoundErr()
