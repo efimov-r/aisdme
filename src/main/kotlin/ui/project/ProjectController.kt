@@ -1,11 +1,17 @@
 package non.era.aisdme.ui.project
 
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
 import non.era.aisdme.bus.RebuilDirRiff
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.configs.repositories.TreeStateRepository
 import non.era.aisdme.configs.store.ConfigStore
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.DirNode
@@ -26,7 +32,8 @@ enum class Movement{
 }
 
 class ProjectController(
-    private val bus: AppEventBus
+    private val bus: AppEventBus,
+    private val rep: TreeStateRepository,
 ) : UiController() {
 
     private val treeState = ProjectTreeState()
@@ -48,6 +55,15 @@ class ProjectController(
                 }
             }
         }
+        scope.launch(Dispatchers.Swing) {
+            snapshotFlow { ProjectListLineHelper.buildLinearExpandedNodes(treeState.getNodes()) } //как в ui подписка
+                .debounce(200)
+                .collectLatest {
+                    withContext(Dispatchers.IO) {
+                        rep.updateTree(treeState.getCashForConfig())
+                    }
+                }
+        }
     }
 
     fun reselectRootProject(config: ConfigStore<ProjectConfig>?, root: File) = scope.launch {
@@ -63,12 +79,6 @@ class ProjectController(
     fun reloadDirFromDisk(config: ConfigStore<ProjectConfig>?) = scope.launch {
         val treeStateConfig = config?.get()?.treeState
         treeState.reloadDirFromDisk(treeStateConfig)
-    }
-    fun saveTreeStateToConfig(config: ConfigStore<ProjectConfig>?)  { //todo добавить приоткрытии файла в редакторе
-        val st = treeState.getCashForConfig()
-        runBlocking {
-            config?.update { it.copy(treeState = st) }
-        }
     }
 
     private var firstMovement: Movement? = null

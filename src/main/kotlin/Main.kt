@@ -18,6 +18,7 @@ import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.repositories.EditorStateRepository
+import non.era.aisdme.configs.repositories.TreeStateRepository
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
@@ -49,16 +50,15 @@ fun main() = application {
             AppEventBus()
         }
 
-        val editorStateRepository = remember {
-            EditorStateRepository()
-        }
+        val editorStateRepository = remember { EditorStateRepository() }
+        val treeStateRepository = remember { TreeStateRepository() }
 
         val editorController = remember {
             EditorController(bus = bus, rep = editorStateRepository)
         }
 
         val projectController = remember {
-            ProjectController(bus)
+            ProjectController(bus, treeStateRepository)
         }
 
         val filesController = remember {
@@ -74,7 +74,7 @@ fun main() = application {
         }
 
         val configController = remember {
-            ConfigController(editorStateRepository)
+            ConfigController(editorStateRepository, treeStateRepository)
         }
 
         val dialogController = remember {

@@ -54,7 +54,6 @@ class AppController(
     }
 
     fun reselectProject(root: File): ProjectConfig? { //открыть новый проект
-        projectC.saveTreeStateToConfig(configC.getStore())
         val res = configC.reselectProject(root) //первый всегда!
         reloadWatcher.switchProject(root.toPath())
         projectC.reselectRootProject(configC.getStore(), root)
@@ -110,7 +109,6 @@ class AppController(
     }
 
     fun dispose() {
-        projectC.saveTreeStateToConfig(configC.getStore())
         editorC.dispose()
         projectC.dispose()
         filesC.dispose()

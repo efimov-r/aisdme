@@ -48,15 +48,15 @@ class ProjectTreeState {
         }
     }
 
-    fun getCashForConfig() : TreeStateConfig {
-        val line = ProjectListLineHelper.buildLinearNodes(_nodes).associate { node ->
+    fun getCashForConfig() = TreeStateConfig(
+        ProjectListLineHelper.buildLinearNodes(_nodes).associate { node ->
             val isDirNode = node is DirNode
             val expanded = isDirNode && (node as DirNode).expanded
             val path: String = node.getFile().path
             path to TreeStateElement(isDirNode, expanded)
         }
-        return TreeStateConfig(line)
-    }
+    )
+
 
     fun reselectNode(node: ProjectNode) {
         getSelectedNodes().forEach { node ->

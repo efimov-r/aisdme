@@ -1,4 +1,4 @@
-package non.era.aisdme.configs.snapshots
+package non.era.aisdme.configs.dataclass.snapshots
 
 import kotlinx.serialization.Serializable
 

@@ -2,7 +2,7 @@ package non.era.aisdme.configs.dataclass
 
 import kotlinx.serialization.Serializable
 import non.era.aisdme.configs.dataclass.child.TreeStateConfig
-import non.era.aisdme.configs.snapshots.SnapshotEditor
+import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
 
 @Serializable
 data class ProjectConfig(
