@@ -132,7 +132,7 @@ fun EditField(
                     ScrollableContent { scrollState->
                         BasicTextField(
                             value = text,
-                            readOnly = (writeStatus == WriteStatus.READ_ONLY_FS), //todo вынести в статусы
+                            readOnly = writeStatus.readOnly,
                             onValueChange = onTextChange,
                             textStyle = TextStyle(
                                 color = LocalAisDmeColors.current.onSurface,
