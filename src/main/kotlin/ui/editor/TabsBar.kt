@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import non.era.aisdme.LocalAppController
+import non.era.aisdme.di.LocalAppController
 
 @Composable
 fun TabsBar(

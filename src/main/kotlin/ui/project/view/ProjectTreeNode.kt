@@ -16,7 +16,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import non.era.aisdme.LocalAppController
+import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.DragailableTreeElement
 import non.era.aisdme.ui.components.custom.ProjectNodeClick

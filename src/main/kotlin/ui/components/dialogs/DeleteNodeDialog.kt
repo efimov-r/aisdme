@@ -23,8 +23,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import non.era.aisdme.AppController
-import non.era.aisdme.LocalAppController
+import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.dialogs.elements.DialogNode
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog

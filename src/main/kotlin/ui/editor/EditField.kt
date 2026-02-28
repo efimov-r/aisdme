@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import non.era.aisdme.LocalAppController
+import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors

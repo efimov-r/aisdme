@@ -1,4 +1,4 @@
-package non.era.aisdme
+package non.era.aisdme.di
 
 import androidx.compose.runtime.*
 import non.era.aisdme.configs.ConfigController
@@ -18,8 +18,6 @@ val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
 }
 
-
-//todo попробовать другую структуру
 class AppController(
     val editorController: EditorController,
     val projectController: ProjectController,
@@ -32,6 +30,9 @@ class AppController(
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
+    fun clearGlobalMess() { _globalMess.clear() }
+    fun removeMess(id: Int) { _globalMess.removeIf { it.id == id } }
+
     var isDarkTheme by mutableStateOf(startGlobalConfig?.isDarkTheme ?: false)
 
     init {
@@ -59,14 +60,6 @@ class AppController(
         val selected = projectController.getSelectedNodes()
         if(cut) selected.forEach { projectController.cutNoteMarkRecursive(it) }
         filesController.copyToClipboard(selected, cut)
-    }
-
-    fun clearGlobalMess() {
-        _globalMess.clear()
-    }
-
-    fun removeMess(id: Int) {
-        _globalMess.removeIf { it.id == id }
     }
 
     fun dispose() {

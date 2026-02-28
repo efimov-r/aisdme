@@ -11,7 +11,7 @@ import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerInput
-import non.era.aisdme.AppController
+import non.era.aisdme.di.AppController
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.project.TypeClickNode
 
