@@ -10,6 +10,8 @@ class HalfEditorTabs(
     private val updateTabs: (tabs: List<Int>) -> Unit,
     private val updateActive: (activ: Int?) -> Unit
 ) {
+    var inFocus by mutableStateOf(false)
+
     fun copy(updateTabs: (tabs: List<Int>) -> Unit,
              updateActive: (activ: Int?) -> Unit): HalfEditorTabs {
         val res = HalfEditorTabs(updateTabs, updateActive)
@@ -39,6 +41,7 @@ class HalfEditorTabs(
         }
         _activeTabId = tabId
         updateActive(_activeTabId)
+        inFocus = true
     }
 
     fun countTabs(): Int = _listTabs.size

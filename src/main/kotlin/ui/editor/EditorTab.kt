@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.over.SvgButton
 import non.era.aisdme.ui.components.over.SvgIcon
@@ -27,6 +28,7 @@ import non.era.aisdme.ui.components.over.SvgIcon
 @Composable
 fun EditorTab(
     tab: ObservableOpenedFile,
+    halfInFocus: Boolean,
     isActive: Boolean,
     onSelect: (Int) -> Unit,
     onClose: (Int) -> Unit,
@@ -34,8 +36,12 @@ fun EditorTab(
 ) {
     val colors = LocalAisDmeColors.current
     val colorSurfaceBorder = colors.surfaceBorder
-    val colorBack = remember(colors, isActive) {
-        if (isActive) colors.selectAndFocus else colors.surface
+    val colorBack = remember(colors, isActive, halfInFocus) {
+        when {
+            isActive && halfInFocus -> colors.selectAndFocus
+            isActive && !halfInFocus -> colors.selectAndNotFocus
+            else -> Color.Transparent
+        }
     }
 
     Row(
@@ -66,17 +72,19 @@ fun EditorTab(
                 )
             }
             .clickable { onSelect(tab.id) }
-            .padding(horizontal = 18.dp, vertical = 4.dp), //внутри элемента, от текста до границ
+            .padding(horizontal = 14.dp, vertical = 2.dp), //внутри элемента, от текста до границ
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SvgIcon("anyType", Modifier.padding(top = 5.dp))
-        Spacer(Modifier.width(4.dp))
+        SvgIcon("anyType", Modifier.padding(top = 3.dp))
+        Spacer(Modifier.width(2.dp))
         Text(
+            modifier = Modifier.padding(bottom = 1.dp),
             text = tab.title,
             color = LocalAisDmeColors.current.onSurface,
-            maxLines = 1
+            maxLines = 1,
+            fontSize = 13.sp,
         )
-        Spacer(Modifier.width(4.dp))
+        Spacer(Modifier.width(3.dp))
         SvgButton(
             baseName = "close",
             modifier = Modifier.padding(top = 5.dp)

@@ -67,6 +67,7 @@ fun TabsBar(
 
                 EditorTab(
                     tab,
+                    half.inFocus,
                     tab.id == half.activeTabId,
                     { half.activateTab(it) },
                     { half.closeTab(it) },
