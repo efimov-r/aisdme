@@ -9,6 +9,7 @@ import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.BuildConfig
+import non.era.aisdme.bus.ShowFileInTree
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
@@ -44,6 +45,8 @@ class ObservableOpenedFile private constructor(
 
     fun getFilePath() = _file.toPath().toString()
     fun compareFile(file: File) = (_file == file)
+
+    fun showFileInTreeEvent() = ShowFileInTree(_file)
 
     fun copy() : ObservableOpenedFile { //копия для конфига
         val res = ObservableOpenedFile(id, File(_file.path))

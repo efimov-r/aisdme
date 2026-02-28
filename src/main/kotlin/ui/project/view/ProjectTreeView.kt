@@ -37,7 +37,7 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.weight(1f))
             SvgButton("locate", "Selected Opened File", Modifier.padding(buttonPadding)) {
-                //todo realisation
+                app.editorController.showSelectedInTree()
             }
             SvgButton("expandAll", "Expand selected", Modifier.padding(buttonPadding)) {
                 app.projectController.expandSelected()

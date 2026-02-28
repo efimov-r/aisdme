@@ -7,6 +7,7 @@ import non.era.aisdme.ui.project.data.LinkNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 
 object ProjectTreeHelper {
 
@@ -93,5 +94,41 @@ object ProjectTreeHelper {
 
         node.children.clear()
         node.children.addAll(result)
+    }
+
+    fun selectFileInTree(
+        nodes: List<ProjectNode>,
+        target: File
+    ) {
+        val path = mutableListOf<ProjectNode>()
+
+        if ( !nodes.any { findPath(it, target.toPath(), path) } ) return
+
+        path.forEach { if (it is DirNode) it.expanded = true }
+        ProjectTreeHelper.findSelectedNodes(nodes).forEach { it.setSelected(false) }
+        path.last().setSelected(true)
+    }
+
+    private fun findPath(
+        node: ProjectNode,
+        target: Path,
+        path: MutableList<ProjectNode>
+    ): Boolean {
+        path.add(node)
+
+        if (node.getFilePath() == target) {
+            return true
+        }
+
+        if (node is DirNode) {
+            for (child in node.children) {
+                if (findPath(child, target, path)) {
+                    return true
+                }
+            }
+        }
+
+        path.removeLast()
+        return false
     }
 }

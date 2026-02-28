@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
 import non.era.aisdme.bus.RebuilDirRiff
+import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.dataclass.child.SnapshotTree
 import non.era.aisdme.configs.repositories.TreeStateRepository
 import non.era.aisdme.ui.UiController
@@ -48,6 +49,11 @@ class ProjectController(
                                     newGlobalError("The directory ${event.dir} was not found during the update.")
                                 }
                             }
+                        }
+                    }
+                    is ShowFileInTree -> {
+                        scope.launch {
+                            treeState.showNode(event.file)
                         }
                     }
                     else ->{}

@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
+import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
 import non.era.aisdme.ui.UiController
@@ -49,6 +50,14 @@ class EditorController(
 
     fun updateTextAndAutosafeFile(id: Int, newText: String) {
         files[id]?.updateTextAndAutosave(newText, scope)
+    }
+
+    fun showSelectedInTree() {
+        when {
+            leftTabs.inFocus -> leftTabs.activeTabId
+            rightTabs.inFocus -> rightTabs.activeTabId
+            else -> null
+        }?.let {  _files[it] }?.let { bus.publish(it.showFileInTreeEvent())}
     }
 
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui

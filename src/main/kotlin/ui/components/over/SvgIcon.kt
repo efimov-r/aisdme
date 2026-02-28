@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -75,6 +76,7 @@ fun SvgButton(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .focusProperties { canFocus = false }
                 .background(
                     color = if (isHovered) LocalAisDmeColors.current.primary.copy(alpha = 0.1f)
                     else Color.Transparent,

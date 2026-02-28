@@ -12,6 +12,7 @@ import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.utils.Log
 import java.io.File
+import java.nio.file.Path
 import kotlin.collections.emptyList
 
 class ProjectTreeState {
@@ -23,6 +24,10 @@ class ProjectTreeState {
 
     fun getSelectedNodes(): List<ProjectNode> {
         return ProjectTreeHelper.findSelectedNodes(_nodes)
+    }
+
+    fun showNode(file: File) {
+        ProjectTreeHelper.selectFileInTree(_nodes, file)
     }
 
     fun expandSelected() {
