@@ -6,6 +6,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import non.era.aisdme.AppController
+import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.editor.Panels
@@ -37,7 +38,7 @@ private fun treeKeyFocusWork(
         }
 
         Hotkeys.PASTE.ifDu(event) -> {
-            app.requestDialog(UiDialog.ShowPasteDialog)
+            app.dialogController.requestDialog(UiDialog.ShowPasteDialog)
             return true
         }
 
@@ -52,12 +53,12 @@ private fun treeKeyFocusWork(
         }
 
         Hotkeys.OPEN_DOLPHIN.ifDu(event) -> {
-            app.openSelectedInFileManager()
+            FileDolphinOpener.openNodesInFileManager(app.projectController.getSelectedNodes())
             return true
         }
 
         Hotkeys.ENTER.ifDu(event) -> {
-            val selected = app.getSelectedNodes()
+            val selected = app.projectController.getSelectedNodes()
             if(selected.size == 1 && selected[0] is DirNode) {
                 (selected[0] as DirNode).openOrClose()
                 return true
@@ -79,22 +80,22 @@ private fun treeKeyFocusWork(
         }
 
         Hotkeys.SHIFT_TOP.ifDu(event) -> {
-            app.movementOnTree(TypeMovementOnTree.SHIFT_TOP)
+            app.projectController.movementOnTree(TypeMovementOnTree.SHIFT_TOP)
             return true
         }
 
         Hotkeys.TOP.ifDu(event) -> {
-            app.movementOnTree(TypeMovementOnTree.TOP)
+            app.projectController.movementOnTree(TypeMovementOnTree.TOP)
             return true
         }
 
         Hotkeys.SHIFT_BOTTOM.ifDu(event) -> {
-            app.movementOnTree(TypeMovementOnTree.SHIFT_BOTTOM)
+            app.projectController.movementOnTree(TypeMovementOnTree.SHIFT_BOTTOM)
             return true
         }
 
         Hotkeys.BOTTOM.ifDu(event) -> {
-            app.movementOnTree(TypeMovementOnTree.BOTTOM)
+            app.projectController.movementOnTree(TypeMovementOnTree.BOTTOM)
             return true
         }
 

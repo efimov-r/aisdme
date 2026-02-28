@@ -34,7 +34,7 @@ fun ProjectTreeNode(
     val app = LocalAppController.current
     val isSelected = node.isSelected()
 
-    val isDropTarget = app.getMoveController().isDropTarget(node)
+    val isDropTarget = app.moveController.isDropTarget(node)
 
     DragailableTreeElement(app, node) {
         ProjectNodeClick(node, app) {
@@ -65,7 +65,7 @@ fun ProjectTreeNode(
                             while (true) {
                                 val event = awaitPointerEvent()
                                 if(event.type == PointerEventType.Press && event.buttons.isPrimaryPressed)
-                                    app.clickNode(node, TypeClickNode.CHEVRON)
+                                    app.projectController.clickNode(node, TypeClickNode.CHEVRON)
                             }
                         }
                     }

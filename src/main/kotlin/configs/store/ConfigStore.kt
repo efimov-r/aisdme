@@ -63,8 +63,8 @@ class ConfigStore<T>(
         try {
             val text = Files.readString(file)
             return json.decodeFromString(serializer, text)
-        } catch (_: Throwable) {
-            //todo обработать
+        } catch (ex: Throwable) {
+            Log.e(ex)
             return null
         }
     }

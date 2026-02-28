@@ -25,7 +25,7 @@ fun TabsBar(
     half: HalfEditorTabs,
     modifier: Modifier = Modifier,
 ) {
-    val editor = LocalAppController.current.getEditorController()
+    val editor = LocalAppController.current.editorController
     val listState = rememberLazyListState()
 
     Box(

@@ -40,10 +40,10 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
                 //todo realisation
             }
             SvgButton("expandAll", "Expand selected", Modifier.padding(buttonPadding)) {
-                app.expandSelected()
+                app.projectController.expandSelected()
             }
             SvgButton("collapseAll", "Collapse all", Modifier.padding(buttonPadding)) {
-                app.collapseAll()
+                app.projectController.collapseAll()
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -52,8 +52,8 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
             ProjectTreeContextMenu {
                 Box(modifier = Modifier
                     .treeKeyEvent(app,
-                        { app.requestDialog(UiDialog.ShowDeleteDialog) },
-                        { app.requestDialog(UiDialog.ShowRenameDialog) })
+                        { app.dialogController.requestDialog(UiDialog.ShowDeleteDialog) },
+                        { app.dialogController.requestDialog(UiDialog.ShowRenameDialog) })
                 ) {
                     BoxFocusedAfterClick{ hasFocus->
                         ListProjectNodes(scrollState, hasFocus)
@@ -67,12 +67,12 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
 @Composable
 fun ListProjectNodes(scrollState: LazyListState, hasFocus: Boolean) {
     val app = LocalAppController.current
-    val moveController = app.getMoveController()
+    val moveController = app.moveController
     moveController.setScrollState(scrollState)
 
     val visibleNodes by remember {
         derivedStateOf {
-            ProjectListLineHelper.buildLinearExpandedNodes(app.getNodes())
+            ProjectListLineHelper.buildLinearExpandedNodes(app.projectController.getNodes())
         }
     }
 

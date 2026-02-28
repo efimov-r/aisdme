@@ -15,6 +15,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.AppController
 import non.era.aisdme.LocalAppController
+import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState
@@ -39,7 +40,7 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
 
             when (it.key.keyCode) {
                 4294967821L -> {
-                    app.getSelectedNodes().lastOrNull()?.let { node ->
+                    app.projectController.getSelectedNodes().lastOrNull()?.let { node ->
                         node.globPos?.let{ menuState.show(it) }
                     }
                     true
@@ -73,10 +74,10 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
         if (menuState.isVisible) {
             TreeContextMenu(
                 state = menuState,
-                showDelDialog = { app.requestDialog(UiDialog.ShowDeleteDialog) },
-                showRenameDialog = { app.requestDialog(UiDialog.ShowRenameDialog) },
-                showNewFileDialog = { app.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.FILE)) },
-                showNewDirectoryDialog = { app.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY)) },
+                showDelDialog = { app.dialogController.requestDialog(UiDialog.ShowDeleteDialog) },
+                showRenameDialog = { app.dialogController.requestDialog(UiDialog.ShowRenameDialog) },
+                showNewFileDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.FILE)) },
+                showNewDirectoryDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY)) },
                 onDismiss = { menuState.hide() }
             )
         }
@@ -92,7 +93,7 @@ private fun TreeContextMenu(
     showNewDirectoryDialog: () -> Unit,
     onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val selected = app.getSelectedNodes()
+    val selected = app.projectController.getSelectedNodes()
 
     buildList {
         if(isSingleDirectory(selected)) {
@@ -154,7 +155,7 @@ private fun pasteItem(app: AppController) = MenuEntry.Item(
     title = "Paste",
     icon = "paste",
     shortcut = Hotkeys.PASTE
-) { app.requestDialog(UiDialog.ShowPasteDialog) }
+) { app.dialogController.requestDialog(UiDialog.ShowPasteDialog) }
 
 private fun copyItem(app: AppController) = MenuEntry.Item(
     title = "Copy",
@@ -198,12 +199,12 @@ private fun openDolphinItem(app: AppController) = MenuEntry.Item(
     title = "Open in Dolphin",
     icon = "npm",
     shortcut = Hotkeys.OPEN_DOLPHIN
-) { app.openSelectedInFileManager() }
+) { FileDolphinOpener.openNodesInFileManager(app.projectController.getSelectedNodes()) }
 
 private fun reloadDiskItem(app: AppController) = MenuEntry.Item(
     title = "Reload from disk",
     icon = "buildLoadChanges"
-) { app.reloadSelectedDeerFromDisk() }
+) { app.projectController.reloadSelectedDirFromDisk() }
 
 private fun divider() = MenuEntry.Divider
 

@@ -128,11 +128,11 @@ fun AisDmeContent(configProjectStart: ProjectConfig?) {
     Row(Modifier.fillMaxSize().background(LocalAisDmeColors.current.background).padding(AisDmeSpacing.s)) {
         ResizableColumn(Modifier.fillMaxHeight().weight(1f),
              configProjectStart?.keyValue?.get(colName)?.toFloat() ?: 250f,
-            { app.updateKeyValueProjectConfig(colName, it.toString()) },
+            { app.configController.updateKeyValue(colName, it.toString()) },
             {
                 ResizableRow(Modifier.fillMaxSize(),
                     configProjectStart?.keyValue?.get(rowName)?.toFloat() ?: 250f,
-                    { app.updateKeyValueProjectConfig(rowName, it.toString()) },
+                    { app.configController.updateKeyValue(rowName, it.toString()) },
                     {
                         ProjectTreeView(Modifier.fillMaxSize().panel())
                     },

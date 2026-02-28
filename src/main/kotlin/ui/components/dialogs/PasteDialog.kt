@@ -16,22 +16,22 @@ import java.io.File
 @Composable
 fun PasteDialog(onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val selected = remember { app.getSelectedNodes() }
+    val selected = remember { app.projectController.getSelectedNodes() }
 
 
     if(selected.isEmpty()) {
-        app.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Directory for paste is not selected"))
+        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Directory for paste is not selected"))
         onDismiss()
         return
     }
     if(selected.size != 1) {
-        app.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Pasting is only available in one directory."))
+        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Pasting is only available in one directory."))
         onDismiss()
         return
     }
     val node = selected[0]
     if(node !is DirNode) {
-        app.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Pasting is only available in directory."))
+        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Pasting is only available in directory."))
         onDismiss()
         return
     }
@@ -46,7 +46,7 @@ fun PasteDialog(onDismiss: () -> Unit) {
     DualButtonDialog(
         title = "Paste",
         onConfirm = {
-            app.pasteFromClipboard(File(textState.text).toPath() )
+            app.filesController.pasteFromClipboard(File(textState.text).toPath() )
         },
         onDismiss = onDismiss,
         enterActive = { error == null }

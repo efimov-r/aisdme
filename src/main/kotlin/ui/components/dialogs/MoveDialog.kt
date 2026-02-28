@@ -17,7 +17,7 @@ import java.io.File
 fun MoveDialog(src: List<ProjectNode>, target: File, onDismiss: () -> Unit) {
     val app = LocalAppController.current
     if(src.isEmpty()) {
-        app.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Selected file to move does not exist."))
+        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Selected file to move does not exist."))
         onDismiss()
         return
     }
@@ -32,7 +32,7 @@ fun MoveDialog(src: List<ProjectNode>, target: File, onDismiss: () -> Unit) {
     DualButtonDialog(
         title = "Move",
         onConfirm = {
-            app.move(src, File(textState.text))
+            app.filesController.move(src, File(textState.text))
         },
         onDismiss = onDismiss,
         enterActive = { error == null }

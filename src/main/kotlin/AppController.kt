@@ -1,27 +1,18 @@
 package non.era.aisdme
 
 import androidx.compose.runtime.*
-import androidx.compose.ui.geometry.Offset
 import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
-import non.era.aisdme.files.FileDolphinOpener
 import non.era.aisdme.files.FilesController
 import non.era.aisdme.ui.components.dialogs.elements.DialogsController
-import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
-import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.editor.EditorController
-import non.era.aisdme.ui.editor.HalfEditorTabs
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.errors.GlobalMessage
 import non.era.aisdme.ui.move.MoveController
 import non.era.aisdme.ui.project.ProjectController
-import non.era.aisdme.ui.project.TypeClickNode
-import non.era.aisdme.ui.project.TypeMovementOnTree
-import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.reload.TreeReloadWatcher
 import java.io.File
-import java.nio.file.Path
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
@@ -30,75 +21,45 @@ val LocalAppController = staticCompositionLocalOf<AppController> {
 
 //todo попробовать другую структуру
 class AppController(
-    private val editorC: EditorController,
-    private val projectC: ProjectController,
-    private val filesC: FilesController,
-    private val moveC: MoveController,
+    val editorController: EditorController,
+    val projectController: ProjectController,
+    val filesController: FilesController,
+    val moveController: MoveController,
     private val reloadWatcher: TreeReloadWatcher,
-    private val configC: ConfigController,
-    private val dialogC: DialogsController,
-    private val startGlobalConfig: AppConfig?
+    val configController: ConfigController,
+    val dialogController: DialogsController,
+    startGlobalConfig: AppConfig?
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
     var isDarkTheme by mutableStateOf(startGlobalConfig?.isDarkTheme ?: false)
 
     init {
-        editorC.subscriptionError { _globalMess += it }
-        projectC.subscriptionError { _globalMess += it }
-        filesC.subscriptionError { _globalMess += it }
-        moveC.subscriptionError { _globalMess += it }
+        editorController.subscriptionError { _globalMess += it }
+        projectController.subscriptionError { _globalMess += it }
+        filesController.subscriptionError { _globalMess += it }
+        moveController.subscriptionError { _globalMess += it }
         reloadWatcher.subscriptionError { _globalMess += it }
-        configC.subscriptionError { _globalMess += it }
-        dialogC.subscriptionError { _globalMess += it }
+        configController.subscriptionError { _globalMess += it }
+        dialogController.subscriptionError { _globalMess += it }
     }
 
     fun reselectProject(root: File): ProjectConfig? { //открыть новый проект
-        val res = configC.reselectProject(root) //первый всегда!
+        val res = configController.reselectProject(root) //первый всегда!
         reloadWatcher.switchProject(root.toPath())
-        projectC.reselectRootProject(res?.treeState, root)
-        editorC.reselectProject(res?.snapshotEditor)
+        projectController.reselectRootProject(res?.treeState, root)
+        editorController.reselectProject(res?.snapshotEditor)
         return res
     }
-
-    fun getEditorController() = editorC
-//todo убрать все проксирование
-    fun tolltipShow(text: String, position: Offset) = dialogC.tolltipShow(text, position)
-    fun tolltipClose() = dialogC.tolltipClose()
-    fun requestDialog(dialog: UiDialog) = dialogC.requestDialog(dialog)
-    fun requestGlobalMessage(mess: GlobalMessageReq) = dialogC.requestGlobalMessage(mess)
-    fun getMoveController() = moveC
-    fun updateKeyValueProjectConfig(key: String, value: String) = configC.updateKeyValue(key, value)
-
-    fun openSelectedNodesInEditor(panel: Panels) = editorC.openNodes(projectC.getSelectedNodes(), panel)
-
-    fun expandSelected() = projectC.expandSelected()
-    fun collapseAll() = projectC.collapseAll()
-
-    fun rightToLeftHalf() = editorC.rightToLeftHalf()
-
-    fun getEditorHalfLeftController(): HalfEditorTabs = editorC.leftTabs
-    fun getEditorHalfRightController(): HalfEditorTabs = editorC.rightTabs
-    fun getSelectedNodes() = projectC.getSelectedNodes()
-    fun getNodes() = projectC.getNodes()
-
-    fun clickNode(node: ProjectNode, typeClick: TypeClickNode) = projectC.clickNode(node, typeClick)
-    fun movementOnTree(typeMovement: TypeMovementOnTree) = projectC.movementOnTree(typeMovement)
-
-    fun createFileInSelected(name: String) = filesC.createFile(projectC.getSelectedNodes(), name)
-    fun createDirectoryInSelected(name: String) = filesC.createDirectory(projectC.getSelectedNodes(), name)
-    fun deleteSelected() = filesC.delete(projectC.getSelectedNodes())
-    fun move(src: List<ProjectNode>, dst: File) = filesC.move(src, dst)
-    fun rename(src: Path, newName: String) = filesC.renemae(src, newName)
+    fun openSelectedNodesInEditor(panel: Panels) = editorController.openNodes(projectController.getSelectedNodes(), panel)
+    fun createFileInSelected(name: String) = filesController.createFile(projectController.getSelectedNodes(), name)
+    fun createDirectoryInSelected(name: String) = filesController.createDirectory(projectController.getSelectedNodes(), name)
+    fun deleteSelected() = filesController.delete(projectController.getSelectedNodes())
     fun copySelectedToClipboard(cut: Boolean) {
-        val selected = projectC.getSelectedNodes()
-        if(cut) selected.forEach { projectC.cutNoteMarkRecursive(it) }
-        filesC.copyToClipboard(selected, cut)
+        val selected = projectController.getSelectedNodes()
+        if(cut) selected.forEach { projectController.cutNoteMarkRecursive(it) }
+        filesController.copyToClipboard(selected, cut)
     }
-    fun pasteFromClipboard(targer: Path) = filesC.pasteFromClipboard(targer)
-
-    fun reloadSelectedDeerFromDisk() = projectC.reloadSelectedDirFromDisk()
-    fun openSelectedInFileManager() = FileDolphinOpener.openNodesInFileManager(projectC.getSelectedNodes())
 
     fun clearGlobalMess() {
         _globalMess.clear()
@@ -109,12 +70,12 @@ class AppController(
     }
 
     fun dispose() {
-        editorC.dispose()
-        projectC.dispose()
-        filesC.dispose()
-        moveC.dispose()
+        editorController.dispose()
+        projectController.dispose()
+        filesController.dispose()
+        moveController.dispose()
         reloadWatcher.dispose()
-        configC.dispose()
-        dialogC.dispose()
+        configController.dispose()
+        dialogController.dispose()
     }
 }

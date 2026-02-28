@@ -15,8 +15,8 @@ import non.era.aisdme.ui.components.over.ErrorableTextField
 @Composable
 fun RenameNodeDialog(onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val node = app.getSelectedNodes().singleOrNull() ?: run {
-        app.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Multi rename"))
+    val node = app.projectController.getSelectedNodes().singleOrNull() ?: run {
+        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Multi rename"))
         onDismiss()
         return
     }
@@ -42,7 +42,7 @@ fun RenameNodeDialog(onDismiss: () -> Unit) {
         title = "Rename",
         onConfirm = {
             if(startFileName != textState.text)
-                app.rename(src.toPath(), textState.text)
+                app.filesController.rename(src.toPath(), textState.text)
             },
         onDismiss = onDismiss,
         enterActive = { error == null }

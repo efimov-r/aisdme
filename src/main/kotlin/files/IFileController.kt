@@ -11,7 +11,7 @@ interface IFileController {
     fun copyToClipboard(nodes: List<ProjectNode>, cut: Boolean)
     fun pasteFromClipboard(target: Path)
     fun move(src: List<ProjectNode>, dst: File)
-    fun renemae(src: Path, newName: String)
+    fun rename(src: Path, newName: String)
 
 //    fun copy(src: Path, dst: Path)
 }

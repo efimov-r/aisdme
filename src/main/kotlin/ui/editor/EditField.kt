@@ -28,32 +28,38 @@ fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
     val app = LocalAppController.current
     val leftRightConfig = "ResizableProporcialRowEditorLeftAndRight"
 
-    if(app.getEditorHalfLeftController().countTabs() == 0 && app.getEditorHalfRightController().countTabs() > 0){
-        app.rightToLeftHalf()
+    if(app.editorController.leftTabs.countTabs() == 0 && app.editorController.rightTabs.countTabs() > 0){
+        app.editorController.rightToLeftHalf()
     }
 
-    if(app.getEditorHalfLeftController().countTabs() > 0 && app.getEditorHalfRightController().countTabs() == 0){
-        EditorHalf(app.getEditorHalfLeftController(), modifier.fillMaxSize())
-    } else if(app.getEditorHalfLeftController().countTabs() > 0 && app.getEditorHalfRightController().countTabs() > 0) {
+    if(app.editorController.leftTabs.countTabs() > 0 && app.editorController.rightTabs.countTabs() == 0){
+        EditorHalf(app.editorController.leftTabs, modifier.fillMaxSize())
+    } else if(app.editorController.leftTabs.countTabs() > 0 && app.editorController.rightTabs.countTabs() > 0) {
         ResizableProporcialRow(Modifier.fillMaxSize(),
             conf?.keyValue?.get(leftRightConfig)?.toFloat() ?: 0.5f,
-            { app.updateKeyValueProjectConfig(leftRightConfig, it.toString()) },
+            { app.configController.updateKeyValue(leftRightConfig, it.toString()) },
             {
-                EditorHalf(app.getEditorHalfLeftController(),
+                EditorHalf(app.editorController.leftTabs,
                     modifier.fillMaxSize())
             },
             {
-                EditorHalf(app.getEditorHalfRightController(),
+                EditorHalf(app.editorController.rightTabs,
                     modifier.fillMaxSize())
             })
     } else { //пусто
-        Box(modifier.fillMaxSize())
+        Box(modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center) {
+            Text(
+                text = "Drop files here to open them",
+                color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
+            )
+        }
     }
 }
 
 @Composable
 fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
-    val editor = LocalAppController.current.getEditorController()
+    val editor = LocalAppController.current.editorController
     val activeTab by remember {
         derivedStateOf {
             half.activeTabId?.let { editor.getFile(it)}
@@ -65,7 +71,7 @@ fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
             modifier = Modifier.height(44.dp).fillMaxWidth(),
         )
         Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
-        activeTab?.let { tab -> //todo а если ничо не открыто?
+        activeTab?.let { tab ->
             EditField(
                 text = tab.text,
                 path = tab.path,

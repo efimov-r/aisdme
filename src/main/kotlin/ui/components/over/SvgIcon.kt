@@ -89,12 +89,12 @@ fun SvgButton(
                 .onPointerEvent(PointerEventType.Enter) {
                     if(tooltip != null) {
                         isHovered = true
-                        app.tolltipShow(tooltip, windowOffset)
+                        app.dialogController.tolltipShow(tooltip, windowOffset)
                     }
                 }
                 .onPointerEvent(PointerEventType.Exit) {
                     isHovered = false
-                    app.tolltipClose()
+                    app.dialogController.tolltipClose()
                },
             contentAlignment = Alignment.Center
         ) {

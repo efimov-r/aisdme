@@ -17,7 +17,7 @@ import non.era.aisdme.ui.project.data.ProjectNode
 fun DragailableTreeElement(app: AppController,
                            node: ProjectNode,
                            content: @Composable BoxScope.() -> Unit) {
-    val moveController = app.getMoveController()
+    val moveController = app.moveController
     var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     DisposableEffect(node) {
@@ -47,7 +47,7 @@ fun DragailableTreeElement(app: AppController,
         .pointerInput(node) {
             detectDragGestures(
                 onDragStart = { offset ->
-                    moveController.onDragStart(offset, app.getSelectedNodes())
+                    moveController.onDragStart(offset, app.projectController.getSelectedNodes())
                 },
                 onDrag = { change, _ ->
                     change.consume()
@@ -59,7 +59,7 @@ fun DragailableTreeElement(app: AppController,
                 },
                 onDragEnd = {
                     moveController.finishDrop{ src, f->
-                        app.requestDialog(UiDialog.ShowMoveDialog(src, f))
+                        app.dialogController.requestDialog(UiDialog.ShowMoveDialog(src, f))
                     }
                 },
                 onDragCancel = {

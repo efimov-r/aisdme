@@ -25,7 +25,7 @@ fun ProjectNodeClick(
             .pointerInput(node) {
                 detectTapGestures(
                     onDoubleTap = {
-                        app.clickNode(node, TypeClickNode.DLMB)
+                        app.projectController.clickNode(node, TypeClickNode.DLMB)
                     }
                 )
             }
@@ -38,16 +38,16 @@ fun ProjectNodeClick(
                                 when {
                                     event.buttons.isPrimaryPressed -> {
                                         if(event.keyboardModifiers.isShiftPressed) {
-                                            app.clickNode(node, TypeClickNode.SHIFT_LMB)
+                                            app.projectController.clickNode(node, TypeClickNode.SHIFT_LMB)
                                         } else if(event.keyboardModifiers.isCtrlPressed){
-                                            app.clickNode(node, TypeClickNode.CTRL_LMB)
+                                            app.projectController.clickNode(node, TypeClickNode.CTRL_LMB)
                                         } else {
-                                            app.clickNode(node, TypeClickNode.LMB)
+                                            app.projectController.clickNode(node, TypeClickNode.LMB)
                                         }
                                     }
 
                                     event.buttons.isSecondaryPressed -> {
-                                        app.clickNode(node, TypeClickNode.RMB)
+                                        app.projectController.clickNode(node, TypeClickNode.RMB)
                                     }
                                 }
                             }
@@ -55,7 +55,7 @@ fun ProjectNodeClick(
                             PointerEventType.Release -> {
                                 when {
                                     event.buttons.isPrimaryPressed.not() -> {
-                                        app.clickNode(node, TypeClickNode.DOWN)
+                                        app.projectController.clickNode(node, TypeClickNode.DOWN)
                                     }
                                 }
                             }
