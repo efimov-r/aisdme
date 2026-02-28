@@ -14,29 +14,40 @@ object ProjectTreeHelper {
         config: SnapshotTree?,
         root: File,
         depth: Int = 0
+    ): DirNode? {
+        if (!root.exists()) return null
+
+        return DirNode(
+            file = root,
+            depth = depth,
+            children = buildChildren(config, root, depth + 1),
+            expand = config?.treeState?.get(root.path)?.expanded ?: true
+        )
+    }
+
+    private fun buildChildren(
+        config: SnapshotTree?,
+        root: File,
+        depth: Int
     ): List<ProjectNode> {
-        if (!root.exists()) return emptyList()
+        if (!root.exists()) return mutableListOf()
 
         return root.listFiles()
             ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
             ?.map { f ->
-                if (f.isDirectory) {
-                    DirNode(
+                when {
+                    f.isDirectory -> DirNode(
                         file = f,
                         depth = depth,
-                        children = buildProjectTree(config, f, depth + 1),
+                        children = buildChildren(config, f, depth + 1),
                         expand = config?.treeState?.get(f.path)?.expanded ?: false
                     )
-                } else if(Files.isSymbolicLink(f.toPath())) {
-                    LinkNode(
-                        file = f,
-                        depth = depth
-                    )
-                } else {
-                    FileNode(
-                        file = f,
-                        depth = depth
-                    )
+
+                    Files.isSymbolicLink(f.toPath()) ->
+                        LinkNode(f, depth)
+
+                    else ->
+                        FileNode(f, depth)
                 }
             } ?: emptyList()
     }
@@ -65,7 +76,7 @@ object ProjectTreeHelper {
 
     fun rebuildDirDiff(node: DirNode) {
         val old = node.children.associateBy { it.getFilePath() }
-        val fresh = buildProjectTree(null, node.getFile(), node.depth + 1)
+        val fresh = buildChildren(null, node.getFile(), node.depth + 1)
 
         val result = mutableListOf<ProjectNode>()
 

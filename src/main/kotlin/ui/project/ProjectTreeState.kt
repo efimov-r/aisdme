@@ -12,6 +12,7 @@ import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.utils.Log
 import java.io.File
+import kotlin.collections.emptyList
 
 class ProjectTreeState {
     private val _nodes = mutableStateListOf<ProjectNode>()
@@ -88,7 +89,7 @@ class ProjectTreeState {
             val newTree = ProjectTreeHelper.buildProjectTree(config, root)
             withContext(Dispatchers.Swing) {
                 _nodes.clear()
-                _nodes.addAll(newTree)
+                newTree?.let { _nodes.add(it) }
             }
         }
 
@@ -102,7 +103,7 @@ class ProjectTreeState {
     suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit) =
         withContext(Dispatchers.Swing) {
             Log.d("rebuildDirDiff: ${deer.path}")
-           ProjectTreeHelper.findDirNode(_nodes, deer)?.let { //todo файл в корне не ищется
+           ProjectTreeHelper.findDirNode(_nodes, deer)?.let {
                ProjectTreeHelper.rebuildDirDiff(it)
            } ?: run {
                notFoundErr()
@@ -112,12 +113,12 @@ class ProjectTreeState {
                        ProjectTreeHelper.buildProjectTree(null, it)
                    } ?: run {
                        Log.e("rootProject in project tree is null")
-                       emptyList()
+                       null
                    }
                }
                withContext(Dispatchers.Swing) {
                    _nodes.clear()
-                   _nodes.addAll(newTree)
+                   newTree?.let { _nodes.add(it) }
                }
            }
         }
