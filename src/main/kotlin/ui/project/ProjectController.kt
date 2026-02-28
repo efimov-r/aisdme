@@ -10,9 +10,8 @@ import kotlinx.coroutines.withContext
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
 import non.era.aisdme.bus.RebuilDirRiff
-import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.configs.dataclass.child.SnapshotTree
 import non.era.aisdme.configs.repositories.TreeStateRepository
-import non.era.aisdme.configs.store.ConfigStore
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
@@ -66,8 +65,7 @@ class ProjectController(
         }
     }
 
-    fun reselectRootProject(config: ConfigStore<ProjectConfig>?, root: File) = scope.launch {
-        val treeStateConfig = config?.get()?.treeState
+    fun reselectRootProject(treeStateConfig: SnapshotTree?, root: File) = scope.launch {
         treeState.reselectRootProject(treeStateConfig, root)
     }
 
@@ -76,9 +74,8 @@ class ProjectController(
     fun getSelectedNodes() = treeState.getSelectedNodes()
     fun getNodes() = treeState.getNodes()
     fun cutNoteMarkRecursive(node: ProjectNode) = treeState.cutNoteMarkRecursive(node)
-    fun reloadDirFromDisk(config: ConfigStore<ProjectConfig>?) = scope.launch {
-        val treeStateConfig = config?.get()?.treeState
-        treeState.reloadDirFromDisk(treeStateConfig)
+    fun reloadSelectedDirFromDisk() = scope.launch {
+        treeState.reloadSelectedDirFromDisk()
     }
 
     private var firstMovement: Movement? = null

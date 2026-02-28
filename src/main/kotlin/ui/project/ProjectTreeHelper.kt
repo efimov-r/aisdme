@@ -1,6 +1,6 @@
 package non.era.aisdme.ui.project
 
-import non.era.aisdme.configs.dataclass.child.TreeStateConfig
+import non.era.aisdme.configs.dataclass.child.SnapshotTree
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.LinkNode
@@ -11,7 +11,7 @@ import java.nio.file.Files
 object ProjectTreeHelper {
 
     fun buildProjectTree(
-        config: TreeStateConfig?,
+        config: SnapshotTree?,
         root: File,
         depth: Int = 0
     ): List<ProjectNode> {
@@ -65,7 +65,7 @@ object ProjectTreeHelper {
 
     fun rebuildDirDiff(node: DirNode) {
         val old = node.children.associateBy { it.getFilePath() }
-        val fresh = ProjectTreeHelper.buildProjectTree(null, node.getFile(), node.depth + 1)
+        val fresh = buildProjectTree(null, node.getFile(), node.depth + 1)
 
         val result = mutableListOf<ProjectNode>()
 

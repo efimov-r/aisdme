@@ -6,7 +6,7 @@ import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import non.era.aisdme.configs.dataclass.child.TreeStateConfig
+import non.era.aisdme.configs.dataclass.child.SnapshotTree
 import non.era.aisdme.configs.dataclass.child.TreeStateElement
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
@@ -48,7 +48,7 @@ class ProjectTreeState {
         }
     }
 
-    fun getCashForConfig() = TreeStateConfig(
+    fun getCashForConfig() = SnapshotTree(
         ProjectListLineHelper.buildLinearNodes(_nodes).associate { node ->
             val isDirNode = node is DirNode
             val expanded = isDirNode && (node as DirNode).expanded
@@ -82,7 +82,7 @@ class ProjectTreeState {
         cutNodeMark(node)
     }
 
-    suspend fun reselectRootProject(config: TreeStateConfig?,root: File) =
+    suspend fun reselectRootProject(config: SnapshotTree?, root: File) =
         rootMutex.withLock {
             rootProject = root
             val newTree = ProjectTreeHelper.buildProjectTree(config, root)
@@ -93,15 +93,9 @@ class ProjectTreeState {
         }
 
     //из контекстного меню обновление
-    suspend fun reloadDirFromDisk(config: TreeStateConfig?) {
+    suspend fun reloadSelectedDirFromDisk() {
         getSelectedNodes().forEach { dirNode ->
-            if(dirNode is DirNode) {
-                val elements = ProjectTreeHelper.buildProjectTree(config, dirNode.getFile(), dirNode.depth + 1)
-                withContext(Dispatchers.Swing) {
-                    dirNode.children.clear()
-                    dirNode.children.addAll(elements)
-                }
-            }
+            rebuildDirDiff(dirNode.getFile(), {})
         }
     }
 

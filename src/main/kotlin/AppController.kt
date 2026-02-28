@@ -56,7 +56,7 @@ class AppController(
     fun reselectProject(root: File): ProjectConfig? { //открыть новый проект
         val res = configC.reselectProject(root) //первый всегда!
         reloadWatcher.switchProject(root.toPath())
-        projectC.reselectRootProject(configC.getStore(), root)
+        projectC.reselectRootProject(res?.treeState, root)
         editorC.reselectProject(res?.snapshotEditor)
         return res
     }
@@ -97,7 +97,7 @@ class AppController(
     }
     fun pasteFromClipboard(targer: Path) = filesC.pasteFromClipboard(targer)
 
-    fun reloadSelectedDeerFromDisk() = projectC.reloadDirFromDisk(configC.getStore())
+    fun reloadSelectedDeerFromDisk() = projectC.reloadSelectedDirFromDisk()
     fun openSelectedInFileManager() = FileDolphinOpener.openNodesInFileManager(projectC.getSelectedNodes())
 
     fun clearGlobalMess() {
