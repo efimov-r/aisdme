@@ -27,7 +27,6 @@ import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 
-//todo по пустому месту
 @Composable
 fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
     val app = LocalAppController.current
@@ -62,7 +61,9 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
                         val windowPos = coords?.localToWindow(local)
 
                         windowPos?.let {
-                            menuState.show(it)
+                            if(app.projectController.getSelectedNodes().isNotEmpty()) {
+                                menuState.show(it)
+                            }
                         }
                     }
                 }
