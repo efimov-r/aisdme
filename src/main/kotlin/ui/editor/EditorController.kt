@@ -4,7 +4,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
-import non.era.aisdme.bus.SaveSnapshotEditor
+import non.era.aisdme.configs.repositories.EditorStateRepository
+import non.era.aisdme.configs.snapshots.SnapshotEditor
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
@@ -15,12 +16,19 @@ enum class Panels{
 }
 
 class EditorController(
-    private val bus: AppEventBus
+    private val bus: AppEventBus,
+    private val rep: EditorStateRepository,
 ) : UiController() {
-    private var files: MutableMap<Int, ObservableOpenedFile> = mutableMapOf()
+    private var _files: MutableMap<Int, ObservableOpenedFile> = mutableMapOf()
+    private val files: Map<Int, ObservableOpenedFile> get() = _files
 
-    var leftTabs = HalfEditorTabs()
-    var rightTabs = HalfEditorTabs()
+    private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) } }
+    private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) } }
+    private val updateLeftActive: (Int?) -> Unit = { scope.launch { rep.updateLeftActiveTabs(it) } }
+    private val updateRightActive: (Int?) -> Unit = { scope.launch { rep.updateRightActiveTabs(it) } }
+
+    var leftTabs = HalfEditorTabs( updateLeftTabs, updateLeftActive)
+    var rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
 
     init {
         scope.launch {
@@ -44,11 +52,11 @@ class EditorController(
     }
 
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
-        files.clear()
+        _files.clear()
         snapshot?.let {snap->
             snap.files.forEach { id, filePath ->
                 val fileState = ObservableOpenedFile.createFromConfig(id, filePath)
-                files[id] = fileState
+                _files[id] = fileState
                 scope.launch {
                     fileState.openFile()
                 }
@@ -74,44 +82,44 @@ class EditorController(
             activateTab(tabMapId, panel)
         } ?: run {
             val tabEmpty = ObservableOpenedFile.createEmpty(file)
-            files[tabEmpty.id] = tabEmpty
+            _files[tabEmpty.id] = tabEmpty
             activateTab(tabEmpty.id, panel)
             scope.launch {
                 tabEmpty.openFile()
             }
+
+            scope.launch {
+                withContext(Dispatchers.Swing) {
+                    files.mapNotNull {
+                        if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {
+                            return@mapNotNull it.key
+                        }
+                        return@mapNotNull null
+                    }
+                }.map { fid->
+                    scope.launch {
+                        files[fid]?.saveNow()
+                        withContext(Dispatchers.Swing) {
+                            _files.remove(fid)
+                        }
+                    }
+                }.joinAll()
+
+                rep.updateFiles(
+                    withContext(Dispatchers.Swing) {
+                        files.mapValues { (_, value) ->
+                            value.copy()
+                        }.toMap()
+                    }
+                )
+            }
         }
-        removeOldFilesAndCreateSnapshot()
     }
 
     fun rightToLeftHalf() {
         leftTabs.closeAllTabs()
-        leftTabs = rightTabs
-        rightTabs = HalfEditorTabs()
-        removeOldFilesAndCreateSnapshot()
-    }
-
-    private fun removeOldFilesAndCreateSnapshot() {
-        val idsToDel = files.mapNotNull {
-            if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {
-                return@mapNotNull it.key
-            }
-            return@mapNotNull null
-        }
-
-        scope.launch {
-            idsToDel.map { fid->
-                scope.launch {
-                    files[fid]?.saveNow()
-                    withContext(Dispatchers.Swing) {
-                        files.remove(fid)
-                    }
-                }
-            }.joinAll()
-            val snapshot = withContext(Dispatchers.Swing) {
-                SnapshotEditor.createSnapshot(files, leftTabs, rightTabs)
-            }
-            bus.publish(SaveSnapshotEditor(snapshot))
-        }
+        leftTabs = rightTabs.copy(updateLeftTabs, updateLeftActive)
+        rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
     }
 
     override fun disposeBefore() {

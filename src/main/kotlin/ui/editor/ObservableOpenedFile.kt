@@ -45,6 +45,16 @@ class ObservableOpenedFile private constructor(
     fun getFilePath() = _file.toPath().toString()
     fun compareFile(file: File) = (_file == file)
 
+    fun copy() : ObservableOpenedFile { //копия для конфига
+        val res = ObservableOpenedFile(id, File(_file.path))
+        res._text = _text
+        res._writeStatus = _writeStatus
+        res._title = _title
+        res._path = _path
+        res._savedText = _savedText
+        return res
+    }
+
     suspend fun saveTextOnDispose() {
         autosaveJob?.cancel()
         saveMutex.withLock {

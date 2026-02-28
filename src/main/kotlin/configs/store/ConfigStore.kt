@@ -16,7 +16,6 @@ class ConfigStore<T>(
     private val default: () -> T,
 ) {
     private val mutex = Mutex()
-    var autosaveJob: Job? = null
 
     private val json = Json {
         prettyPrint = true
