@@ -11,7 +11,7 @@ import java.io.File
 abstract class ProjectNode(
     protected val _file: File,
     val depth: Int
-) {//todo вспомнил, контекстное оффсетится сейчас стало
+) {
     var globPos: Offset? = null //для контекстного меню по кнопке
     var isCutted by mutableStateOf(false)
     private var _isSelected by mutableStateOf(false)

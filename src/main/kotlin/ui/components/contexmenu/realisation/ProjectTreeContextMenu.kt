@@ -2,8 +2,7 @@ package non.era.aisdme.ui.components.contexmenu.realisation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -12,6 +11,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.AppController
 import non.era.aisdme.LocalAppController
 import non.era.aisdme.settings.Hotkeys
@@ -25,10 +26,12 @@ import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 
+//todo по пустому месту
 @Composable
 fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
     val app = LocalAppController.current
     val menuState = remember { ContextMenuState() }
+    var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     Box(Modifier
         .onPreviewKeyEvent {
@@ -44,19 +47,26 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
                 else -> false
             }
         }
+        .onGloballyPositioned { coords = it }
         .pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                val event = awaitPointerEvent()
-                if (
-                    event.type == PointerEventType.Press &&
-                    event.buttons.isSecondaryPressed
-                ) {
-                    menuState.show(event.changes.first().position)
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+
+                    if (
+                        event.type == PointerEventType.Press &&
+                        event.buttons.isSecondaryPressed
+                    ) {
+                        val local = event.changes.first().position
+                        val windowPos = coords?.localToWindow(local)
+
+                        windowPos?.let {
+                            menuState.show(it)
+                        }
+                    }
                 }
             }
         }
-    }
         ) {
         content()
 

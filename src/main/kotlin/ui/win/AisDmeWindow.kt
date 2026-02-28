@@ -58,7 +58,7 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
 
         delay(delayLeft)
 
-        startState = AppStartState.Ready(config, lastProject!!)//todo окно открытия проетов
+        startState = AppStartState.Ready(config, lastProject!!)
     }
 
     when (val state = startState) {
