@@ -92,7 +92,8 @@ private fun TreeContextMenu(
     showRenameDialog: () -> Unit,
     showNewFileDialog: () -> Unit,
     showNewDirectoryDialog: () -> Unit,
-    onDismiss: () -> Unit) {
+    onDismiss: () -> Unit
+) {
     val app = LocalAppController.current
     val selected = app.projectController.treeState.getSelectedNodes()
 

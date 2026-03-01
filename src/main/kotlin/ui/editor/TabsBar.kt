@@ -19,10 +19,12 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.ui.components.contexmenu.realisation.EditorTabContextMenu
 
 @Composable
 fun TabsBar(
     half: HalfEditorTabs,
+    oppositeHalf: HalfEditorTabs,
     modifier: Modifier = Modifier,
 ) {
     val editor = LocalAppController.current.editorController
@@ -64,19 +66,20 @@ fun TabsBar(
             userScrollEnabled = true
         ) {
             itemsIndexed(tabs, key = { _, tab -> tab.id }) { index, tab ->
-
-                EditorTab(
-                    tab,
-                    half.inFocus,
-                    tab.id == half.activeTabId,
-                    {
-                        half.activateTab(it)
-                        half.inFocus = true
-                    },
-                    { half.closeTab(it) },
-                    modifier = Modifier
-                        .zIndex(if (tab.id == half.activeTabId) 100f else index.toFloat())
-                )
+                EditorTabContextMenu(half, oppositeHalf, tab) {
+                    EditorTab(
+                        tab,
+                        half.inFocus,
+                        tab.id == half.activeTabId,
+                        {
+                            half.activateTab(it)
+                            half.inFocus = true
+                        },
+                        { half.closeTab(it) },
+                        modifier = Modifier
+                            .zIndex(if (tab.id == half.activeTabId) 100f else index.toFloat())
+                    )
+                }
             }
         }
     }

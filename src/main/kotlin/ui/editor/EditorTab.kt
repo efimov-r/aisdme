@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.ui.components.contexmenu.realisation.EditorTabContextMenu
 import non.era.aisdme.ui.components.over.NodeIcon
 import non.era.aisdme.ui.components.over.SvgButton
 import non.era.aisdme.ui.components.over.SvgIcon
@@ -46,7 +47,6 @@ fun EditorTab(
             else -> colors.surface
         }
     }
-
     Row(
         modifier = modifier
             .padding(0.dp) //между элементами

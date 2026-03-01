@@ -8,7 +8,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.geometry.Rect
 
-//todo при сворачивании дерева проверить чтобы внутри не было селекнутого элемента
 class HalfEditorTabs(
     private var updateTabs: (tabs: List<Int>) -> Unit,
     private var updateActive: (activ: Int?) -> Unit
@@ -63,8 +62,43 @@ class HalfEditorTabs(
         }
     }
 
+    fun closeOtherTabs(id: Int) {
+        _listTabs.removeIf { it != id }
+        updateTabs(_listTabs)
+        if (_activeTabId != id) {
+            _activeTabId = id
+            updateActive(_activeTabId)
+        }
+    }
+
+    fun closeLeftTabs(id: Int) {
+        val index = _listTabs.indexOf(id)
+        if (index != -1) {
+            _listTabs.subList(0, index).clear()
+        }
+        updateTabs(_listTabs)
+        if (!_listTabs.contains(_activeTabId)) {
+            _activeTabId = id
+            updateActive(_activeTabId)
+        }
+    }
+
+    fun closeRightTabs(id: Int) {
+        val index = _listTabs.indexOf(id)
+        if (index != -1 && index < _listTabs.size - 1) {
+            _listTabs.subList(index + 1, _listTabs.size).clear()
+        }
+        updateTabs(_listTabs)
+        if (!_listTabs.contains(_activeTabId)) {
+            _activeTabId = id
+            updateActive(_activeTabId)
+        }
+    }
+
     fun closeAllTabs() {
         _activeTabId = null
+        updateActive(_activeTabId)
         _listTabs.removeAll{ true }
+        updateTabs(_listTabs)
     }
 }

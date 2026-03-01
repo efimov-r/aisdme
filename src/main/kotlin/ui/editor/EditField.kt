@@ -40,20 +40,24 @@ fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
             conf?.keyValue?.get(leftRightConfig)?.toFloat() ?: 0.5f,
             { app.configController.updateKeyValue(leftRightConfig, it.toString()) },
             {
-                EditorHalf(app.editorController.leftTabs,
+                EditorHalf(app.editorController.leftTabs, app.editorController.rightTabs,
                     modifier.fillMaxSize())
             },
             {
-                EditorHalf(app.editorController.rightTabs,
+                EditorHalf(app.editorController.rightTabs, app.editorController.leftTabs,
                     modifier.fillMaxSize())
             })
     } else {
-        EditorHalf(app.editorController.leftTabs, modifier.fillMaxSize())
+        EditorHalf(app.editorController.leftTabs, app.editorController.rightTabs, modifier.fillMaxSize())
     }
 }
 
 @Composable
-fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
+fun EditorHalf(
+    half: HalfEditorTabs,
+    oppositeHalf: HalfEditorTabs,
+    modifier: Modifier = Modifier
+){
     val editor = LocalAppController.current.editorController
     val activeTab by remember {
         derivedStateOf {
@@ -75,6 +79,7 @@ fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
         ) {
             TabsBar(
                 half = half,
+                oppositeHalf = oppositeHalf,
                 modifier = Modifier.height(44.dp).fillMaxWidth(),
             )
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
