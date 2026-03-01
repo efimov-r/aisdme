@@ -61,8 +61,17 @@ class EditorController(
     }
 
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
+
+        fun updateHalf(half: HalfEditorTabs, tabs: MutableList<Int>, sel: Int?) {
+            var _sel = sel
+            tabs.removeIf { !_files.keys.contains(it) }
+            if(!tabs.contains(_sel)) _sel = null
+            half.reselectProject(tabs, _sel ?: tabs.lastOrNull())
+        }
+
         _files.clear()
-        snapshot?.let {snap->
+        snapshot?.let { snap ->
+
             snap.files.forEach { id, filePath ->
                 val fileState = ObservableOpenedFile.createFromConfig(id, filePath)
                 _files[id] = fileState
@@ -70,9 +79,9 @@ class EditorController(
                     fileState.openFile()
                 }
             }
+            updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
+            updateHalf(rightTabs, snap.rightTabs.toMutableList(), snap.rightTabsSelect)
         }
-        leftTabs.reselectProject(snapshot?.leftTabs, snapshot?.leftTabsSelect)
-        rightTabs.reselectProject(snapshot?.rightTabs, snapshot?.rightTabsSelect)
     }
 
     fun openNodes(nodes: List<ProjectNode>, panel: Panels = Panels.LEFT) {
