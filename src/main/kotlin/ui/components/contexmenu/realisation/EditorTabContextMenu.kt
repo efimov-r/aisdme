@@ -20,6 +20,7 @@ import non.era.aisdme.ui.editor.Panels
 
 @Composable
 fun EditorTabContextMenu(
+    modifier: Modifier = Modifier,
     half: HalfEditorTabs,
     oppositeHalf: HalfEditorTabs,
     tab: ObservableOpenedFile,
@@ -28,7 +29,7 @@ fun EditorTabContextMenu(
     val menuState = remember { ContextMenuState() }
     var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
-    Box(Modifier
+    Box(modifier
         .onGloballyPositioned { coords = it }
         .pointerInput(Unit) {
             awaitPointerEventScope {
