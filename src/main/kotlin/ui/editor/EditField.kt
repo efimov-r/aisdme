@@ -13,6 +13,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +60,12 @@ fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
         }
     }
 
-    Column (modifier) {
+    Column (
+        modifier
+            .onGloballyPositioned {
+                half.rect = it.boundsInWindow()
+            }
+    ) {
         if(half.listTabs.size > 0) {
             TabsBar(
                 half = half,

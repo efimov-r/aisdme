@@ -77,14 +77,22 @@ class MoveController : UiController() {
             false
         }
 
-    fun finishDrop(resultDrop: (src: List<ProjectNode>, file: File) -> Unit) {
+    fun finishDrop(
+        resultDropOnTree: (src: List<ProjectNode>, file: File) -> Unit,
+        resultDropOutsideTree: (src: List<ProjectNode>, position: Offset) -> Unit
+    ) {
         Log.d("finish drop")
         if(!_draggingNode) return
         _draggingNode = false
         _autoScrollJob?.cancel()
-        val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key ?: return
-
         if(_selectedNodeOnStart == null) return
+
+
+        val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key ?: run {
+            resultDropOutsideTree(_selectedNodeOnStart!!, _dragPosition)
+            return@finishDrop
+        }
+
         _selectedNodeOnStart!!.forEach { node ->
             if(node.getFile() == target.getFile()) return@finishDrop
         }
@@ -95,7 +103,7 @@ class MoveController : UiController() {
             target.getFile().parentFile
         }
 
-        resultDrop(_selectedNodeOnStart!!, tergetFile)
+        resultDropOnTree(_selectedNodeOnStart!!, tergetFile)
     }
 
     private fun checkAutoScroll() {

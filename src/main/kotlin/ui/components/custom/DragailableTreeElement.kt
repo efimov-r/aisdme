@@ -58,9 +58,11 @@ fun DragailableTreeElement(app: AppController,
                     }
                 },
                 onDragEnd = {
-                    moveController.finishDrop{ src, f->
+                    moveController.finishDrop({ src, f->
                         app.dialogController.requestDialog(UiDialog.ShowMoveDialog(src, f))
-                    }
+                    }, { src, ofs->
+                        app.editorController.dropOutsideTree(src, ofs)
+                    })
                 },
                 onDragCancel = {
                     moveController.cancelDrag()

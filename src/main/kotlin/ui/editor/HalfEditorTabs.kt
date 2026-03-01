@@ -6,12 +6,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.geometry.Rect
 
+//todo при сворачивании дерева проверить чтобы внутри не было селекнутого элемента
 class HalfEditorTabs(
     private var updateTabs: (tabs: List<Int>) -> Unit,
     private var updateActive: (activ: Int?) -> Unit
 ) {
     var inFocus by mutableStateOf(false)
+    var rect: Rect? = null
 
     fun copy(updateTabs: (tabs: List<Int>) -> Unit,
              updateActive: (activ: Int?) -> Unit): HalfEditorTabs {

@@ -1,5 +1,6 @@
 package non.era.aisdme.ui.editor
 
+import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import non.era.aisdme.bus.AppEventBus
@@ -10,6 +11,7 @@ import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.utils.Log
 import java.io.File
 
 enum class Panels{
@@ -44,6 +46,14 @@ class EditorController(
                 }
             }
         }
+    }
+
+    fun dropOutsideTree(src: List<ProjectNode>, position: Offset) {
+        when {
+            leftTabs.rect?.contains(position) == true -> Panels.LEFT
+            rightTabs.rect?.contains(position) == true -> Panels.RIGHT
+            else -> null
+        }?.let { openNodes(src, it) }
     }
 
     fun getFile(id: Int) = files[id]
