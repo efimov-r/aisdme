@@ -48,7 +48,9 @@ class ProjectTreeState {
     fun collapseAll() {
         fun col(node: DirNode) {
             node.expanded = false
+            node.setSelected(false)
             node.children.forEach {
+                it.setSelected(false)
                 if (it is DirNode) col(it)
             }
         }
