@@ -43,6 +43,7 @@ class ObservableOpenedFile private constructor(
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()
 
+    fun getFile() = _file
     fun getFilePath() = _file.toPath().toString()
     fun compareFile(file: File) = (_file == file)
 

@@ -110,6 +110,8 @@ class ProjectTreeState {
         }
     }
 
+    fun findNodes(file: File) = ProjectTreeHelper.findNode(_nodes, file)
+
     suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit) =
         withContext(Dispatchers.Swing) {
             Log.d("rebuildDirDiff: ${deer.path}")

@@ -28,6 +28,7 @@ import non.era.aisdme.ui.components.dialogs.elements.DialogsStarter
 import non.era.aisdme.ui.components.dialogs.elements.TooltipStarter
 import non.era.aisdme.ui.editor.Editor
 import non.era.aisdme.ui.errors.view.ErrorOverlay
+import non.era.aisdme.ui.move.DragPreviewLayer
 import non.era.aisdme.ui.project.view.ProjectTreeView
 import non.era.aisdme.ui.win.AisDmeWindow
 import non.era.aisdme.utils.Log
@@ -111,6 +112,7 @@ fun AisDmeContent(configProjectStart: ProjectConfig?) {
         }
     }
     ErrorOverlay()
+    DragPreviewLayer()
 }
 
 @Composable

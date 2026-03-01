@@ -66,6 +66,19 @@ object ProjectTreeHelper {
         return null
     }
 
+    fun findNode(
+        nodes: List<ProjectNode>,
+        file: File
+    ): ProjectNode? {
+        for (node in nodes) {
+            if(node.getFile() == file) return node
+            if (node is DirNode) {
+                findNode(node.children, file)?.let { return it }
+            }
+        }
+        return null
+    }
+
     fun findSelectedNodes(nodes: List<ProjectNode>): List<ProjectNode> {
         val result: MutableList<ProjectNode> = mutableListOf()
         for (node in nodes) {

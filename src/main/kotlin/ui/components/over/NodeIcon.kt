@@ -9,7 +9,7 @@ import non.era.aisdme.ui.project.data.ProjectNode
 @Composable
 fun NodeIcon(
     modifier: Modifier = Modifier,
-    node: ProjectNode
+    node: ProjectNode?
 ) {
     val icon: String = when(node) {
         is DirNode -> "folder"

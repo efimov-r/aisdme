@@ -30,6 +30,9 @@ class MoveController : UiController() {
     private var _autoScrollJob: Job? = null
     private var _scrollState: LazyListState? = null
 
+    fun getDragPosition(): Offset? = if(_draggingNode && _selectedNodeOnStart != null) _dragPosition else null
+    fun getNodesDragable() = _selectedNodeOnStart
+
     fun setListBounds(listBounds: Rect) {
         _listBounds = listBounds
     }
