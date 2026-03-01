@@ -33,11 +33,21 @@ class ObservableOpenedFile private constructor(
     private var _writeStatus by mutableStateOf(WriteStatus.LOAD)
     val writeStatus get() = _writeStatus
 
+    private var _path by mutableStateOf(_file.path)
+    val path get() = _path
+
+    private var _name by mutableStateOf(_file.name)
+    val name get() = _name
+
     private var autosaveJob: Job? = null
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()
 
-    fun refile(file: File) {_file = file }
+    fun refile(file: File) {
+        _file = file
+        _path = _file.path
+        _name = _file.name
+    }
     fun getFile() = _file
     fun getFilePath() = _file.toPath().toString()
     fun compareFile(file: File) = (_file == file)

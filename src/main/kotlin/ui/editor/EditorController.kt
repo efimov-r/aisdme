@@ -51,6 +51,13 @@ class EditorController(
                         }.forEach { _, file ->
                             file.refile(File(event.newFile.toString()))
                         }
+                        rep.updateFiles(
+                            withContext(Dispatchers.Swing) {
+                                files.mapValues { (_, value) ->
+                                    value.copy()
+                                }.toMap()
+                            }
+                        )
                     }
                     is DeleteFile -> {
                         _files.filterValues {

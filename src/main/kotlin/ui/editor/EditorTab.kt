@@ -82,7 +82,7 @@ fun EditorTab(
         Spacer(Modifier.width(2.dp))
         Text(
             modifier = Modifier.padding(bottom = 1.dp),
-            text = tab.getFile().name ?: "Untitled",
+            text = tab.name ?: "Untitled",
             color = LocalAisDmeColors.current.onSurface,
             maxLines = 1,
             fontSize = 13.sp,

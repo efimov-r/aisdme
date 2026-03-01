@@ -59,11 +59,7 @@ fun EditorHalf(
     modifier: Modifier = Modifier
 ){
     val editor = LocalAppController.current.editorController
-    val activeTab by remember {
-        derivedStateOf {
-            half.activeTabId?.let { editor.getFile(it)}
-        }
-    }
+    val activeTab = half.activeTabId?.let { editor.getFile(it)}
 
     if(activeTab != null) {
         Column (
@@ -84,9 +80,9 @@ fun EditorHalf(
             )
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
             EditField(
-                text = activeTab!!.text,
-                path = activeTab!!.getFile().path ?: "",
-                writeStatus = activeTab!!.writeStatus,
+                text = activeTab.text,
+                path = activeTab.path ?: "",
+                writeStatus = activeTab.writeStatus,
                 onTextChange = { newText->
                     half.activeTabId?.let{ editor.updateTextAndAutosafeFile(it, newText) }
                 },
