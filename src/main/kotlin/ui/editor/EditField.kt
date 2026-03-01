@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
@@ -60,45 +61,44 @@ fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
         }
     }
 
-    val intMod = if(half.dragDest) {
-        modifier.background(LocalAisDmeColors.current.dropTargetElement)
-    } else {
-        modifier
-    }
-
-    Column (
-        intMod
-            .onGloballyPositioned {
-                half.rect = it.boundsInWindow()
-            }
-    ) {
-        if(half.listTabs.size > 0) {
+    if(activeTab != null) {
+        Column (
+            modifier
+                .then(
+                    if (half.dragDest) Modifier.background(LocalAisDmeColors.current.dropTargetElement)
+                    else Modifier
+                )
+                .onGloballyPositioned {
+                    half.rect = it.boundsInWindow()
+                }
+                .fillMaxSize()
+        ) {
             TabsBar(
                 half = half,
                 modifier = Modifier.height(44.dp).fillMaxWidth(),
             )
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
-        }
-        activeTab?.let { tab ->
             EditField(
-                text = tab.text,
-                path = tab.path,
-                writeStatus = tab.writeStatus,
+                text = activeTab!!.text,
+                path = activeTab!!.path,
+                writeStatus = activeTab!!.writeStatus,
                 onTextChange = { newText->
                     half.activeTabId?.let{ editor.updateTextAndAutosafeFile(it, newText) }
                 },
                 half = half,
             )
-        } ?: run {
-            if(half.listTabs.size < 1) {
-                Box(modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Drop files here to open them",
-                        color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
-                    )
-                }
-            }
+        }
+    } else {
+        Box(modifier = modifier
+            .then(
+                if (half.dragDest) Modifier.background(LocalAisDmeColors.current.dropTargetElement)
+                else Modifier
+            ),
+            contentAlignment = Alignment.Center) {
+            Text(
+                text = "Drop files here to open them",
+                color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
+            )
         }
     }
 }
