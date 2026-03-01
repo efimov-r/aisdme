@@ -1,6 +1,9 @@
 package non.era.aisdme.ui.project
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
@@ -12,12 +15,12 @@ import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.utils.Log
 import java.io.File
-import java.nio.file.Path
-import kotlin.collections.emptyList
 
 class ProjectTreeState {
     private val _nodes = mutableStateListOf<ProjectNode>()
     fun getNodes() = _nodes
+
+    var inFocus by mutableStateOf(false)
 
     private val rootMutex = Mutex()
     private var rootProject: File? = null
@@ -27,7 +30,7 @@ class ProjectTreeState {
     }
 
     fun showNode(file: File) {
-        ProjectTreeHelper.selectFileInTree(_nodes, file)
+        inFocus = ProjectTreeHelper.selectFileInTree(_nodes, file)
     }
 
     fun expandSelected() {

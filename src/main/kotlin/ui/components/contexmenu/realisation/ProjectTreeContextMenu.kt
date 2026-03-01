@@ -39,7 +39,7 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
 
             when (it.key.keyCode) {
                 4294967821L -> {
-                    app.projectController.getSelectedNodes().lastOrNull()?.let { node ->
+                    app.projectController.treeState.getSelectedNodes().lastOrNull()?.let { node ->
                         node.globPos?.let{ menuState.show(it) }
                     }
                     true
@@ -61,7 +61,7 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
                         val windowPos = coords?.localToWindow(local)
 
                         windowPos?.let {
-                            if(app.projectController.getSelectedNodes().isNotEmpty()) {
+                            if(app.projectController.treeState.getSelectedNodes().isNotEmpty()) {
                                 menuState.show(it)
                             }
                         }
@@ -94,7 +94,7 @@ private fun TreeContextMenu(
     showNewDirectoryDialog: () -> Unit,
     onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val selected = app.projectController.getSelectedNodes()
+    val selected = app.projectController.treeState.getSelectedNodes()
 
     buildList {
         if(isSingleDirectory(selected)) {
@@ -200,7 +200,7 @@ private fun openDolphinItem(app: AppController) = MenuEntry.Item(
     title = "Open in Dolphin",
     icon = "npm",
     shortcut = Hotkeys.OPEN_DOLPHIN
-) { FileDolphinOpener.openNodesInFileManager(app.projectController.getSelectedNodes()) }
+) { FileDolphinOpener.openNodesInFileManager(app.projectController.treeState.getSelectedNodes()) }
 
 private fun reloadDiskItem(app: AppController) = MenuEntry.Item(
     title = "Reload from disk",

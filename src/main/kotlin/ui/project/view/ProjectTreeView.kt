@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.realisation.ProjectTreeContextMenu
-import non.era.aisdme.ui.components.custom.BoxFocusedAfterClick
+import non.era.aisdme.ui.components.custom.BoxFocusedTree
 import non.era.aisdme.ui.components.custom.ScrollableLazyContent
 import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.components.over.SvgButton
@@ -40,10 +40,10 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
                 app.editorController.showSelectedInTree()
             }
             SvgButton("expandAll", "Expand selected", Modifier.padding(buttonPadding)) {
-                app.projectController.expandSelected()
+                app.projectController.treeState.expandSelected()
             }
             SvgButton("collapseAll", "Collapse all", Modifier.padding(buttonPadding)) {
-                app.projectController.collapseAll()
+                app.projectController.treeState.collapseAll()
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -55,7 +55,7 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
                         { app.dialogController.requestDialog(UiDialog.ShowDeleteDialog) },
                         { app.dialogController.requestDialog(UiDialog.ShowRenameDialog) })
                 ) {
-                    BoxFocusedAfterClick{ hasFocus->
+                    BoxFocusedTree{ hasFocus->
                         ListProjectNodes(scrollState, hasFocus)
                     }
                 }
@@ -72,7 +72,7 @@ fun ListProjectNodes(scrollState: LazyListState, hasFocus: Boolean) {
 
     val visibleNodes by remember {
         derivedStateOf {
-            ProjectListLineHelper.buildLinearExpandedNodes(app.projectController.getNodes())
+            ProjectListLineHelper.buildLinearExpandedNodes(app.projectController.treeState.getNodes())
         }
     }
 

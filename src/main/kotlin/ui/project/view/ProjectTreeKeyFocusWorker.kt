@@ -53,12 +53,12 @@ private fun treeKeyFocusWork(
         }
 
         Hotkeys.OPEN_DOLPHIN.ifDu(event) -> {
-            FileDolphinOpener.openNodesInFileManager(app.projectController.getSelectedNodes())
+            FileDolphinOpener.openNodesInFileManager(app.projectController.treeState.getSelectedNodes())
             return true
         }
 
         Hotkeys.ENTER.ifDu(event) -> {
-            val selected = app.projectController.getSelectedNodes()
+            val selected = app.projectController.treeState.getSelectedNodes()
             if(selected.size == 1 && selected[0] is DirNode) {
                 (selected[0] as DirNode).openOrClose()
                 return true

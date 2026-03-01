@@ -13,18 +13,26 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import non.era.aisdme.di.LocalAppController
 
 @Composable
-fun BoxFocusedAfterClick(
+fun BoxFocusedTree(
     content: @Composable BoxScope.(hasFocus: Boolean) -> Unit
 ) {
+    val projController = LocalAppController.current.projectController
     val focusRequester = remember { FocusRequester() }
-    var hasFocus by remember { mutableStateOf(false) }
+
+    LaunchedEffect(projController.treeState.inFocus) {
+        if (projController.treeState.inFocus) {
+            focusRequester.requestFocus()
+        }
+    }
+
     Box(modifier = Modifier
         .fillMaxHeight().padding(horizontal = 6.dp)
         .focusRequester(focusRequester)
         .onFocusChanged {
-            hasFocus = it.isFocused
+            projController.treeState.inFocus = it.isFocused
         }
         .focusable()
         .pointerInput(Unit) {
@@ -36,5 +44,5 @@ fun BoxFocusedAfterClick(
                 }
             }
         },
-        content = { content(hasFocus) })
+        content = { content(projController.treeState.inFocus) })
 }

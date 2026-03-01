@@ -47,7 +47,7 @@ fun DragailableTreeElement(app: AppController,
         .pointerInput(node) {
             detectDragGestures(
                 onDragStart = { offset ->
-                    moveController.onDragStart(offset, app.projectController.getSelectedNodes())
+                    moveController.onDragStart(offset, app.projectController.treeState.getSelectedNodes())
                 },
                 onDrag = { change, _ ->
                     change.consume()

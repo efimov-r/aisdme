@@ -36,7 +36,7 @@ class ProjectController(
     private val rep: TreeStateRepository,
 ) : UiController() {
 
-    private val treeState = ProjectTreeState()
+    val treeState = ProjectTreeState()
 
     init {
         scope.launch {
@@ -75,11 +75,6 @@ class ProjectController(
         treeState.reselectRootProject(treeStateConfig, root)
     }
 
-    fun expandSelected() = treeState.expandSelected()
-    fun collapseAll() = treeState.collapseAll()
-    fun getSelectedNodes() = treeState.getSelectedNodes()
-    fun getNodes() = treeState.getNodes()
-    fun cutNoteMarkRecursive(node: ProjectNode) = treeState.cutNoteMarkRecursive(node)
     fun reloadSelectedDirFromDisk() = scope.launch {
         treeState.reloadSelectedDirFromDisk()
     }

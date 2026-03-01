@@ -16,7 +16,7 @@ import java.io.File
 @Composable
 fun PasteDialog(onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val selected = remember { app.projectController.getSelectedNodes() }
+    val selected = remember { app.projectController.treeState.getSelectedNodes() }
 
 
     if(selected.isEmpty()) {

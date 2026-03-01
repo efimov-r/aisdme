@@ -52,13 +52,13 @@ class AppController(
         editorController.reselectProject(res?.snapshotEditor)
         return res
     }
-    fun openSelectedNodesInEditor(panel: Panels) = editorController.openNodes(projectController.getSelectedNodes(), panel)
-    fun createFileInSelected(name: String) = filesController.createFile(projectController.getSelectedNodes(), name)
-    fun createDirectoryInSelected(name: String) = filesController.createDirectory(projectController.getSelectedNodes(), name)
-    fun deleteSelected() = filesController.delete(projectController.getSelectedNodes())
+    fun openSelectedNodesInEditor(panel: Panels) = editorController.openNodes(projectController.treeState.getSelectedNodes(), panel)
+    fun createFileInSelected(name: String) = filesController.createFile(projectController.treeState.getSelectedNodes(), name)
+    fun createDirectoryInSelected(name: String) = filesController.createDirectory(projectController.treeState.getSelectedNodes(), name)
+    fun deleteSelected() = filesController.delete(projectController.treeState.getSelectedNodes())
     fun copySelectedToClipboard(cut: Boolean) {
-        val selected = projectController.getSelectedNodes()
-        if(cut) selected.forEach { projectController.cutNoteMarkRecursive(it) }
+        val selected = projectController.treeState.getSelectedNodes()
+        if(cut) selected.forEach { projectController.treeState.cutNoteMarkRecursive(it) }
         filesController.copyToClipboard(selected, cut)
     }
 

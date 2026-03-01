@@ -99,14 +99,15 @@ object ProjectTreeHelper {
     fun selectFileInTree(
         nodes: List<ProjectNode>,
         target: File
-    ) {
+    ): Boolean {
         val path = mutableListOf<ProjectNode>()
 
-        if ( !nodes.any { findPath(it, target.toPath(), path) } ) return
+        if ( !nodes.any { findPath(it, target.toPath(), path) } ) return false
 
         path.forEach { if (it is DirNode) it.expanded = true }
         ProjectTreeHelper.findSelectedNodes(nodes).forEach { it.setSelected(false) }
         path.last().setSelected(true)
+        return true
     }
 
     private fun findPath(
