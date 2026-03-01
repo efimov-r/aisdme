@@ -4,7 +4,10 @@ import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import non.era.aisdme.bus.AppEventBus
+import non.era.aisdme.bus.DeleteDir
+import non.era.aisdme.bus.DeleteFile
 import non.era.aisdme.bus.FileOpened
+import non.era.aisdme.bus.MoveFile
 import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
@@ -40,6 +43,29 @@ class EditorController(
                     is FileOpened -> {
                         withContext(Dispatchers.Swing) {
                             openFile(event.file)
+                        }
+                    }
+                    is MoveFile -> {
+                        _files.filterValues {
+                            it.getFile().toPath() == event.oldFile
+                        }.forEach { _, file ->
+                            file.refile(File(event.newFile.toString()))
+                        }
+                    }
+                    is DeleteFile -> {
+                        _files.filterValues {
+                            it.getFile().toPath() == event.file
+                        }.keys.forEach { id->
+                            leftTabs.closeTab(id)
+                            rightTabs.closeTab(id)
+                        }
+                    }
+                    is DeleteDir -> {
+                        _files.filterValues {
+                            it.getFile().toPath() == event.dir || it.getFile().path.startsWith(event.dir.toString())
+                        }.keys.forEach { id->
+                            leftTabs.closeTab(id)
+                            rightTabs.closeTab(id)
                         }
                     }
                     else -> {}

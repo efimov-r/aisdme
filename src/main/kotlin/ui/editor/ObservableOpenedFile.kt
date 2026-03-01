@@ -25,7 +25,7 @@ enum class WriteStatus(val text: String, val back: Color, val te: Color, val toC
 
 class ObservableOpenedFile private constructor(
     val id: Int,
-    private val _file: File
+    private var _file: File
 ) {
     private var _text by mutableStateOf("")
     val text get() = _text
@@ -33,16 +33,11 @@ class ObservableOpenedFile private constructor(
     private var _writeStatus by mutableStateOf(WriteStatus.LOAD)
     val writeStatus get() = _writeStatus
 
-    private var _title by mutableStateOf(_file.name ?: "Untitled")
-    val title get() = _title
-
-    private var _path by mutableStateOf(_file.path ?: "")
-    val path get() = _path
-
     private var autosaveJob: Job? = null
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()
 
+    fun refile(file: File) {_file = file }
     fun getFile() = _file
     fun getFilePath() = _file.toPath().toString()
     fun compareFile(file: File) = (_file == file)
@@ -53,8 +48,6 @@ class ObservableOpenedFile private constructor(
         val res = ObservableOpenedFile(id, File(_file.path))
         res._text = _text
         res._writeStatus = _writeStatus
-        res._title = _title
-        res._path = _path
         res._savedText = _savedText
         return res
     }

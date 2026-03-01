@@ -151,25 +151,8 @@ object FilesExecutor {
         return files to isCut
     }
 
-    fun rename(src: Path, newName: String) {
-        val target = src.resolveSibling(newName)
-
+    fun move(src: Path, target: Path) {
         Files.move(src, target, StandardCopyOption.REPLACE_EXISTING)
-    }
-
-    fun move(src: Path, dst: Path) {
-        Log.d("move, src=$src, dst=$dst")
-        val target = if (Files.isDirectory(dst)) {
-            dst.resolve(src.fileName)
-        } else {
-            dst
-        }
-
-        Files.move(
-            src,
-            target,
-            StandardCopyOption.REPLACE_EXISTING
-        )
     }
 
 //    fun copy(src: Path, dst: Path) {

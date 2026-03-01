@@ -68,7 +68,7 @@ fun TabsBar(
         ) {
             itemsIndexed(tabs, key = { _, tab -> tab.id }) { index, tab ->
                 EditorTabContextMenu(
-                    modifier = Modifier.zIndex(if (tab.id == half.activeTabId) { Log.d("100f"); 100f} else index.toFloat()),
+                    modifier = Modifier.zIndex(if (tab.id == half.activeTabId) 100f else index.toFloat()),
                     half, oppositeHalf, tab
                 ) {
                     EditorTab(

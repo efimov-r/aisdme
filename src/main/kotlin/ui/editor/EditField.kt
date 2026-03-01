@@ -85,7 +85,7 @@ fun EditorHalf(
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
             EditField(
                 text = activeTab!!.text,
-                path = activeTab!!.path,
+                path = activeTab!!.getFile().path ?: "",
                 writeStatus = activeTab!!.writeStatus,
                 onTextChange = { newText->
                     half.activeTabId?.let{ editor.updateTextAndAutosafeFile(it, newText) }

@@ -24,7 +24,7 @@ fun buildAppController(globalConf: AppConfig) : AppController {
     val treeStateRepository = remember { TreeStateRepository() }
 
     val editorController = remember {
-        EditorController(bus = bus, rep = editorStateRepository)
+        EditorController(bus, editorStateRepository)
     }
 
     val projectController = remember {
@@ -32,7 +32,7 @@ fun buildAppController(globalConf: AppConfig) : AppController {
     }
 
     val filesController = remember {
-        FilesController()
+        FilesController(bus)
     }
 
     val moveController = remember {
