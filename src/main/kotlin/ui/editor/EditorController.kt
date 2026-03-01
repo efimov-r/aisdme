@@ -79,6 +79,10 @@ class EditorController(
         }?.let {  _files[it] }?.let { bus.publish(it.showFileInTreeEvent())}
     }
 
+    fun showInTree(id: Int) {
+        _files[id]?.let { bus.publish(it.showFileInTreeEvent())}
+    }
+
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
 
         fun updateHalf(half: HalfEditorTabs, tabs: MutableList<Int>, sel: Int?) {

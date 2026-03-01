@@ -10,6 +10,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.di.AppController
+import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
@@ -71,6 +72,8 @@ private fun TabContextMenu(
     tab: ObservableOpenedFile,
     onDismiss: () -> Unit
 ) {
+    val editController = LocalAppController.current.editorController
+
     buildList {
         add(MenuEntry.Item("Close") {
             half.closeTab(tab.id)
@@ -93,6 +96,12 @@ private fun TabContextMenu(
         add(MenuEntry.Item("Split and Move Other Half") {
             half.closeTab(tab.id)
             oppositeHalf.activateTab(tab.id)
+        })
+
+        add(MenuEntry.Divider)
+
+        add(MenuEntry.Item("Show in Tree") {
+            editController.showInTree(tab.id)
         })
     }.let {
         ContextMenu(
