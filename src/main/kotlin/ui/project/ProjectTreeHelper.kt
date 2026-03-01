@@ -96,17 +96,26 @@ object ProjectTreeHelper {
 
         for (newNode in fresh) {
             val oldNode = old[newNode.getFilePath()]
-            if (oldNode is DirNode && newNode is DirNode) {
-                // сохраняем старый узел, обновляем детей
-                rebuildDirDiff(oldNode)
-                result += oldNode
-            } else {
-                result += newNode
+            when {
+                oldNode == null -> result += newNode
+
+                oldNode::class != newNode::class ->  result += newNode
+
+                oldNode is DirNode && newNode is DirNode -> {// сохраняем объект директории
+                    rebuildDirDiff(oldNode)
+                    result += oldNode
+                }
+
+                oldNode is FileNode && newNode is FileNode -> result += oldNode
+
+                else -> result += newNode
             }
         }
 
-        node.children.clear()
-        node.children.addAll(result)
+        node.children.apply {
+            clear()
+            addAll(result)
+        }
     }
 
     fun selectFileInTree(

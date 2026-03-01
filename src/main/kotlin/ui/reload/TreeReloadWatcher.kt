@@ -109,7 +109,11 @@ class TreeReloadWatcher(
                 list
             }
 
-            dirs.forEach { bus.publish(RebuilDirRiff(it)) }
+            dirs.forEach {
+                if(it.exists()) {
+                    bus.publish(RebuilDirRiff(it))
+                }
+            }
 
         } finally {
             applyMutex.unlock()
