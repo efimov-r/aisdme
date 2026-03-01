@@ -39,6 +39,7 @@ fun DragailableTreeElement(app: AppController,
                     val anyPressed = event.changes.any { it.pressed }
 
                     if (!anyPressed) {
+                        app.editorController.dragPosition(null)
                         moveController.forceFinish()
                     }
                 }
@@ -55,9 +56,11 @@ fun DragailableTreeElement(app: AppController,
                     coords?.let { layoutCoords ->
                         val windowPos = layoutCoords.localToWindow(change.position)
                         moveController.setDragPosition(windowPos)
+                        app.editorController.dragPosition(windowPos)
                     }
                 },
                 onDragEnd = {
+                    app.editorController.dragPosition(null)
                     moveController.finishDrop({ src, f->
                         app.dialogController.requestDialog(UiDialog.ShowMoveDialog(src, f))
                     }, { src, ofs->
@@ -66,6 +69,7 @@ fun DragailableTreeElement(app: AppController,
                 },
                 onDragCancel = {
                     moveController.cancelDrag()
+                    app.editorController.dragPosition(null)
                 }
             )
         },

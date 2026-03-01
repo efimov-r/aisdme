@@ -60,8 +60,14 @@ fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
         }
     }
 
-    Column (
+    val intMod = if(half.dragDest) {
+        modifier.background(LocalAisDmeColors.current.dropTargetElement)
+    } else {
         modifier
+    }
+
+    Column (
+        intMod
             .onGloballyPositioned {
                 half.rect = it.boundsInWindow()
             }

@@ -56,6 +56,15 @@ class EditorController(
         }?.let { openNodes(src, it) }
     }
 
+    fun dragPosition(position: Offset?) {
+        if(position == null) {
+            leftTabs.dragDest = false; rightTabs.dragDest = false
+            return
+        }
+        leftTabs.dragDest = (leftTabs.rect?.contains(position) == true)
+        rightTabs.dragDest = (rightTabs.rect?.contains(position) == true)
+    }
+
     fun getFile(id: Int) = files[id]
 
     fun updateTextAndAutosafeFile(id: Int, newText: String) {

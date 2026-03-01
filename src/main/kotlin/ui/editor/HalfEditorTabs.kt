@@ -13,6 +13,7 @@ class HalfEditorTabs(
     private var updateTabs: (tabs: List<Int>) -> Unit,
     private var updateActive: (activ: Int?) -> Unit
 ) {
+    var dragDest by mutableStateOf(false)
     var inFocus by mutableStateOf(false)
     var rect: Rect? = null
 
