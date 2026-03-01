@@ -40,7 +40,7 @@ fun EditorTab(
         when {
             isActive && halfInFocus -> colors.selectAndFocus
             isActive && !halfInFocus -> colors.selectAndNotFocus
-            else -> Color.Transparent
+            else -> colors.surface
         }
     }
 

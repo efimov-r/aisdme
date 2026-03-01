@@ -69,7 +69,10 @@ fun TabsBar(
                     tab,
                     half.inFocus,
                     tab.id == half.activeTabId,
-                    { half.activateTab(it) },
+                    {
+                        half.activateTab(it)
+                        half.inFocus = true
+                    },
                     { half.closeTab(it) },
                     modifier = Modifier
                         .zIndex(if (tab.id == half.activeTabId) 100f else index.toFloat())

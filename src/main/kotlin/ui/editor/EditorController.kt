@@ -135,7 +135,6 @@ class EditorController(
     }
 
     fun rightToLeftHalf() {
-        leftTabs.closeAllTabs()
         leftTabs = rightTabs.copy(updateLeftTabs, updateLeftActive)
         rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
     }

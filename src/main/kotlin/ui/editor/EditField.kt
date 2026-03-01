@@ -6,11 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,26 +16,23 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 import non.era.aisdme.ui.components.custom.ScrollableContent
-import non.era.aisdme.utils.Log
 
 @Composable
 fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
     val app = LocalAppController.current
     val leftRightConfig = "ResizableProporcialRowEditorLeftAndRight"
 
-    if(app.editorController.leftTabs.countTabs() == 0 && app.editorController.rightTabs.countTabs() > 0){
+    if(app.editorController.leftTabs.listTabs.size == 0 && app.editorController.rightTabs.listTabs.size > 0){
         app.editorController.rightToLeftHalf()
     }
 
-    if(app.editorController.leftTabs.countTabs() > 0 && app.editorController.rightTabs.countTabs() == 0){
-        EditorHalf(app.editorController.leftTabs, modifier.fillMaxSize())
-    } else if(app.editorController.leftTabs.countTabs() > 0 && app.editorController.rightTabs.countTabs() > 0) {
+    if(app.editorController.leftTabs.listTabs.size > 0 && app.editorController.rightTabs.listTabs.size > 0) {
         ResizableProporcialRow(Modifier.fillMaxSize(),
             conf?.keyValue?.get(leftRightConfig)?.toFloat() ?: 0.5f,
             { app.configController.updateKeyValue(leftRightConfig, it.toString()) },
@@ -51,14 +44,8 @@ fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
                 EditorHalf(app.editorController.rightTabs,
                     modifier.fillMaxSize())
             })
-    } else { //пусто
-        Box(modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center) {
-            Text(
-                text = "Drop files here to open them",
-                color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
-            )
-        }
+    } else {
+        EditorHalf(app.editorController.leftTabs, modifier.fillMaxSize())
     }
 }
 
@@ -71,21 +58,14 @@ fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
         }
     }
 
-    val focusRequester = remember { FocusRequester() }
-
-    // реакция на изменение state извне
-    LaunchedEffect(half.inFocus) {
-        if (half.inFocus) {
-            focusRequester.requestFocus()
-        }
-    }
-
     Column (modifier) {
-        TabsBar(
-            half = half,
-            modifier = Modifier.height(44.dp).fillMaxWidth(),
-        )
-        Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
+        if(half.listTabs.size > 0) {
+            TabsBar(
+                half = half,
+                modifier = Modifier.height(44.dp).fillMaxWidth(),
+            )
+            Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
+        }
         activeTab?.let { tab ->
             EditField(
                 text = tab.text,
@@ -94,11 +74,18 @@ fun EditorHalf(half: HalfEditorTabs, modifier: Modifier = Modifier){
                 onTextChange = { newText->
                     half.activeTabId?.let{ editor.updateTextAndAutosafeFile(it, newText) }
                 },
-                focusRequester = focusRequester,
-                onFocusChanged = {isFocus ->
-                    half.inFocus = isFocus
-                }
+                half = half,
             )
+        } ?: run {
+            if(half.listTabs.size < 1) {
+                Box(modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Drop files here to open them",
+                        color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
+                    )
+                }
+            }
         }
     }
 }
@@ -109,8 +96,7 @@ fun EditField(
     path: String,
     writeStatus: WriteStatus,
     onTextChange: (String) -> Unit,
-    focusRequester: FocusRequester,
-    onFocusChanged: (Boolean) -> Unit
+    half: HalfEditorTabs,
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -129,6 +115,14 @@ fun EditField(
                         fontSize = 14.sp
                     )
                 } else {
+                    val focusRequester = remember { FocusRequester() }
+
+                    LaunchedEffect(half.inFocus) {
+                        if (half.inFocus) {
+                            focusRequester.requestFocus()
+                        }
+                    }
+
                     ScrollableContent { scrollState->
                         BasicTextField(
                             value = text,
@@ -143,7 +137,7 @@ fun EditField(
                                 .verticalScroll(scrollState)
                                 .focusRequester(focusRequester)
                                 .onFocusChanged {
-                                    onFocusChanged(it.isFocused)
+                                    half.inFocus = it.isFocused
                                 }
                         )
                     }
