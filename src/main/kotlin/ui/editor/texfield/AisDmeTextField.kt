@@ -14,6 +14,7 @@ import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ScrollableContent
 import non.era.aisdme.ui.editor.ObservableOpenedFile
+import non.era.aisdme.utils.Log
 import kotlin.math.max
 
 @Composable
@@ -36,10 +38,47 @@ fun AisDmeTextField(
     var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     val startEditorSpace = 4.dp
     val endEditorSpace = 120.dp
+    val endEditorSpaceAutoscroll = 20.dp
+    var viewportHeightPx by remember { mutableIntStateOf(0) }
 
     ScrollableContent { scrollState->
+        val density = LocalDensity.current
+        LaunchedEffect(file.textFieldValue.selection, layoutResult, viewportHeightPx) {
+            val layout = layoutResult ?: return@LaunchedEffect
+            if (viewportHeightPx == 0) return@LaunchedEffect
+
+            val cursorOffset = file.textFieldValue.selection.start
+            val line = layout.getLineForOffset(cursorOffset)
+
+            val lineTop = layout.getLineTop(line)
+            val lineBottom = layout.getLineBottom(line)
+
+            val topPaddingPx = with(density) { startEditorSpace.toPx() }
+            val bottomPaddingPx = with(density) { endEditorSpaceAutoscroll.toPx() }
+
+            val visibleTop = scrollState.value
+            val visibleBottom = scrollState.value + viewportHeightPx
+
+            when {
+                lineTop < visibleTop + topPaddingPx -> { // Курсор слишком близко к верхнему краю
+                    Log.d("scroll 1")
+                    val targetScroll = (lineTop - topPaddingPx).toInt().coerceAtLeast(0)
+                    scrollState.animateScrollTo(targetScroll)
+                }
+
+                lineBottom > visibleBottom - bottomPaddingPx -> { // Курсор слишком близко к нижнему краю
+                    Log.d("scroll 2")
+                    val targetScroll = (lineBottom - viewportHeightPx + bottomPaddingPx).toInt()
+                        .coerceAtLeast(0)
+                    scrollState.animateScrollTo(targetScroll)
+                }
+            }
+        }
+
         Row(
-            Modifier.fillMaxSize()
+            Modifier
+                .fillMaxSize()
+                .onSizeChanged { viewportHeightPx = it.height }
         ) {
             LineNumbers(
                 layoutResult = layoutResult,
