@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -25,6 +26,7 @@ import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 import non.era.aisdme.ui.components.custom.ScrollableContent
+import non.era.aisdme.ui.editor.texfield.AisDmeTextField
 
 @Composable
 fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
@@ -115,7 +117,7 @@ fun EditField(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(vertical = 1.dp)
             ) {
                 if (writeStatus == WriteStatus.LOAD) {
                     Text(
@@ -132,26 +134,11 @@ fun EditField(
                         }
                     }
 
-                    ScrollableContent { scrollState->
-                        BasicTextField(
-                            value = file.textFieldValue,
-                            readOnly = writeStatus.readOnly,
-                            onValueChange = { newValue ->
-                                file.updateTextFieldValue(newValue)
-                            },
-                            textStyle = TextStyle(
-                                color = LocalAisDmeColors.current.onSurface,
-                                fontSize = 14.sp
-                            ),
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(scrollState)
-                                .focusRequester(focusRequester)
-                                .onFocusChanged {
-                                    half.inFocus = it.isFocused
-                                }
-                        )
-                    }
+                    AisDmeTextField(
+                        focusRequester = focusRequester,
+                        onFocusChanged = { half.inFocus = it.isFocused },
+                        file = file
+                    )
                 }
             }
 

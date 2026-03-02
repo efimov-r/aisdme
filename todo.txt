@@ -11,3 +11,20 @@
 autoscroll при drag к краю останавливается при конце прокрутки
 
 copy(alpha все убрать
+
+
+!!!!!!!!!!Редактор!!!!!!!!!!!!!!!
+
+Уровень 2 — Rendering layers
+Piece Table (Таблица кусков) - редактирование файлов
+
+Уровень 3 — Incremental parsing
+Lexer → tokens → styling
+
+
+Уровень 4 — Rendering layers
+highlight
+inline hints
+error squiggles
+caret
+selection
