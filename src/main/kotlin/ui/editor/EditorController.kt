@@ -100,10 +100,6 @@ class EditorController(
 
     fun getFile(id: Int) = files[id]
 
-    fun updateTextAndAutosafeFile(id: Int, newText: String) {
-        files[id]?.updateTextAndAutosave(newText, scope)
-    }
-
     fun showSelectedInTree() {
         when {
             leftTabs.inFocus -> leftTabs.activeTabId
@@ -129,7 +125,7 @@ class EditorController(
         snapshot?.let { snap ->
 
             snap.files.forEach { id, filePath ->
-                val fileState = ObservableOpenedFile.createFromConfig(id, filePath)
+                val fileState = ObservableOpenedFile.createFromConfig(id, filePath, scope)
                 _files[id] = fileState
                 scope.launch {
                     fileState.openFile()
@@ -155,7 +151,7 @@ class EditorController(
         files.values.find { it.compareFile(file) }?.id?.let { tabMapId ->
             activateTab(tabMapId, panel)
         } ?: run {
-            val tabEmpty = ObservableOpenedFile.createEmpty(file)
+            val tabEmpty = ObservableOpenedFile.createEmpty(file, scope)
             _files[tabEmpty.id] = tabEmpty
             activateTab(tabEmpty.id, panel)
             scope.launch {

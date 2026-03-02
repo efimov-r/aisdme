@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
@@ -25,10 +26,11 @@ enum class WriteStatus(val text: String, val back: Color, val te: Color, val toC
 
 class ObservableOpenedFile private constructor(
     val id: Int,
-    private var _file: File
+    private var _file: File,
+    private val _extScope: CoroutineScope,
 ) {
-    private var _text by mutableStateOf("")
-    val text get() = _text
+    private var _textFieldValue by mutableStateOf(TextFieldValue(""))
+    val textFieldValue: TextFieldValue get() = _textFieldValue
 
     private var _writeStatus by mutableStateOf(WriteStatus.LOAD)
     val writeStatus get() = _writeStatus
@@ -55,8 +57,8 @@ class ObservableOpenedFile private constructor(
     fun showFileInTreeEvent() = ShowFileInTree(_file)
 
     fun copy() : ObservableOpenedFile { //копия для конфига
-        val res = ObservableOpenedFile(id, File(_file.path))
-        res._text = _text
+        val res = ObservableOpenedFile(id, File(_file.path), _extScope)
+        res._textFieldValue = _textFieldValue
         res._writeStatus = _writeStatus
         res._savedText = _savedText
         return res
@@ -66,7 +68,7 @@ class ObservableOpenedFile private constructor(
         autosaveJob?.cancel()
         saveMutex.withLock {
             runCatching {
-                _file.writeText(_text)
+                _file.writeText(_textFieldValue.text)
             }
         }
     }
@@ -85,27 +87,26 @@ class ObservableOpenedFile private constructor(
                 _writeStatus =
                     if(!Files.isWritable(_file.toPath()))  WriteStatus.READ_ONLY_FS else WriteStatus.WRITABLE
                 _savedText = textIn
-                _text = textIn
+                _textFieldValue = TextFieldValue(textIn)
             }
         } catch(_: Throwable) {
             writeStatus(WriteStatus.LOCKED)
         }
     }
 
-    fun updateTextAndAutosave(newText: String, scope: CoroutineScope) {
-        _text = newText
+    fun updateTextFieldValue(newValue: TextFieldValue) {
+        _textFieldValue = newValue
         _writeStatus = WriteStatus.NOT_SAVE
 
         autosaveJob?.cancel()
-
-        autosaveJob = scope.launch {
+        autosaveJob = _extScope.launch {
             delay(2000)
             saveNow()
         }
     }
 
     suspend fun saveNow() {
-        if (_text == _savedText) return
+        if (_textFieldValue.text == _savedText) return
 
         if(!_file.exists()) {
             writeStatus(WriteStatus.ERROR)
@@ -119,8 +120,8 @@ class ObservableOpenedFile private constructor(
 
         try{
             saveMutex.withLock {
-                _file.writeText(_text)
-                _savedText = _text
+                _file.writeText(_textFieldValue.text)
+                _savedText = _textFieldValue.text
             }
             writeStatus(WriteStatus.WRITABLE)
         } catch (_: Throwable) {
@@ -131,20 +132,22 @@ class ObservableOpenedFile private constructor(
     companion object {
         private var nextTabId = AtomicInteger(0)
 
-        fun createEmpty(file: File): ObservableOpenedFile{
+        fun createEmpty(file: File, extScope: CoroutineScope): ObservableOpenedFile{
             return ObservableOpenedFile(
                 id = nextTabId.getAndIncrement(),
                 _file = file,
+                _extScope = extScope
             )
         }
 
-        fun createFromConfig(id: Int, filePath: String): ObservableOpenedFile{
+        fun createFromConfig(id: Int, filePath: String, extScope: CoroutineScope): ObservableOpenedFile{
             if(id >= nextTabId.get()){
                 nextTabId.set(id+1)
             }
             return ObservableOpenedFile(
                 id = id,
                 _file = File(filePath),
+                _extScope = extScope
             )
         }
     }

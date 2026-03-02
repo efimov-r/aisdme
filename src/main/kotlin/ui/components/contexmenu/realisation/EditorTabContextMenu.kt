@@ -94,9 +94,14 @@ private fun TabContextMenu(
 
         add(MenuEntry.Divider)
 
+        add(MenuEntry.Item("Split Other Half") {
+            oppositeHalf.activateTab(tab.id)
+        })
+
         add(MenuEntry.Item("Split and Move Other Half") {
             half.closeTab(tab.id)
             oppositeHalf.activateTab(tab.id)
+            oppositeHalf.inFocus = true
         })
 
         add(MenuEntry.Divider)
@@ -112,7 +117,3 @@ private fun TabContextMenu(
         )
     }
 }
-
-private fun openInLeftItem(app: AppController) = MenuEntry.Item(
-    "Open in Left"
-) { app.openSelectedNodesInEditor(Panels.LEFT) }

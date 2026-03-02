@@ -80,12 +80,7 @@ fun EditorHalf(
             )
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
             EditField(
-                text = activeTab.text,
-                path = activeTab.path ?: "",
-                writeStatus = activeTab.writeStatus,
-                onTextChange = { newText->
-                    half.activeTabId?.let{ editor.updateTextAndAutosafeFile(it, newText) }
-                },
+                activeTab,
                 half = half,
             )
         }
@@ -106,12 +101,12 @@ fun EditorHalf(
 
 @Composable
 fun EditField(
-    text: String,
-    path: String,
-    writeStatus: WriteStatus,
-    onTextChange: (String) -> Unit,
+    file: ObservableOpenedFile,
     half: HalfEditorTabs,
 ) {
+    val path = file.path ?: ""
+    val writeStatus = file.writeStatus
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -139,9 +134,11 @@ fun EditField(
 
                     ScrollableContent { scrollState->
                         BasicTextField(
-                            value = text,
+                            value = file.textFieldValue,
                             readOnly = writeStatus.readOnly,
-                            onValueChange = onTextChange,
+                            onValueChange = { newValue ->
+                                file.updateTextFieldValue(newValue)
+                            },
                             textStyle = TextStyle(
                                 color = LocalAisDmeColors.current.onSurface,
                                 fontSize = 14.sp
