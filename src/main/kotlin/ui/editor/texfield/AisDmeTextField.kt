@@ -1,33 +1,23 @@
 package non.era.aisdme.ui.editor.texfield
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.LocalAisDmeColors
-import non.era.aisdme.ui.components.custom.ScrollableContent
 import non.era.aisdme.ui.editor.ObservableOpenedFile
-import non.era.aisdme.utils.Log
-import kotlin.math.max
 
 @Composable
 fun AisDmeTextField(
@@ -38,51 +28,27 @@ fun AisDmeTextField(
     var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     val startEditorSpace = 4.dp
     val endEditorSpace = 120.dp
-    val endEditorSpaceAutoscroll = 20.dp
+    val rightEditorSpace = 20.dp
     var viewportHeightPx by remember { mutableIntStateOf(0) }
+    var viewportWidthPx by remember { mutableIntStateOf(0) }
 
-    ScrollableContent { scrollState->
-        val density = LocalDensity.current
-        LaunchedEffect(file.textFieldValue.selection, layoutResult, viewportHeightPx) {
-            val layout = layoutResult ?: return@LaunchedEffect
-            if (viewportHeightPx == 0) return@LaunchedEffect
-
-            val cursorOffset = file.textFieldValue.selection.start
-            val line = layout.getLineForOffset(cursorOffset)
-
-            val lineTop = layout.getLineTop(line)
-            val lineBottom = layout.getLineBottom(line)
-
-            val topPaddingPx = with(density) { startEditorSpace.toPx() }
-            val bottomPaddingPx = with(density) { endEditorSpaceAutoscroll.toPx() }
-
-            val visibleTop = scrollState.value
-            val visibleBottom = scrollState.value + viewportHeightPx
-
-            when {
-                lineTop < visibleTop + topPaddingPx -> { // Курсор слишком близко к верхнему краю
-                    Log.d("scroll 1")
-                    val targetScroll = (lineTop - topPaddingPx).toInt().coerceAtLeast(0)
-                    scrollState.animateScrollTo(targetScroll)
-                }
-
-                lineBottom > visibleBottom - bottomPaddingPx -> { // Курсор слишком близко к нижнему краю
-                    Log.d("scroll 2")
-                    val targetScroll = (lineBottom - viewportHeightPx + bottomPaddingPx).toInt()
-                        .coerceAtLeast(0)
-                    scrollState.animateScrollTo(targetScroll)
-                }
-            }
-        }
-
+    VerticalAutoscroll(
+        layoutResult,
+        viewportHeightPx,
+        file.textFieldValue,
+        startEditorSpace
+    ) { verticalScrollState->
         Row(
             Modifier
                 .fillMaxSize()
-                .onSizeChanged { viewportHeightPx = it.height }
+                .onSizeChanged {
+                    viewportHeightPx = it.height
+                    viewportWidthPx = it.width
+                }
         ) {
             LineNumbers(
                 layoutResult = layoutResult,
-                scrollState = scrollState,
+                scrollState = verticalScrollState,
                 edgePadding = startEditorSpace + 3.dp
             )
 
@@ -93,77 +59,39 @@ fun AisDmeTextField(
             )
 
             Spacer(Modifier.width(2.dp))
-
-            Column(
-                Modifier
-                    .verticalScroll(scrollState)
-                    .fillMaxSize()
-            ){
-                Spacer(Modifier.height(startEditorSpace))
-                BasicTextField(
-                    value = file.textFieldValue,
-                    readOnly = file.writeStatus.readOnly,
-                    onValueChange = { newValue ->
-                        file.updateTextFieldValue(newValue)
-                    },
-                    textStyle = TextStyle(
-                        color = LocalAisDmeColors.current.onSurface,
-                        fontSize = 14.sp
-                    ),
-                    modifier = Modifier
+            horizontalAutoscroll(layoutResult, viewportWidthPx, file.textFieldValue) { horizontalScrollState ->
+                Column(
+                    Modifier
+                        .verticalScroll(verticalScrollState)
+                        .horizontalScroll(horizontalScrollState)
                         .fillMaxSize()
-                        .focusRequester(focusRequester)
-                        .onFocusChanged {
-                            onFocusChanged(it)
-                        },
-                    onTextLayout = { layoutResult = it }
-                )
-                Spacer(Modifier.height(endEditorSpace))
-            }
-        }
-    }
-}
-
-@Composable
-fun LineNumbers(
-    layoutResult: TextLayoutResult?,
-    scrollState: ScrollState,
-    edgePadding: Dp
-) {
-    val colors = LocalAisDmeColors.current
-    val density = LocalDensity.current
-    val textMeasurer = rememberTextMeasurer()
-
-    val edgePaddingPx = with(density) { edgePadding.toPx() }
-
-    Canvas(
-        Modifier
-            .width(60.dp)
-            .fillMaxHeight()
-            .clipToBounds()
-    ) {
-        val layout = layoutResult ?: return@Canvas
-
-        val scrollY = scrollState.value.toFloat()
-
-        var line = layout.getLineForVerticalPosition(scrollY)
-        line = max((line-2), 0)
-        var y = layout.getLineTop(line) - scrollY + edgePaddingPx
-
-        while (line < layout.lineCount && y < size.height) {
-            drawText(
-                textMeasurer = textMeasurer,
-                text = (line + 1).toString(),
-                topLeft = Offset(8f, y),
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    color = colors.surfaceBorder
-                )
-            )
-
-            line++
-            if (line < layout.lineCount) {
-                y = layout.getLineTop(line) - scrollY + edgePaddingPx
+                ){
+                    Spacer(Modifier.height(startEditorSpace))
+                    Row(
+                        Modifier.fillMaxSize(),
+                    ){
+                        BasicTextField(
+                            value = file.textFieldValue,
+                            readOnly = file.writeStatus.readOnly,
+                            onValueChange = { newValue ->
+                                file.updateTextFieldValue(newValue)
+                            },
+                            textStyle = TextStyle(
+                                color = LocalAisDmeColors.current.onSurface,
+                                fontSize = 14.sp
+                            ),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .focusRequester(focusRequester)
+                                .onFocusChanged {
+                                    onFocusChanged(it)
+                                },
+                            onTextLayout = { layoutResult = it }
+                        )
+                        Spacer(Modifier.width(rightEditorSpace))
+                    }
+                    Spacer(Modifier.height(endEditorSpace))
+                }
             }
         }
     }
