@@ -13,6 +13,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.dialogBorder
@@ -23,6 +24,19 @@ fun ContextMenu(
     state: ContextMenuState,
     onDismiss: () -> Unit
 ) {
+    ButtonsMenu(
+        entries = entries,
+        popupPositionProvider = SmartMenuPositionProvider(state.position),
+        onDismiss = onDismiss
+    )
+}
+
+@Composable
+fun ButtonsMenu(
+    entries: List<MenuEntry>,
+    popupPositionProvider: PopupPositionProvider,
+    onDismiss: () -> Unit
+) {
     val items = remember { entries.filterIsInstance<MenuEntry.Item>() }
     var selectedIndex by remember { mutableStateOf(-1) }
 
@@ -30,7 +44,7 @@ fun ContextMenu(
     val focusRequester = remember { FocusRequester() }
 
     Popup(
-        popupPositionProvider = SmartMenuPositionProvider(state.position),
+        popupPositionProvider = popupPositionProvider,
         onDismissRequest = onDismiss,
         focusable = true
     ) {

@@ -151,6 +151,13 @@ class EditorController(
         Panels.LEFT -> leftTabs.activateTab(id)
     }
 
+    //todo объеденить с нижним?
+    fun addFromCpipboardTab() : Int {
+        val tab = HalfViewModelFactory.createObservableOpenedPaste(scope)
+        _files[tab.id] = tab
+        return tab.id
+    }
+
     private fun openFile(file: File, panel: Panels = Panels.LEFT) {
         files.values.find { it is ObservableOpenedHalfFile && it.compareFile(file) }?.id?.let { tabMapId ->
             activateTab(tabMapId, panel)

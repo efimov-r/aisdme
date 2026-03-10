@@ -13,8 +13,10 @@ import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
+import non.era.aisdme.ui.editor.halfview.fromclipboard.FromClipboardHalfContent
 import non.era.aisdme.ui.editor.halfview.texfield.TextEditorHalfContent
 import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfPaste
 
 @Composable
 fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
@@ -72,6 +74,13 @@ fun EditorHalf(
             when(activeTab) {
                 is ObservableOpenedHalfFile -> {
                     TextEditorHalfContent(
+                        activeTab,
+                        half.inFocus,
+                        { half.inFocus = it.isFocused },
+                    )
+                }
+                is ObservableOpenedHalfPaste -> {
+                    FromClipboardHalfContent(
                         activeTab,
                         half.inFocus,
                         { half.inFocus = it.isFocused },

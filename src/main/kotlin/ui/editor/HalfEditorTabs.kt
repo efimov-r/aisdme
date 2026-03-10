@@ -51,6 +51,7 @@ class HalfEditorTabs(
         }
         _activeTabId = tabId
         updateActive(_activeTabId)
+        inFocus = true
     }
 
     fun closeTab(id: Int) {

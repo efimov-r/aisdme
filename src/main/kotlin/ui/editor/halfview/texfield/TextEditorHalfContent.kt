@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.ui.editor.halfview.AisDmeTextField
 import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 
@@ -56,7 +57,9 @@ fun TextEditorHalfContent(
                     AisDmeTextField(
                         focusRequester = focusRequester,
                         onFocusChanged = onFocusChanged,
-                        file = file
+                        textFieldValue = file.textFieldValue,
+                        readOnly = file.writeStatus.readOnly,
+                        onValueChange = { file.updateTextFieldValue(it) }
                     )
                 }
             }

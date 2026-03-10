@@ -7,13 +7,16 @@ import java.util.concurrent.atomic.AtomicInteger
 object HalfViewModelFactory {
     private var nextTabId = AtomicInteger(0)
 
-    fun createObservableOpenedFile(file: File, extScope: CoroutineScope): ObservableOpenedHalfFile{
-        return ObservableOpenedHalfFile(
+    fun createObservableOpenedPaste(extScope: CoroutineScope) =
+        ObservableOpenedHalfPaste(nextTabId.getAndIncrement(), extScope)
+
+
+    fun createObservableOpenedFile(file: File, extScope: CoroutineScope) =
+        ObservableOpenedHalfFile(
             id = nextTabId.getAndIncrement(),
             _file = file,
             extScope = extScope
         )
-    }
 
     fun createObservableOpenedFile(id: Int, filePath: String, extScope: CoroutineScope): ObservableOpenedHalfFile{
         if(id >= nextTabId.get()){

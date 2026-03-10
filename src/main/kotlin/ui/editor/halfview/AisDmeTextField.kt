@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor.halfview.texfield
+package non.era.aisdme.ui.editor.halfview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -14,19 +14,21 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.VerticalAutoscroll
 import non.era.aisdme.ui.components.custom.horizontalAutoscroll
 import non.era.aisdme.ui.components.over.LineNumbers
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 
 @Composable
 fun AisDmeTextField(
     focusRequester: FocusRequester,
     onFocusChanged: (FocusState) -> Unit,
-    file: ObservableOpenedHalfFile,
+    textFieldValue: TextFieldValue,
+    readOnly: Boolean,
+    onValueChange: (TextFieldValue) -> Unit,
 ) {
     var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     val startEditorSpace = 4.dp
@@ -38,7 +40,7 @@ fun AisDmeTextField(
     VerticalAutoscroll(
         layoutResult,
         viewportHeightPx,
-        file.textFieldValue,
+        textFieldValue,
         startEditorSpace
     ) { verticalScrollState ->
         Row(
@@ -63,7 +65,7 @@ fun AisDmeTextField(
             )
 
             Spacer(Modifier.width(2.dp))
-            horizontalAutoscroll(layoutResult, viewportWidthPx, file.textFieldValue) { horizontalScrollState ->
+            horizontalAutoscroll(layoutResult, viewportWidthPx, textFieldValue) { horizontalScrollState ->
                 Column(
                     Modifier
                         .verticalScroll(verticalScrollState)
@@ -75,11 +77,9 @@ fun AisDmeTextField(
                         Modifier.fillMaxSize(),
                     ) {
                         BasicTextField(
-                            value = file.textFieldValue,
-                            readOnly = file.writeStatus.readOnly,
-                            onValueChange = { newValue ->
-                                file.updateTextFieldValue(newValue)
-                            },
+                            value = textFieldValue,
+                            readOnly = readOnly,
+                            onValueChange = onValueChange,
                             textStyle = TextStyle(
                                 color = LocalAisDmeColors.current.onSurface,
                                 fontSize = 14.sp
