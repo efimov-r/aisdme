@@ -14,4 +14,6 @@ abstract class ObservableOpenedHalf(
     abstract suspend fun beforeRemove()
 
     abstract suspend fun disposeBeforeBlocked()
+
+    abstract suspend fun openFile()
 }

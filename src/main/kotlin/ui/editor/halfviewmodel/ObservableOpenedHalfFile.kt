@@ -27,7 +27,7 @@ class ObservableOpenedHalfFile (
     id: Int,
     private var _file: File,
     extScope: CoroutineScope,
-) : ObservableOpenedHalf(id, extScope) {
+) : ITabIsFiled, ObservableOpenedHalf(id, extScope) {
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
@@ -49,7 +49,8 @@ class ObservableOpenedHalfFile (
         _name = _file.name
     }
     fun getFile() = _file
-    fun getFilePath() = _file.toPath().toString()
+    override fun getFilePath() = _file.toPath().toString()
+    override fun needSaveToCash(): Boolean = writeStatus.toConfig
     fun compareFile(file: File) = (_file == file)
 
     fun showFileInTreeEvent() = ShowFileInTree(_file)
@@ -71,7 +72,7 @@ class ObservableOpenedHalfFile (
         }
     }
 
-    suspend fun openFile() {
+    override suspend fun openFile() {
         if(BuildConfig.DEBUG) delay(300)
 
         if(!_file.exists()) {

@@ -5,7 +5,8 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 object HalfViewModelFactory {
-    private var nextTabId = AtomicInteger(0)
+    val clipboarTypePath = "clipboard"
+    private var nextTabId = AtomicInteger(0) //todo сброс если все закрыто
 
     fun createObservableOpenedPaste(extScope: CoroutineScope) =
         ObservableOpenedHalfPaste(nextTabId.getAndIncrement(), extScope)
@@ -18,14 +19,24 @@ object HalfViewModelFactory {
             extScope = extScope
         )
 
-    fun createObservableOpenedFile(id: Int, filePath: String, extScope: CoroutineScope): ObservableOpenedHalfFile{
+    fun createObservableOpened(id: Int, filePath: String, extScope: CoroutineScope): ObservableOpenedHalf{
         if(id >= nextTabId.get()){
             nextTabId.set(id+1)
         }
-        return ObservableOpenedHalfFile(
-            id = id,
-            _file = File(filePath),
-            extScope = extScope
-        )
+        when(filePath) {
+            clipboarTypePath -> {
+                return ObservableOpenedHalfPaste(
+                    id = id,
+                    extScope = extScope
+                )
+            }
+            else -> {
+                return ObservableOpenedHalfFile(
+                    id = id,
+                    _file = File(filePath),
+                    extScope = extScope
+                )
+            }
+        }
     }
 }

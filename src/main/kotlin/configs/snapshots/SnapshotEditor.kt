@@ -3,8 +3,10 @@ package non.era.aisdme.configs.dataclass.snapshots
 import kotlinx.serialization.Serializable
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.store.ConfigStore
+import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
+import non.era.aisdme.ui.editor.halfviewmodel.ITabIsFiled
 import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfPaste
 import non.era.aisdme.utils.Log
 
 @Serializable
@@ -32,11 +34,17 @@ data class SnapshotEditor(
             projectStore: ConfigStore<ProjectConfig>?,
         ): SnapshotEditor? {
             val trueFiles = files?.mapNotNull {
-                val half = it.value
-                if(half is ObservableOpenedHalfFile) {
-                    if(!half.writeStatus.toConfig) return@mapNotNull null
-                    it.key to half.getFilePath()
-                } else return@mapNotNull null
+                when(val half = it.value) {
+                    is ITabIsFiled -> {
+                        if(!half.needSaveToCash()) return@mapNotNull null
+                        it.key to half.getFilePath()
+                    }
+                    is ObservableOpenedHalfPaste -> {
+                        Log.d("Save editor snapshot, paste")
+                        it.key to HalfViewModelFactory.clipboarTypePath
+                    }
+                    else -> return@mapNotNull null
+                }
             }?.toMap()
             val snapFromCash = projectStore?.getFromCashe()?.snapshotEditor
             if(snapFromCash == null) {

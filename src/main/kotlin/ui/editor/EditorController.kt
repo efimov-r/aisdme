@@ -129,7 +129,7 @@ class EditorController(
         snapshot?.let { snap ->
 
             snap.files.forEach { id, filePath ->
-                val fileState = HalfViewModelFactory.createObservableOpenedFile(id, filePath, scope)
+                val fileState = HalfViewModelFactory.createObservableOpened(id, filePath, scope)
                 _files[id] = fileState
                 scope.launch {
                     fileState.openFile()
@@ -155,6 +155,18 @@ class EditorController(
     fun addFromCpipboardTab() : Int {
         val tab = HalfViewModelFactory.createObservableOpenedPaste(scope)
         _files[tab.id] = tab
+        scope.launch {
+            tab.openFile()
+        }
+        scope.launch {
+            rep.updateFiles(
+                withContext(Dispatchers.Swing) {
+                    files.mapValues { (_, value) ->
+                        value.copy()
+                    }.toMap()
+                }
+            )
+        }
         return tab.id
     }
 
