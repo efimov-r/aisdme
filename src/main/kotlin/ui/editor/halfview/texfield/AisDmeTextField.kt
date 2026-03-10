@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor.texfield
+package non.era.aisdme.ui.editor.halfview.texfield
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -17,13 +17,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.LocalAisDmeColors
-import non.era.aisdme.ui.editor.ObservableOpenedFile
+import non.era.aisdme.ui.components.custom.VerticalAutoscroll
+import non.era.aisdme.ui.components.custom.horizontalAutoscroll
+import non.era.aisdme.ui.components.over.LineNumbers
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 
 @Composable
 fun AisDmeTextField(
     focusRequester: FocusRequester,
     onFocusChanged: (FocusState) -> Unit,
-    file: ObservableOpenedFile,
+    file: ObservableOpenedHalfFile,
 ) {
     var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     val startEditorSpace = 4.dp
@@ -37,7 +40,7 @@ fun AisDmeTextField(
         viewportHeightPx,
         file.textFieldValue,
         startEditorSpace
-    ) { verticalScrollState->
+    ) { verticalScrollState ->
         Row(
             Modifier
                 .fillMaxSize()
@@ -52,10 +55,11 @@ fun AisDmeTextField(
                 edgePadding = startEditorSpace + 3.dp
             )
 
-            Spacer(Modifier
-                .fillMaxHeight()
-                .width(1.dp)
-                .background(LocalAisDmeColors.current.surfaceBorder)
+            Spacer(
+                Modifier
+                    .fillMaxHeight()
+                    .width(1.dp)
+                    .background(LocalAisDmeColors.current.surfaceBorder)
             )
 
             Spacer(Modifier.width(2.dp))
@@ -65,11 +69,11 @@ fun AisDmeTextField(
                         .verticalScroll(verticalScrollState)
                         .horizontalScroll(horizontalScrollState)
                         .fillMaxSize()
-                ){
+                ) {
                     Spacer(Modifier.height(startEditorSpace))
                     Row(
                         Modifier.fillMaxSize(),
-                    ){
+                    ) {
                         BasicTextField(
                             value = file.textFieldValue,
                             readOnly = file.writeStatus.readOnly,

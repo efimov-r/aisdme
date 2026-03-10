@@ -3,7 +3,8 @@ package non.era.aisdme.configs.dataclass.snapshots
 import kotlinx.serialization.Serializable
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.store.ConfigStore
-import non.era.aisdme.ui.editor.ObservableOpenedFile
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 import non.era.aisdme.utils.Log
 
 @Serializable
@@ -23,7 +24,7 @@ data class SnapshotEditor(
 
     companion object {
         fun buildFromOldVersion(
-            files: Map<Int, ObservableOpenedFile>?,
+            files: Map<Int, ObservableOpenedHalf>?,
             leftTabs: List<Int>?,
             rightTabs: List<Int>?,
             leftActive: Int?,
@@ -31,8 +32,11 @@ data class SnapshotEditor(
             projectStore: ConfigStore<ProjectConfig>?,
         ): SnapshotEditor? {
             val trueFiles = files?.mapNotNull {
-                if(!it.value.writeStatus.toConfig) return@mapNotNull null
-                it.key to it.value.getFilePath()
+                val half = it.value
+                if(half is ObservableOpenedHalfFile) {
+                    if(!half.writeStatus.toConfig) return@mapNotNull null
+                    it.key to half.getFilePath()
+                } else return@mapNotNull null
             }?.toMap()
             val snapFromCash = projectStore?.getFromCashe()?.snapshotEditor
             if(snapFromCash == null) {

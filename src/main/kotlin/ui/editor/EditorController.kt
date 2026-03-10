@@ -8,14 +8,16 @@ import non.era.aisdme.bus.DeleteDir
 import non.era.aisdme.bus.DeleteFile
 import non.era.aisdme.bus.FileOpened
 import non.era.aisdme.bus.MoveFile
-import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
 import non.era.aisdme.ui.UiController
+import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
-import non.era.aisdme.utils.Log
 import java.io.File
+import kotlin.collections.find
 
 enum class Panels{
     LEFT, RIGHT
@@ -25,8 +27,8 @@ class EditorController(
     private val bus: AppEventBus,
     private val rep: EditorStateRepository,
 ) : UiController() {
-    private var _files: MutableMap<Int, ObservableOpenedFile> = mutableMapOf()
-    private val files: Map<Int, ObservableOpenedFile> get() = _files
+    private var _files: MutableMap<Int, ObservableOpenedHalf> = mutableMapOf()
+    private val files: Map<Int, ObservableOpenedHalf> get() = _files
 
     private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) } }
     private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) } }
@@ -47,9 +49,9 @@ class EditorController(
                     }
                     is MoveFile -> {
                         _files.filterValues {
-                            it.getFile().toPath() == event.oldFile
+                            it is ObservableOpenedHalfFile && it.getFile().toPath() == event.oldFile
                         }.forEach { _, file ->
-                            file.refile(File(event.newFile.toString()))
+                            (file as ObservableOpenedHalfFile).refile(File(event.newFile.toString()))
                         }
                         rep.updateFiles(
                             withContext(Dispatchers.Swing) {
@@ -61,7 +63,7 @@ class EditorController(
                     }
                     is DeleteFile -> {
                         _files.filterValues {
-                            it.getFile().toPath() == event.file
+                            it is ObservableOpenedHalfFile && it.getFile().toPath() == event.file
                         }.keys.forEach { id->
                             leftTabs.closeTab(id)
                             rightTabs.closeTab(id)
@@ -69,7 +71,8 @@ class EditorController(
                     }
                     is DeleteDir -> {
                         _files.filterValues {
-                            it.getFile().toPath() == event.dir || it.getFile().path.startsWith(event.dir.toString())
+                            it is ObservableOpenedHalfFile &&
+                                    (it.getFile().toPath() == event.dir || it.getFile().path.startsWith(event.dir.toString()))
                         }.keys.forEach { id->
                             leftTabs.closeTab(id)
                             rightTabs.closeTab(id)
@@ -105,11 +108,12 @@ class EditorController(
             leftTabs.inFocus -> leftTabs.activeTabId
             rightTabs.inFocus -> rightTabs.activeTabId
             else -> null
-        }?.let {  _files[it] }?.let { bus.publish(it.showFileInTreeEvent())}
+        }?.let { showInTree(it) }
     }
 
     fun showInTree(id: Int) {
-        _files[id]?.let { bus.publish(it.showFileInTreeEvent())}
+        val file = _files[id]
+        if(file is ObservableOpenedHalfFile) bus.publish(file.showFileInTreeEvent())
     }
 
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
@@ -125,7 +129,7 @@ class EditorController(
         snapshot?.let { snap ->
 
             snap.files.forEach { id, filePath ->
-                val fileState = ObservableOpenedFile.createFromConfig(id, filePath, scope)
+                val fileState = HalfViewModelFactory.createObservableOpenedFile(id, filePath, scope)
                 _files[id] = fileState
                 scope.launch {
                     fileState.openFile()
@@ -148,10 +152,10 @@ class EditorController(
     }
 
     private fun openFile(file: File, panel: Panels = Panels.LEFT) {
-        files.values.find { it.compareFile(file) }?.id?.let { tabMapId ->
+        files.values.find { it is ObservableOpenedHalfFile && it.compareFile(file) }?.id?.let { tabMapId ->
             activateTab(tabMapId, panel)
         } ?: run {
-            val tabEmpty = ObservableOpenedFile.createEmpty(file, scope)
+            val tabEmpty = HalfViewModelFactory.createObservableOpenedFile(file, scope)
             _files[tabEmpty.id] = tabEmpty
             activateTab(tabEmpty.id, panel)
             scope.launch {
@@ -168,7 +172,7 @@ class EditorController(
                     }
                 }.map { fid->
                     scope.launch {
-                        files[fid]?.saveNow()
+                        files[fid]?.beforeRemove()
                         withContext(Dispatchers.Swing) {
                             _files.remove(fid)
                         }
@@ -195,7 +199,7 @@ class EditorController(
         runBlocking {
             files.values.map { ta ->
                 scope.launch {
-                    ta.saveTextOnDispose()
+                    ta.disposeBeforeBlocked()
                 }
             }.joinAll()
         }

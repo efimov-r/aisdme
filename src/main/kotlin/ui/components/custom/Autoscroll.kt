@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor.texfield
+package non.era.aisdme.ui.components.custom
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.Composable
@@ -8,8 +8,6 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import non.era.aisdme.ui.components.custom.HorizontalScrollContent
-import non.era.aisdme.ui.components.custom.ScrollableContent
 
 @Composable
 fun horizontalAutoscroll(

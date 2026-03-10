@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor
+package non.era.aisdme.ui.editor.halfviewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,7 +13,6 @@ import non.era.aisdme.BuildConfig
 import non.era.aisdme.bus.ShowFileInTree
 import java.io.File
 import java.nio.file.Files
-import java.util.concurrent.atomic.AtomicInteger
 
 enum class WriteStatus(val text: String, val back: Color, val te: Color, val toConfig: Boolean, val readOnly: Boolean) {
     LOAD("load", Color(0xFFaca700), Color.Black, true, true),
@@ -24,11 +23,11 @@ enum class WriteStatus(val text: String, val back: Color, val te: Color, val toC
     ERROR("error", Color(0xFFe20300), Color.Black, false, true) //!file.exists()
 }
 
-class ObservableOpenedFile private constructor(
-    val id: Int,
+class ObservableOpenedHalfFile (
+    id: Int,
     private var _file: File,
-    private val _extScope: CoroutineScope,
-) {
+    extScope: CoroutineScope,
+) : ObservableOpenedHalf(id, extScope) {
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
@@ -38,8 +37,7 @@ class ObservableOpenedFile private constructor(
     private var _path by mutableStateOf(_file.path)
     val path get() = _path
 
-    private var _name by mutableStateOf(_file.name)
-    val name get() = _name
+    override var _name by mutableStateOf(_file.name)
 
     private var autosaveJob: Job? = null
     private var _savedText by mutableStateOf("")
@@ -56,15 +54,15 @@ class ObservableOpenedFile private constructor(
 
     fun showFileInTreeEvent() = ShowFileInTree(_file)
 
-    fun copy() : ObservableOpenedFile { //копия для конфига
-        val res = ObservableOpenedFile(id, File(_file.path), _extScope)
+    override fun copy() : ObservableOpenedHalfFile { //копия для конфига
+        val res = ObservableOpenedHalfFile(id, File(_file.path), _extScope)
         res._textFieldValue = _textFieldValue
         res._writeStatus = _writeStatus
         res._savedText = _savedText
         return res
     }
 
-    suspend fun saveTextOnDispose() {
+    override suspend fun disposeBeforeBlocked() {
         autosaveJob?.cancel()
         saveMutex.withLock {
             runCatching {
@@ -105,7 +103,11 @@ class ObservableOpenedFile private constructor(
         }
     }
 
-    suspend fun saveNow() {
+    override suspend fun beforeRemove() {
+        saveNow()
+    }
+
+    private suspend fun saveNow() { //todo туда суда
         if (_textFieldValue.text == _savedText) return
 
         if(!_file.exists()) {
@@ -126,29 +128,6 @@ class ObservableOpenedFile private constructor(
             writeStatus(WriteStatus.WRITABLE)
         } catch (_: Throwable) {
             writeStatus(WriteStatus.LOCKED)
-        }
-    }
-
-    companion object {
-        private var nextTabId = AtomicInteger(0)
-
-        fun createEmpty(file: File, extScope: CoroutineScope): ObservableOpenedFile{
-            return ObservableOpenedFile(
-                id = nextTabId.getAndIncrement(),
-                _file = file,
-                _extScope = extScope
-            )
-        }
-
-        fun createFromConfig(id: Int, filePath: String, extScope: CoroutineScope): ObservableOpenedFile{
-            if(id >= nextTabId.get()){
-                nextTabId.set(id+1)
-            }
-            return ObservableOpenedFile(
-                id = id,
-                _file = File(filePath),
-                _extScope = extScope
-            )
         }
     }
 

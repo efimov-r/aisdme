@@ -23,14 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
-import non.era.aisdme.ui.components.contexmenu.realisation.EditorTabContextMenu
 import non.era.aisdme.ui.components.over.NodeIcon
 import non.era.aisdme.ui.components.over.SvgButton
-import non.era.aisdme.ui.components.over.SvgIcon
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 
 @Composable
 fun EditorTab(
-    tab: ObservableOpenedFile,
+    tab: ObservableOpenedHalf,
     halfInFocus: Boolean,
     isActive: Boolean,
     onSelect: (Int) -> Unit,
@@ -78,7 +78,9 @@ fun EditorTab(
             .padding(horizontal = 14.dp, vertical = 2.dp), //внутри элемента, от текста до границ
         verticalAlignment = Alignment.CenterVertically
     ) {
-        NodeIcon(Modifier.padding(top = 3.dp), app.projectController.treeState.findNodes(tab.getFile()))
+        if(tab is ObservableOpenedHalfFile) {
+            NodeIcon(Modifier.padding(top = 3.dp), app.projectController.treeState.findNodes(tab.getFile()))
+        }
         Spacer(Modifier.width(2.dp))
         Text(
             modifier = Modifier.padding(bottom = 1.dp),

@@ -9,21 +9,20 @@ import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
-import non.era.aisdme.di.AppController
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
 import non.era.aisdme.ui.editor.HalfEditorTabs
-import non.era.aisdme.ui.editor.ObservableOpenedFile
-import non.era.aisdme.ui.editor.Panels
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 
 @Composable
 fun EditorTabContextMenu(
     modifier: Modifier = Modifier,
     half: HalfEditorTabs,
     oppositeHalf: HalfEditorTabs,
-    tab: ObservableOpenedFile,
+    tab: ObservableOpenedHalf,
     content: @Composable BoxScope.() -> Unit
 ) {
     val menuState = remember { ContextMenuState() }
@@ -70,7 +69,7 @@ private fun TabContextMenu(
     state: ContextMenuState,
     half: HalfEditorTabs,
     oppositeHalf: HalfEditorTabs,
-    tab: ObservableOpenedFile,
+    tab: ObservableOpenedHalf,
     onDismiss: () -> Unit
 ) {
     val editController = LocalAppController.current.editorController
@@ -104,11 +103,13 @@ private fun TabContextMenu(
             oppositeHalf.inFocus = true
         })
 
-        add(MenuEntry.Divider)
+        if(tab is ObservableOpenedHalfFile) {
+            add(MenuEntry.Divider)
 
-        add(MenuEntry.Item("Show in Tree") {
-            editController.showInTree(tab.id)
-        })
+            add(MenuEntry.Item("Show in Tree") {
+                editController.showInTree(tab.id)
+            })
+        }
     }.let {
         ContextMenu(
             entries = it,
