@@ -13,6 +13,7 @@ import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.move.MoveController
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.reload.TreeReloadWatcher
+import non.era.aisdme.ui.win.WindowState
 
 @Composable
 fun buildAppController(globalConf: AppConfig) : AppController {
@@ -20,11 +21,13 @@ fun buildAppController(globalConf: AppConfig) : AppController {
         AppEventBus()
     }
 
+    val winState = remember { WindowState() }
+
     val editorStateRepository = remember { EditorStateRepository() }
     val treeStateRepository = remember { TreeStateRepository() }
 
     val editorController = remember {
-        EditorController(bus, editorStateRepository)
+        EditorController(bus, editorStateRepository, winState)
     }
 
     val projectController = remember {
@@ -59,6 +62,7 @@ fun buildAppController(globalConf: AppConfig) : AppController {
             reloadWotcher,
             configController,
             dialogController,
-            globalConf)
+            globalConf,
+            winState)
     }
 }

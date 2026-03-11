@@ -12,6 +12,7 @@ import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
 import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.ui.win.WindowState
 import java.io.File
 import java.nio.file.Path
 
@@ -22,6 +23,7 @@ enum class Panels{
 class EditorController(
     private val bus: AppEventBus,
     private val rep: EditorStateRepository,
+    private val winState: WindowState,
 ) : UiController() {
     private var _files: MutableMap<Int, ObservableOpenedHalf> = mutableMapOf()
 
@@ -112,7 +114,7 @@ class EditorController(
         snapshot?.let { snap ->
             if(!snap.leftTabs.isEmpty() || !snap.rightTabs.isEmpty()) {
                 snap.files.forEach { id, filePath ->
-                    val fileState = HalfViewModelFactory.createObservableOpened(id, filePath, scope)
+                    val fileState = HalfViewModelFactory.createObservableOpened(id, filePath, scope, winState)
                     _files[id] = fileState
                     scope.launch {
                         fileState.openFile(ObservableOpenedHalf.OpenFileType.OPEN_FROM_CASH)
@@ -136,7 +138,7 @@ class EditorController(
     }
 
     fun addFromCpipboardTab() : Int { //создание таба из ui
-        val tab = HalfViewModelFactory.createObservableOpenedPaste(scope)
+        val tab = HalfViewModelFactory.createObservableOpenedPaste(scope, winState)
         tabToCash(tab)
         return tab.id
     }

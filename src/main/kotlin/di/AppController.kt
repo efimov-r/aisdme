@@ -12,6 +12,7 @@ import non.era.aisdme.ui.errors.GlobalMessage
 import non.era.aisdme.ui.move.MoveController
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.reload.TreeReloadWatcher
+import non.era.aisdme.ui.win.WindowState
 import java.io.File
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
@@ -26,7 +27,8 @@ class AppController(
     private val reloadWatcher: TreeReloadWatcher,
     val configController: ConfigController,
     val dialogController: DialogsController,
-    startGlobalConfig: AppConfig?
+    startGlobalConfig: AppConfig?,
+    val winState: WindowState
 )  {
     private val _globalMess = mutableStateListOf<GlobalMessage>()
     val globalMess: List<GlobalMessage> get() = _globalMess
@@ -46,6 +48,7 @@ class AppController(
     }
 
     fun reselectProject(root: File): ProjectConfig? { //открыть новый проект
+        winState.openProject(root.toPath())
         val res = configController.reselectProject(root) //первый всегда!
         reloadWatcher.switchProject(root.toPath())
         projectController.reselectRootProject(res?.treeState, root)

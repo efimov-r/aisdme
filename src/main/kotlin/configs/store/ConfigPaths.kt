@@ -6,6 +6,7 @@ import java.nio.file.Paths
 object ConfigPaths {
 
     private const val APP_DIR = "AisDme"
+    const val PROJECT_CONFIG_DIR = ".aisdme"
 
     fun globalConfigDir(): Path {
         val os = System.getProperty("os.name").lowercase()
@@ -28,5 +29,5 @@ object ConfigPaths {
         globalConfigDir().resolve("config.json")
 
     fun projectConfigFile(projectRoot: Path): Path =
-        projectRoot.resolve(".aisdme").resolve("config.json")
+        projectRoot.resolve(PROJECT_CONFIG_DIR).resolve("config.json")
 }

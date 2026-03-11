@@ -8,20 +8,20 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
-import non.era.aisdme.configs.GlobalConfig
+import non.era.aisdme.configs.store.ConfigPaths.PROJECT_CONFIG_DIR
+import non.era.aisdme.ui.win.WindowState
 import non.era.aisdme.utils.ClipboardHelper
 import non.era.aisdme.utils.Log
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.io.path.pathString
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 class ObservableOpenedHalfPaste(
     id: Int,
-    extScope: CoroutineScope
+    extScope: CoroutineScope,
+    val winState: WindowState
 ) : ObservableOpenedHalf(id, extScope) {
 
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
@@ -30,7 +30,7 @@ class ObservableOpenedHalfPaste(
     override var _name  by mutableStateOf("From Clipboard")
 
     override fun copy(): ObservableOpenedHalf {
-        val res = ObservableOpenedHalfPaste(id, _extScope)
+        val res = ObservableOpenedHalfPaste(id, _extScope, winState)
         res._textFieldValue = textFieldValue
         return res
     }
@@ -85,11 +85,10 @@ class ObservableOpenedHalfPaste(
         }
     }
 
-    private suspend fun getPathClipFile(): Path? {
-        val rootProjPathStr = GlobalConfig.store.get().lastOpenProject ?: return null //todo херня, переделать
-        return File(rootProjPathStr)
-            .toPath()
-            .resolve(".aisdme")
+    private fun getPathClipFile(): Path? {
+        val rootProjPath = winState.getProjectRootSafe() ?: return null
+        return rootProjPath
+            .resolve(PROJECT_CONFIG_DIR)
             .resolve("pastedtab")
             .resolve("${id}.clip")
     }

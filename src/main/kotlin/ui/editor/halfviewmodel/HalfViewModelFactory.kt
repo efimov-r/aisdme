@@ -1,6 +1,7 @@
 package non.era.aisdme.ui.editor.halfviewmodel
 
 import kotlinx.coroutines.CoroutineScope
+import non.era.aisdme.ui.win.WindowState
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -12,8 +13,8 @@ object HalfViewModelFactory {
         nextTabId.set(0)
     }
 
-    fun createObservableOpenedPaste(extScope: CoroutineScope) =
-        ObservableOpenedHalfPaste(nextTabId.getAndIncrement(), extScope)
+    fun createObservableOpenedPaste(extScope: CoroutineScope, winState: WindowState) =
+        ObservableOpenedHalfPaste(nextTabId.getAndIncrement(), extScope, winState)
 
 
     fun createObservableOpenedFile(file: File, extScope: CoroutineScope) =
@@ -23,7 +24,7 @@ object HalfViewModelFactory {
             extScope = extScope
         )
 
-    fun createObservableOpened(id: Int, filePath: String, extScope: CoroutineScope): ObservableOpenedHalf{
+    fun createObservableOpened(id: Int, filePath: String, extScope: CoroutineScope, winState: WindowState): ObservableOpenedHalf{
         if(id >= nextTabId.get()){
             nextTabId.set(id+1)
         }
@@ -31,7 +32,8 @@ object HalfViewModelFactory {
             clipboarTypePath -> {
                 return ObservableOpenedHalfPaste(
                     id = id,
-                    extScope = extScope
+                    extScope = extScope,
+                    winState = winState
                 )
             }
             else -> {
