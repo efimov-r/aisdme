@@ -25,6 +25,7 @@ import non.era.aisdme.ui.components.over.SvgIcon
 import non.era.aisdme.ui.project.TypeClickNode
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.utils.PathHelper
 
 @Composable
 fun ProjectTreeNode(
@@ -93,6 +94,18 @@ fun ProjectTreeNode(
                     maxLines = 1,
                     softWrap = false,
                 )
+
+                val rootProj = app.winState.projectRoot
+                if(node.depth == 0 && rootProj != null) {
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        color = LocalAisDmeColors.current.cutted,
+                        text = PathHelper.pathToStrFormat(rootProj),
+                        style = LocalTextStyle.current.copy(fontSize = 12.sp, lineHeight = 26.sp),
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
             }
         }
     }

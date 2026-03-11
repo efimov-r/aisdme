@@ -19,6 +19,8 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.editor.halfview.AisDmeTextField
 import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
+import non.era.aisdme.utils.PathHelper
+import java.nio.file.Path
 
 @Composable
 fun TextEditorHalfContent(
@@ -26,7 +28,6 @@ fun TextEditorHalfContent(
     inFocus: Boolean,
     onFocusChanged: (FocusState) -> Unit,
 ) {
-    val path = file.path ?: ""
     val writeStatus = file.writeStatus
 
     Column(
@@ -66,12 +67,12 @@ fun TextEditorHalfContent(
 
         }
         Spacer(Modifier.fillMaxWidth().height(1.dp).background(LocalAisDmeColors.current.surfaceBorder))
-        BottomPanel(path, writeStatus)
+        BottomPanel(file.path, writeStatus)
     }
 }
 
 @Composable
-private fun BottomPanel(path: String, writeStatus: WriteStatus,) {
+private fun BottomPanel(path: Path?, writeStatus: WriteStatus,) {
     Row(modifier = Modifier.fillMaxWidth().height(36.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -84,7 +85,7 @@ private fun BottomPanel(path: String, writeStatus: WriteStatus,) {
 }
 
 @Composable
-private fun Path(path: String) {
+private fun Path(path: Path?) {
     Box(modifier = Modifier.height(24.dp)
         .clip(AisDmeShapes.large)
         .background(LocalAisDmeColors.current.surface)
@@ -92,7 +93,7 @@ private fun Path(path: String) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = path,
+            text = path?.let{ PathHelper.pathToStrFormat(it)} ?: "",
             modifier = Modifier.padding(bottom = 1.dp).padding(horizontal = 16.dp),
             fontSize = 11.sp,
             lineHeight = 12.sp,

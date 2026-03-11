@@ -34,7 +34,7 @@ class ObservableOpenedHalfFile (
     private var _writeStatus by mutableStateOf(WriteStatus.LOAD)
     val writeStatus get() = _writeStatus
 
-    private var _path by mutableStateOf(_file.path)
+    private var _path by mutableStateOf(_file.toPath())
     val path get() = _path
 
     override var _name by mutableStateOf(_file.name)
@@ -45,7 +45,7 @@ class ObservableOpenedHalfFile (
 
     fun refile(file: File) {
         _file = file
-        _path = _file.path
+        _path = _file.toPath()
         _name = _file.name
     }
     fun getFile() = _file
