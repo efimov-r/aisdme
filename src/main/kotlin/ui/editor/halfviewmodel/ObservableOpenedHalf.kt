@@ -6,6 +6,10 @@ abstract class ObservableOpenedHalf(
     val id: Int,
     protected val _extScope: CoroutineScope,
 ) {
+    enum class OpenFileType {
+        OPEN_NEW_FILE, OPEN_FROM_CASH
+    }
+
     protected abstract var _name: String
     val name get() = _name
 
@@ -15,5 +19,5 @@ abstract class ObservableOpenedHalf(
 
     abstract suspend fun disposeBeforeBlocked()
 
-    abstract suspend fun openFile()
+    abstract suspend fun openFile(typeOpen: OpenFileType)
 }

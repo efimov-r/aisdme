@@ -72,7 +72,7 @@ class ObservableOpenedHalfFile (
         }
     }
 
-    override suspend fun openFile() {
+    override suspend fun openFile(typeOpen: OpenFileType) {
         if(BuildConfig.DEBUG) delay(300)
 
         if(!_file.exists()) {

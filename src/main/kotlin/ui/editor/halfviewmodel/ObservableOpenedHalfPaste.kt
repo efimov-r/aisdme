@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.utils.ClipboardHelper
@@ -14,6 +15,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
+import kotlin.io.path.pathString
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
@@ -22,7 +24,7 @@ class ObservableOpenedHalfPaste(
     extScope: CoroutineScope
 ) : ObservableOpenedHalf(id, extScope) {
 
-    private var _textFieldValue by mutableStateOf(TextFieldValue(ClipboardHelper.getClipboardText() ?: ""))
+    private var _textFieldValue by mutableStateOf(TextFieldValue(""))
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
     override var _name  by mutableStateOf("From Clipboard")
@@ -49,20 +51,37 @@ class ObservableOpenedHalfPaste(
     override suspend fun disposeBeforeBlocked() { //сохранить файл
         try {
             val file = getPathClipFile() ?: return
-            file.writeText(_textFieldValue.text)
+            withContext(Dispatchers.IO) {
+                Files.createDirectories(file.parent)
+                file.writeText(_textFieldValue.text)
+            }
         } catch (ex: Exception) {
             Log.e("Ошибка сохранения файла сохраненного текста буфера обмена")
             Log.e(ex)
         }
     }
 
-    override suspend fun openFile() { //загрузится из файла
-        try {
-            val file = getPathClipFile() ?: return
-            _textFieldValue = TextFieldValue(file.readText())
-        } catch (ex: Exception) {
-            Log.e("Ошибка загрузки файла сохраненного текста буфера обмена")
-            Log.e(ex)
+    override suspend fun openFile(typeOpen: OpenFileType) { //загрузится из файла
+        when (typeOpen) {
+            OpenFileType.OPEN_NEW_FILE -> {
+                val text = ClipboardHelper.getClipboardText() ?: ""
+                withContext(Dispatchers.Swing) {
+                    _textFieldValue = TextFieldValue(text)
+                }
+            }
+
+            OpenFileType.OPEN_FROM_CASH -> {
+                try {
+                    val file = getPathClipFile() ?: return
+                    val text = file.readText()
+                    withContext(Dispatchers.Swing) {
+                        _textFieldValue = TextFieldValue(text)
+                    }
+                } catch (ex: Exception) {
+                    Log.e("Ошибка загрузки файла сохраненного текста буфера обмена")
+                    Log.e(ex)
+                }
+            }
         }
     }
 
@@ -70,7 +89,8 @@ class ObservableOpenedHalfPaste(
         val rootProjPathStr = GlobalConfig.store.get().lastOpenProject ?: return null //todo херня, переделать
         return File(rootProjPathStr)
             .toPath()
-            .resolve(".aisdme") //todo свою папку надо
+            .resolve(".aisdme")
+            .resolve("pastedtab")
             .resolve("${id}.clip")
     }
 }

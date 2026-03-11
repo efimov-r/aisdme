@@ -115,7 +115,7 @@ class EditorController(
                     val fileState = HalfViewModelFactory.createObservableOpened(id, filePath, scope)
                     _files[id] = fileState
                     scope.launch {
-                        fileState.openFile()
+                        fileState.openFile(ObservableOpenedHalf.OpenFileType.OPEN_FROM_CASH)
                     }
                 }
                 updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
@@ -135,7 +135,7 @@ class EditorController(
         Panels.LEFT -> leftTabs.activateTab(id)
     }
 
-    fun addFromCpipboardTab() : Int {
+    fun addFromCpipboardTab() : Int { //создание таба из ui
         val tab = HalfViewModelFactory.createObservableOpenedPaste(scope)
         tabToCash(tab)
         return tab.id
@@ -154,7 +154,7 @@ class EditorController(
     private fun tabToCash(tab: ObservableOpenedHalf) {
         _files[tab.id] = tab
         scope.launch {
-            tab.openFile()
+            tab.openFile(ObservableOpenedHalf.OpenFileType.OPEN_NEW_FILE)
         }
         scope.launch {
             saveToConfig()
