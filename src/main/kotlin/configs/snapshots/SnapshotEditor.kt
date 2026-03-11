@@ -47,21 +47,21 @@ data class SnapshotEditor(
                 }
             }?.toMap()
             val snapFromCash = projectStore?.getFromCashe()?.snapshotEditor
-            if(snapFromCash == null) {
-                if(trueFiles != null && leftTabs!= null && leftActive != null) {
+            if(snapFromCash == null) { //старой версии нет
+                if(trueFiles != null && leftTabs!= null) {
                     val default = SnapshotEditor()
                     Log.d("snapFromCash, new default")
                     return default.copy(
                         files = trueFiles,
                         leftTabs = leftTabs,
                         rightTabs = rightTabs ?: default.rightTabs,
-                        leftTabsSelect = leftActive,
+                        leftTabsSelect = leftActive ?: default.leftTabsSelect,
                         rightTabsSelect = rightActive ?: default.rightTabsSelect
                     )
                 } else {
-                    return null
+                    return null //нехуй сохранять
                 }
-            } else {
+            } else { //есть старая версия, обновляем
                 return snapFromCash.copy(
                     files = trueFiles ?: snapFromCash.files,
                     leftTabs = leftTabs ?: snapFromCash.leftTabs,

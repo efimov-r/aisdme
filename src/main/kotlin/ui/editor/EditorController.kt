@@ -3,21 +3,17 @@ package non.era.aisdme.ui.editor
 import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import non.era.aisdme.bus.AppEventBus
-import non.era.aisdme.bus.DeleteDir
-import non.era.aisdme.bus.DeleteFile
-import non.era.aisdme.bus.FileOpened
-import non.era.aisdme.bus.MoveFile
-import non.era.aisdme.configs.repositories.EditorStateRepository
+import non.era.aisdme.bus.*
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
+import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
+import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import java.io.File
-import kotlin.collections.find
+import java.nio.file.Path
 
 enum class Panels{
     LEFT, RIGHT
@@ -28,7 +24,6 @@ class EditorController(
     private val rep: EditorStateRepository,
 ) : UiController() {
     private var _files: MutableMap<Int, ObservableOpenedHalf> = mutableMapOf()
-    private val files: Map<Int, ObservableOpenedHalf> get() = _files
 
     private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) } }
     private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) } }
@@ -48,32 +43,19 @@ class EditorController(
                         }
                     }
                     is MoveFile -> {
-                        _files.filterValues {
-                            it is ObservableOpenedHalfFile && it.getFile().toPath() == event.oldFile
-                        }.forEach { _, file ->
+                        getTabsFileFilter(event.oldFile).forEach { (_, file) ->
                             (file as ObservableOpenedHalfFile).refile(File(event.newFile.toString()))
                         }
-                        rep.updateFiles(
-                            withContext(Dispatchers.Swing) {
-                                files.mapValues { (_, value) ->
-                                    value.copy()
-                                }.toMap()
-                            }
-                        )
+                        saveToConfig()
                     }
                     is DeleteFile -> {
-                        _files.filterValues {
-                            it is ObservableOpenedHalfFile && it.getFile().toPath() == event.file
-                        }.keys.forEach { id->
+                        getTabsFileFilter(event.file).keys.forEach { id->
                             leftTabs.closeTab(id)
                             rightTabs.closeTab(id)
                         }
                     }
                     is DeleteDir -> {
-                        _files.filterValues {
-                            it is ObservableOpenedHalfFile &&
-                                    (it.getFile().toPath() == event.dir || it.getFile().path.startsWith(event.dir.toString()))
-                        }.keys.forEach { id->
+                        getTabsFileFilter(event.dir, event.dir).keys.forEach { id->
                             leftTabs.closeTab(id)
                             rightTabs.closeTab(id)
                         }
@@ -101,7 +83,7 @@ class EditorController(
         rightTabs.dragDest = (rightTabs.rect?.contains(position) == true)
     }
 
-    fun getFile(id: Int) = files[id]
+    fun getFile(id: Int) = _files[id]
 
     fun showSelectedInTree() {
         when {
@@ -126,17 +108,19 @@ class EditorController(
         }
 
         _files.clear()
+        HalfViewModelFactory.clearNexTabId()
         snapshot?.let { snap ->
-
-            snap.files.forEach { id, filePath ->
-                val fileState = HalfViewModelFactory.createObservableOpened(id, filePath, scope)
-                _files[id] = fileState
-                scope.launch {
-                    fileState.openFile()
+            if(!snap.leftTabs.isEmpty() || !snap.rightTabs.isEmpty()) {
+                snap.files.forEach { id, filePath ->
+                    val fileState = HalfViewModelFactory.createObservableOpened(id, filePath, scope)
+                    _files[id] = fileState
+                    scope.launch {
+                        fileState.openFile()
+                    }
                 }
+                updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
+                updateHalf(rightTabs, snap.rightTabs.toMutableList(), snap.rightTabsSelect)
             }
-            updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
-            updateHalf(rightTabs, snap.rightTabs.toMutableList(), snap.rightTabsSelect)
         }
     }
 
@@ -151,63 +135,48 @@ class EditorController(
         Panels.LEFT -> leftTabs.activateTab(id)
     }
 
-    //todo объеденить с нижним?
     fun addFromCpipboardTab() : Int {
         val tab = HalfViewModelFactory.createObservableOpenedPaste(scope)
+        tabToCash(tab)
+        return tab.id
+    }
+
+    private fun openFile(file: File, panel: Panels = Panels.LEFT) {
+        _files.values.find { it is ObservableOpenedHalfFile && it.compareFile(file) }?.id?.let { tabMapId ->
+            activateTab(tabMapId, panel)
+        } ?: run {
+            val tab = HalfViewModelFactory.createObservableOpenedFile(file, scope)
+            tabToCash(tab)
+            activateTab(tab.id, panel)
+        }
+    }
+
+    private fun tabToCash(tab: ObservableOpenedHalf) {
         _files[tab.id] = tab
         scope.launch {
             tab.openFile()
         }
         scope.launch {
-            rep.updateFiles(
-                withContext(Dispatchers.Swing) {
-                    files.mapValues { (_, value) ->
-                        value.copy()
-                    }.toMap()
-                }
-            )
-        }
-        return tab.id
-    }
-
-    private fun openFile(file: File, panel: Panels = Panels.LEFT) {
-        files.values.find { it is ObservableOpenedHalfFile && it.compareFile(file) }?.id?.let { tabMapId ->
-            activateTab(tabMapId, panel)
-        } ?: run {
-            val tabEmpty = HalfViewModelFactory.createObservableOpenedFile(file, scope)
-            _files[tabEmpty.id] = tabEmpty
-            activateTab(tabEmpty.id, panel)
-            scope.launch {
-                tabEmpty.openFile()
-            }
-
-            scope.launch {
-                withContext(Dispatchers.Swing) {
-                    files.mapNotNull {
-                        if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {
-                            return@mapNotNull it.key
-                        }
-                        return@mapNotNull null
-                    }
-                }.map { fid->
-                    scope.launch {
-                        files[fid]?.beforeRemove()
-                        withContext(Dispatchers.Swing) {
-                            _files.remove(fid)
-                        }
-                    }
-                }.joinAll()
-
-                rep.updateFiles(
-                    withContext(Dispatchers.Swing) {
-                        files.mapValues { (_, value) ->
-                            value.copy()
-                        }.toMap()
-                    }
-                )
-            }
+            saveToConfig()
         }
     }
+
+    private suspend fun saveToConfig() {
+        rep.updateFiles( //уходит на сохранение в конфиг
+            withContext(Dispatchers.Swing) {
+                _files.mapValues { (_, value) ->
+                    value.copy()
+                }.toMap()
+            }
+        )
+    }
+
+    private fun getTabsFileFilter(eq: Path, startWith: Path? = null) =
+        _files.filterValues {
+            it is ObservableOpenedHalfFile &&
+                    (it.getFile().toPath() == eq ||
+                            if(startWith == null) false else it.getFile().path.startsWith(startWith.toString()))
+        }
 
     fun rightToLeftHalf() {
         leftTabs = rightTabs.copy(updateLeftTabs, updateLeftActive)
@@ -216,11 +185,29 @@ class EditorController(
 
     override fun disposeBefore() {
         runBlocking {
-            files.values.map { ta ->
+            _files.values.map { ta ->
                 scope.launch {
                     ta.disposeBeforeBlocked()
                 }
             }.joinAll()
         }
+    }
+
+    suspend fun removeNotUsedFiles() { //оставлю на всякий случай, вроде пока не нужно чистить кэшь
+        withContext(Dispatchers.Swing) {
+            _files.mapNotNull {
+                if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {
+                    return@mapNotNull it.key
+                }
+                return@mapNotNull null
+            }
+        }.map { fid->
+            scope.launch {
+                _files[fid]?.beforeRemove()
+                withContext(Dispatchers.Swing) {
+                    _files.remove(fid)
+                }
+            }
+        }.joinAll()
     }
 }

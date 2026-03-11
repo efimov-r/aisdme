@@ -5,8 +5,12 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 object HalfViewModelFactory {
-    val clipboarTypePath = "clipboard"
-    private var nextTabId = AtomicInteger(0) //todo сброс если все закрыто
+    val clipboarTypePath = "clipboard" //todo перейти на класс
+    private var nextTabId = AtomicInteger(0)
+
+    fun clearNexTabId() {
+        nextTabId.set(0)
+    }
 
     fun createObservableOpenedPaste(extScope: CoroutineScope) =
         ObservableOpenedHalfPaste(nextTabId.getAndIncrement(), extScope)

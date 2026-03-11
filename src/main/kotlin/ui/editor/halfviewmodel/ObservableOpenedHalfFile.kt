@@ -108,7 +108,7 @@ class ObservableOpenedHalfFile (
         saveNow()
     }
 
-    private suspend fun saveNow() { //todo туда суда
+    private suspend fun saveNow() {
         if (_textFieldValue.text == _savedText) return
 
         if(!_file.exists()) {

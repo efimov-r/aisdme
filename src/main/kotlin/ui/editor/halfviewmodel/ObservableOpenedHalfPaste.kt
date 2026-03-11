@@ -67,10 +67,10 @@ class ObservableOpenedHalfPaste(
     }
 
     private suspend fun getPathClipFile(): Path? {
-        val rootProjPathStr = GlobalConfig.store.get().lastOpenProject ?: return null
+        val rootProjPathStr = GlobalConfig.store.get().lastOpenProject ?: return null //todo херня, переделать
         return File(rootProjPathStr)
             .toPath()
-            .resolve(".aisdme")
+            .resolve(".aisdme") //todo свою папку надо
             .resolve("${id}.clip")
     }
 }
