@@ -14,30 +14,30 @@ object HalfViewModelFactory {
     }
 
     fun createObservableOpenedPaste(extScope: CoroutineScope, winState: WindowState) =
-        ObservableOpenedHalfPaste(nextTabId.getAndIncrement(), extScope, winState)
+        TabCashPaste(nextTabId.getAndIncrement(), extScope, winState)
 
 
     fun createObservableOpenedFile(file: File, extScope: CoroutineScope) =
-        ObservableOpenedHalfFile(
+        TabCashTextFile(
             id = nextTabId.getAndIncrement(),
             _file = file,
             extScope = extScope
         )
 
-    fun createObservableOpened(id: Int, filePath: String, extScope: CoroutineScope, winState: WindowState): ObservableOpenedHalf{
+    fun createObservableOpened(id: Int, filePath: String, extScope: CoroutineScope, winState: WindowState): TabCash{
         if(id >= nextTabId.get()){
             nextTabId.set(id+1)
         }
         when(filePath) {
             clipboarTypePath -> {
-                return ObservableOpenedHalfPaste(
+                return TabCashPaste(
                     id = id,
                     extScope = extScope,
                     winState = winState
                 )
             }
             else -> {
-                return ObservableOpenedHalfFile(
+                return TabCashTextFile(
                     id = id,
                     _file = File(filePath),
                     extScope = extScope

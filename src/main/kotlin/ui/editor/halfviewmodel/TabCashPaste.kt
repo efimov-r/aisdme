@@ -18,19 +18,19 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class ObservableOpenedHalfPaste(
+class TabCashPaste(
     id: Int,
     extScope: CoroutineScope,
     val winState: WindowState
-) : ObservableOpenedHalf(id, extScope) {
+) : TabCash(id, extScope) {
 
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
     override var _name  by mutableStateOf("From Clipboard")
 
-    override fun copy(): ObservableOpenedHalf {
-        val res = ObservableOpenedHalfPaste(id, _extScope, winState)
+    override fun copy(): TabCash {
+        val res = TabCashPaste(id, _extScope, winState)
         res._textFieldValue = textFieldValue
         return res
     }

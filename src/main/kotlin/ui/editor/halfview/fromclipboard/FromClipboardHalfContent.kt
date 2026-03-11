@@ -11,11 +11,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.ui.editor.halfview.AisDmeTextField
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfPaste
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashPaste
 
 @Composable
 fun FromClipboardHalfContent(
-    file: ObservableOpenedHalfPaste,
+    file: TabCashPaste,
     inFocus: Boolean,
     onFocusChanged: (FocusState) -> Unit,
 ) {

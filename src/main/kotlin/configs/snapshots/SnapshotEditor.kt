@@ -5,8 +5,8 @@ import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.store.ConfigStore
 import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
 import non.era.aisdme.ui.editor.halfviewmodel.ITabIsFiled
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfPaste
+import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashPaste
 import non.era.aisdme.utils.Log
 
 @Serializable
@@ -26,7 +26,7 @@ data class SnapshotEditor(
 
     companion object {
         fun buildFromOldVersion(
-            files: Map<Int, ObservableOpenedHalf>?,
+            files: Map<Int, TabCash>?,
             leftTabs: List<Int>?,
             rightTabs: List<Int>?,
             leftActive: Int?,
@@ -39,7 +39,7 @@ data class SnapshotEditor(
                         if(!half.needSaveToCash()) return@mapNotNull null
                         it.key to half.getFilePath()
                     }
-                    is ObservableOpenedHalfPaste -> {
+                    is TabCashPaste -> {
                         Log.d("Save editor snapshot, paste")
                         it.key to HalfViewModelFactory.clipboarTypePath
                     }

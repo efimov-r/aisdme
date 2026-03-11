@@ -25,12 +25,12 @@ import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.over.NodeIcon
 import non.era.aisdme.ui.components.over.SvgButton
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
+import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
 
 @Composable
 fun EditorTab(
-    tab: ObservableOpenedHalf,
+    tab: TabCash,
     halfInFocus: Boolean,
     isActive: Boolean,
     onSelect: (Int) -> Unit,
@@ -78,7 +78,7 @@ fun EditorTab(
             .padding(horizontal = 14.dp, vertical = 2.dp), //внутри элемента, от текста до границ
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if(tab is ObservableOpenedHalfFile) {
+        if(tab is TabCashTextFile) {
             NodeIcon(Modifier.padding(top = 3.dp), app.projectController.treeState.findNodes(tab.getFile()))
         }
         Spacer(Modifier.width(2.dp))

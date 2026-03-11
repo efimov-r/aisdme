@@ -2,7 +2,7 @@ package non.era.aisdme.ui.editor.halfviewmodel
 
 import kotlinx.coroutines.CoroutineScope
 
-abstract class ObservableOpenedHalf(
+abstract class TabCash(
     val id: Int,
     protected val _extScope: CoroutineScope,
 ) {
@@ -13,7 +13,7 @@ abstract class ObservableOpenedHalf(
     protected abstract var _name: String
     val name get() = _name
 
-    abstract fun copy() : ObservableOpenedHalf
+    abstract fun copy() : TabCash
 
     abstract suspend fun beforeRemove()
 

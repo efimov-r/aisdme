@@ -14,15 +14,15 @@ import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
 import non.era.aisdme.ui.editor.HalfEditorTabs
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
+import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
 
 @Composable
 fun EditorTabContextMenu(
     modifier: Modifier = Modifier,
     half: HalfEditorTabs,
     oppositeHalf: HalfEditorTabs,
-    tab: ObservableOpenedHalf,
+    tab: TabCash,
     content: @Composable BoxScope.() -> Unit
 ) {
     val menuState = remember { ContextMenuState() }
@@ -69,7 +69,7 @@ private fun TabContextMenu(
     state: ContextMenuState,
     half: HalfEditorTabs,
     oppositeHalf: HalfEditorTabs,
-    tab: ObservableOpenedHalf,
+    tab: TabCash,
     onDismiss: () -> Unit
 ) {
     val editController = LocalAppController.current.editorController
@@ -103,7 +103,7 @@ private fun TabContextMenu(
             oppositeHalf.inFocus = true
         })
 
-        if(tab is ObservableOpenedHalfFile) {
+        if(tab is TabCashTextFile) {
             add(MenuEntry.Divider)
 
             add(MenuEntry.Item("Show in Tree") {

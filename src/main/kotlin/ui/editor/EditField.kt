@@ -15,8 +15,8 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 import non.era.aisdme.ui.editor.halfview.fromclipboard.FromClipboardHalfContent
 import non.era.aisdme.ui.editor.halfview.texfield.TextEditorHalfContent
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfPaste
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashPaste
 
 @Composable
 fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
@@ -51,7 +51,7 @@ fun EditorHalf(
     modifier: Modifier = Modifier
 ){
     val editor = LocalAppController.current.editorController
-    val activeTab = half.activeTabId?.let { editor.getFile(it)}
+    val activeTab = half.activeTabId?.let { editor.getTab(it)}
 
     if(activeTab != null) {
         Column (
@@ -72,14 +72,14 @@ fun EditorHalf(
             )
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
             when(activeTab) {
-                is ObservableOpenedHalfFile -> {
+                is TabCashTextFile -> {
                     TextEditorHalfContent(
                         activeTab,
                         half.inFocus,
                         { half.inFocus = it.isFocused },
                     )
                 }
-                is ObservableOpenedHalfPaste -> {
+                is TabCashPaste -> {
                     FromClipboardHalfContent(
                         activeTab,
                         half.inFocus,

@@ -8,8 +8,8 @@ import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
 import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalfFile
+import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.win.WindowState
@@ -25,7 +25,7 @@ class EditorController(
     private val rep: EditorStateRepository,
     private val winState: WindowState,
 ) : UiController() {
-    private var _files: MutableMap<Int, ObservableOpenedHalf> = mutableMapOf()
+    private var _tabsCash: MutableMap<Int, TabCash> = mutableMapOf()
 
     private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) } }
     private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) } }
@@ -46,7 +46,7 @@ class EditorController(
                     }
                     is MoveFile -> {
                         getTabsFileFilter(event.oldFile).forEach { (_, file) ->
-                            (file as ObservableOpenedHalfFile).refile(File(event.newFile.toString()))
+                            (file as TabCashTextFile).refile(File(event.newFile.toString()))
                         }
                         saveToConfig()
                     }
@@ -85,7 +85,7 @@ class EditorController(
         rightTabs.dragDest = (rightTabs.rect?.contains(position) == true)
     }
 
-    fun getFile(id: Int) = _files[id]
+    fun getTab(id: Int) = _tabsCash[id]
 
     fun showSelectedInTree() {
         when {
@@ -96,28 +96,28 @@ class EditorController(
     }
 
     fun showInTree(id: Int) {
-        val file = _files[id]
-        if(file is ObservableOpenedHalfFile) bus.publish(file.showFileInTreeEvent())
+        val tab = _tabsCash[id]
+        if(tab is TabCashTextFile) bus.publish(tab.showFileInTreeEvent())
     }
 
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
 
         fun updateHalf(half: HalfEditorTabs, tabs: MutableList<Int>, sel: Int?) {
             var _sel = sel
-            tabs.removeIf { !_files.keys.contains(it) }
+            tabs.removeIf { !_tabsCash.keys.contains(it) }
             if(!tabs.contains(_sel)) _sel = null
             half.reselectProject(tabs, _sel ?: tabs.lastOrNull())
         }
 
-        _files.clear()
+        _tabsCash.clear()
         HalfViewModelFactory.clearNexTabId()
         snapshot?.let { snap ->
             if(!snap.leftTabs.isEmpty() || !snap.rightTabs.isEmpty()) {
                 snap.files.forEach { id, filePath ->
-                    val fileState = HalfViewModelFactory.createObservableOpened(id, filePath, scope, winState)
-                    _files[id] = fileState
+                    val tabState = HalfViewModelFactory.createObservableOpened(id, filePath, scope, winState)
+                    _tabsCash[id] = tabState
                     scope.launch {
-                        fileState.openFile(ObservableOpenedHalf.OpenFileType.OPEN_FROM_CASH)
+                        tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
                     }
                 }
                 updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
@@ -144,7 +144,7 @@ class EditorController(
     }
 
     private fun openFile(file: File, panel: Panels = Panels.LEFT) {
-        _files.values.find { it is ObservableOpenedHalfFile && it.compareFile(file) }?.id?.let { tabMapId ->
+        _tabsCash.values.find { it is TabCashTextFile && it.compareFile(file) }?.id?.let { tabMapId ->
             activateTab(tabMapId, panel)
         } ?: run {
             val tab = HalfViewModelFactory.createObservableOpenedFile(file, scope)
@@ -153,10 +153,10 @@ class EditorController(
         }
     }
 
-    private fun tabToCash(tab: ObservableOpenedHalf) {
-        _files[tab.id] = tab
+    private fun tabToCash(tab: TabCash) {
+        _tabsCash[tab.id] = tab
         scope.launch {
-            tab.openFile(ObservableOpenedHalf.OpenFileType.OPEN_NEW_FILE)
+            tab.openFile(TabCash.OpenFileType.OPEN_NEW_FILE)
         }
         scope.launch {
             saveToConfig()
@@ -166,7 +166,7 @@ class EditorController(
     private suspend fun saveToConfig() {
         rep.updateFiles( //уходит на сохранение в конфиг
             withContext(Dispatchers.Swing) {
-                _files.mapValues { (_, value) ->
+                _tabsCash.mapValues { (_, value) ->
                     value.copy()
                 }.toMap()
             }
@@ -174,8 +174,8 @@ class EditorController(
     }
 
     private fun getTabsFileFilter(eq: Path, startWith: Path? = null) =
-        _files.filterValues {
-            it is ObservableOpenedHalfFile &&
+        _tabsCash.filterValues {
+            it is TabCashTextFile &&
                     (it.getFile().toPath() == eq ||
                             if(startWith == null) false else it.getFile().path.startsWith(startWith.toString()))
         }
@@ -187,7 +187,7 @@ class EditorController(
 
     override fun disposeBefore() {
         runBlocking {
-            _files.values.map { ta ->
+            _tabsCash.values.map { ta ->
                 scope.launch {
                     ta.disposeBeforeBlocked()
                 }
@@ -197,7 +197,7 @@ class EditorController(
 
     suspend fun removeNotUsedFiles() { //оставлю на всякий случай, вроде пока не нужно чистить кэшь
         withContext(Dispatchers.Swing) {
-            _files.mapNotNull {
+            _tabsCash.mapNotNull {
                 if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {
                     return@mapNotNull it.key
                 }
@@ -205,9 +205,9 @@ class EditorController(
             }
         }.map { fid->
             scope.launch {
-                _files[fid]?.beforeRemove()
+                _tabsCash[fid]?.beforeRemove()
                 withContext(Dispatchers.Swing) {
-                    _files.remove(fid)
+                    _tabsCash.remove(fid)
                 }
             }
         }.joinAll()

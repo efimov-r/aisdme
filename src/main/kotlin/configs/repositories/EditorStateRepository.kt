@@ -2,12 +2,12 @@ package non.era.aisdme.configs.repositories
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import non.era.aisdme.ui.editor.halfviewmodel.ObservableOpenedHalf
+import non.era.aisdme.ui.editor.halfviewmodel.TabCash
 
 class EditorStateRepository {
-    private val _files = MutableStateFlow<Map<Int, ObservableOpenedHalf>?>(null)
+    private val _files = MutableStateFlow<Map<Int, TabCash>?>(null)
     val files = _files.asStateFlow()
-    suspend fun updateFiles(files: Map<Int, ObservableOpenedHalf>) { _files.emit(files) }
+    suspend fun updateFiles(files: Map<Int, TabCash>) { _files.emit(files) }
 
     private val _leftTabs = MutableStateFlow<List<Int>?>(null)
     val leftTabs get() = _leftTabs.asStateFlow()

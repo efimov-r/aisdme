@@ -23,11 +23,11 @@ enum class WriteStatus(val text: String, val back: Color, val te: Color, val toC
     ERROR("error", Color(0xFFe20300), Color.Black, false, true) //!file.exists()
 }
 
-class ObservableOpenedHalfFile (
+class TabCashTextFile (
     id: Int,
     private var _file: File,
     extScope: CoroutineScope,
-) : ITabIsFiled, ObservableOpenedHalf(id, extScope) {
+) : ITabIsFiled, TabCash(id, extScope) {
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
@@ -55,8 +55,8 @@ class ObservableOpenedHalfFile (
 
     fun showFileInTreeEvent() = ShowFileInTree(_file)
 
-    override fun copy() : ObservableOpenedHalfFile { //копия для конфига
-        val res = ObservableOpenedHalfFile(id, File(_file.path), _extScope)
+    override fun copy() : TabCashTextFile { //копия для конфига
+        val res = TabCashTextFile(id, File(_file.path), _extScope)
         res._textFieldValue = _textFieldValue
         res._writeStatus = _writeStatus
         res._savedText = _savedText

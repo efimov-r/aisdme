@@ -48,7 +48,7 @@ fun TabsBar(
     ) {
         val tabs by remember {
             derivedStateOf {
-                half.listTabs.mapNotNull { tId -> editor.getFile(tId) }.toList()
+                half.listTabs.mapNotNull { tId -> editor.getTab(tId) }.toList()
             }
         }
 
