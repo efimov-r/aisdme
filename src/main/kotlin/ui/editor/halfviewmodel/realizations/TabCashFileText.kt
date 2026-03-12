@@ -13,46 +13,30 @@ import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 import java.io.File
 import java.nio.file.Files
 
 class TabCashFileText (
     id: Int,
-    private var _file: File,
+    file: File,
     extScope: CoroutineScope,
-) : TabCash(id, extScope) {
+) : TabCashFile(id, file, extScope) {
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
-    private var _writeStatus by mutableStateOf(WriteStatus.LOAD)
-    val writeStatus get() = _writeStatus
-
-    private var _path by mutableStateOf(_file.toPath())
-    val path get() = _path
-
     override val typeFile: TypeFile = TypeFile.TEXT_FILE
-    override var _name by mutableStateOf(_file.name)
 
     private var autosaveJob: Job? = null
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()
 
-    override fun refile(file: File) {
-        _file = file
-        _path = _file.toPath()
-        _name = _file.name
-    }
-    fun getFile() = _file
-    fun compareFile(file: File) = (_file == file)
-
-    fun showFileInTreeEvent() = ShowFileInTree(_file)
-
     override fun copy() : TabCashFileText { //копия для конфига
         val res = TabCashFileText(id, File(_file.path), _extScope)
         res._textFieldValue = _textFieldValue
-        res._writeStatus = _writeStatus
         res._savedText = _savedText
+        copyCashFile(res)
         return res
     }
 
@@ -65,30 +49,16 @@ class TabCashFileText (
         }
     }
 
-    override suspend fun openFile(typeOpen: OpenFileType) {
-        if(BuildConfig.DEBUG) delay(300)
-
-        if(!_file.exists()) {
-            writeStatus(WriteStatus.ERROR)
-            return
+    override suspend fun openExistFile(typeOpen: OpenFileType) {
+        val textIn = _file.readText()
+        withContext(Dispatchers.Swing) {
+            if(!Files.isWritable(_file.toPath()))
+                writeStatus(WriteStatus.READ_ONLY_FS)
+            else
+                writeStatus(WriteStatus.WRITABLE)
+            _savedText = textIn
+            _textFieldValue = TextFieldValue(textIn)
         }
-
-        try {
-            val textIn = _file.readText()
-            withContext(Dispatchers.Swing) {
-                _writeStatus =
-                    if(!Files.isWritable(_file.toPath()))  WriteStatus.READ_ONLY_FS else WriteStatus.WRITABLE
-                _savedText = textIn
-                _textFieldValue = TextFieldValue(textIn)
-            }
-        } catch(_: Throwable) {
-            writeStatus(WriteStatus.LOCKED)
-        }
-    }
-
-    override fun toSnapshot(): SnapshotTabCash? {
-        if(!writeStatus.toConfig) return null
-        return SnapshotTabCash(_file.path, typeFile)
     }
 
     fun updateTextFieldValue(newValue: TextFieldValue) {
@@ -127,12 +97,6 @@ class TabCashFileText (
             writeStatus(WriteStatus.WRITABLE)
         } catch (_: Throwable) {
             writeStatus(WriteStatus.LOCKED)
-        }
-    }
-
-    private suspend fun writeStatus(status: WriteStatus) {
-        withContext(Dispatchers.Swing) {
-            _writeStatus = status
         }
     }
 }

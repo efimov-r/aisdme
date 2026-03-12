@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor.halfview.components
+package non.era.aisdme.ui.components.custom.editor
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll

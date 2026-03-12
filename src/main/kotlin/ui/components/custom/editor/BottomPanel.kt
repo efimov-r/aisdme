@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor.halfview.components
+package non.era.aisdme.ui.components.custom.editor
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,19 +18,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 import non.era.aisdme.utils.PathHelper
 import java.nio.file.Path
 
 @Composable
-fun BottomPanel(path: Path?, writeStatus: WriteStatus,) { //todo принимать одним объектом
+fun BottomPanel(tab: TabCashFile) {
     Row(modifier = Modifier.fillMaxWidth().height(36.dp), //todo сделать данные о img
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(Modifier.width(4.dp))
-        Path(path)
+        Path(tab.path)
         Spacer(Modifier.weight(1f))
-        WriteStatus(writeStatus)
+        WriteStatus(tab.writeStatus)
         Spacer(Modifier.width(4.dp))
     }
 }

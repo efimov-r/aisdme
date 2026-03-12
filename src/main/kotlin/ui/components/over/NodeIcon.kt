@@ -11,7 +11,7 @@ fun NodeIcon(
     modifier: Modifier = Modifier,
     node: ProjectNode?
 ) {
-    val icon: String = when(node) {
+    val icon: String = when(node) { //todo для img иконка
         is DirNode -> "folder"
         is FileNode -> "anyType"
         else -> "unknown"

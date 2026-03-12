@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.realisation.EditorTabContextMenu
-import non.era.aisdme.ui.components.custom.TabMenuView
+import non.era.aisdme.ui.components.custom.editor.TabMenuView
 import non.era.aisdme.ui.components.over.SvgButton
 
 @Composable

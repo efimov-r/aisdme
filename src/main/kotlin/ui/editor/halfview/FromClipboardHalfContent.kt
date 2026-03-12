@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.unit.dp
-import non.era.aisdme.ui.editor.halfview.components.AisDmeTextField
+import non.era.aisdme.ui.components.custom.editor.AisDmeTextField
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 
 @Composable

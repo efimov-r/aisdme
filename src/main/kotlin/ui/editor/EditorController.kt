@@ -9,6 +9,7 @@ import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
@@ -97,7 +98,7 @@ class EditorController(
 
     fun showInTree(id: Int) {
         val tab = _tabsCash[id]
-        if(tab is TabCashFileText) bus.publish(tab.showFileInTreeEvent())
+        if(tab is TabCashFile) bus.publish(tab.showFileInTreeEvent())
     }
 
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
@@ -135,7 +136,7 @@ class EditorController(
 
         nodes.forEach { node->
             if(node is FileNode) {
-                _tabsCash.values.find { it is TabCashFileText && it.compareFile(node.getFile()) }?.id?.let { tabMapId ->
+                _tabsCash.values.find { it is TabCashFile && it.compareFile(node.getFile()) }?.id?.let { tabMapId ->
                     activateTab(tabMapId)
                 } ?: run {
                     val tab = HalfViewModelFactory.createFileTab(node.getFile(), scope)
@@ -174,7 +175,7 @@ class EditorController(
 
     private fun getTabsFileFilter(eq: Path, startWith: Path? = null) =
         _tabsCash.filterValues {
-            it is TabCashFileText &&
+            it is TabCashFile &&
                     (it.getFile().toPath() == eq ||
                             if(startWith == null) false else it.getFile().path.startsWith(startWith.toString()))
         }

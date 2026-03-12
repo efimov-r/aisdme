@@ -14,8 +14,9 @@ import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 import non.era.aisdme.ui.editor.halfview.FromClipboardHalfContent
-import non.era.aisdme.ui.editor.halfview.ImgHalfContent
-import non.era.aisdme.ui.editor.halfview.TextEditorHalfContent
+import non.era.aisdme.ui.editor.halfview.HalfContentFile
+import non.era.aisdme.ui.editor.halfview.HalfContentFileImg
+import non.era.aisdme.ui.editor.halfview.HalfContentFileText
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileImg
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
@@ -75,11 +76,13 @@ fun EditorHalf(
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
             when(activeTab) {
                 is TabCashFileText -> {
-                    TextEditorHalfContent(
-                        activeTab,
-                        half.inFocus,
-                        { half.inFocus = it.isFocused },
-                    )
+                    HalfContentFile(activeTab) {
+                        HalfContentFileText(
+                            activeTab,
+                            half.inFocus,
+                            { half.inFocus = it.isFocused },
+                        )
+                    }
                 }
                 is TabCashPaste -> {
                     FromClipboardHalfContent(
@@ -89,11 +92,13 @@ fun EditorHalf(
                     )
                 }
                 is TabCashFileImg -> {
-                    ImgHalfContent(
-                        activeTab,
-                        half.inFocus,
-                        { half.inFocus = it },
-                    )
+                    HalfContentFile(activeTab) {
+                        HalfContentFileImg(
+                            activeTab,
+                            half.inFocus,
+                            { half.inFocus = it },
+                        )
+                    }
                 }
                 else -> {
                     Text(

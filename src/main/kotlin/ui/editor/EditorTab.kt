@@ -26,6 +26,7 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.over.NodeIcon
 import non.era.aisdme.ui.components.over.SvgButton
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 
 @Composable
@@ -78,7 +79,7 @@ fun EditorTab(
             .padding(horizontal = 14.dp, vertical = 2.dp), //внутри элемента, от текста до границ
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if(tab is TabCashFileText) {
+        if(tab is TabCashFile) {
             NodeIcon(Modifier.padding(top = 3.dp), app.projectController.treeState.findNodes(tab.getFile()))
         }
         Spacer(Modifier.width(2.dp))

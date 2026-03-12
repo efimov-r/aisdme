@@ -27,13 +27,13 @@ object HalfViewModelFactory {
         if(isImageFile(file.toPath())) {
             return TabCashFileImg(
                 id = nextTabId.getAndIncrement(),
-                _file = file,
+                file = file,
                 extScope = extScope
             )
         }
         return TabCashFileText(
             id = nextTabId.getAndIncrement(),
-            _file = file,
+            file = file,
             extScope = extScope
         )
     }
@@ -59,7 +59,7 @@ object HalfViewModelFactory {
                 return snap.pathStr?.let { pathStr ->
                     TabCashFileText(
                         id = id,
-                        _file = File(pathStr),
+                        file = File(pathStr),
                         extScope = extScope
                     )
                 }
@@ -68,7 +68,7 @@ object HalfViewModelFactory {
                 return snap.pathStr?.let { pathStr ->
                     TabCashFileImg(
                         id = id,
-                        _file = File(pathStr),
+                        file = File(pathStr),
                         extScope = extScope
                     )
                 }

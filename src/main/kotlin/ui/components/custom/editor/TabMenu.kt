@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.components.custom
+package non.era.aisdme.ui.components.custom.editor
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
