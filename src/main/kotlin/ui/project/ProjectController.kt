@@ -125,7 +125,7 @@ class ProjectController(
             TypeClickNode.DLMB -> {
                 nodeClicked = node
                 if(node is FileNode){
-                    bus.publish(FileOpened(node.getFile()))
+                    bus.publish(FileOpened(node))
                 } else if (node is DirNode) {
                     node.openOrClose()
                 }

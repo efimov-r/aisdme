@@ -11,13 +11,13 @@ import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.BuildConfig
 import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
-import non.era.aisdme.configs.dataclass.snapshots.TypeTabSnapshot
+import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
 import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 import java.io.File
 import java.nio.file.Files
 
-class TabCashTextFile (
+class TabCashFileText (
     id: Int,
     private var _file: File,
     extScope: CoroutineScope,
@@ -31,6 +31,7 @@ class TabCashTextFile (
     private var _path by mutableStateOf(_file.toPath())
     val path get() = _path
 
+    override val typeFile: TypeFile = TypeFile.TEXT_FILE
     override var _name by mutableStateOf(_file.name)
 
     private var autosaveJob: Job? = null
@@ -47,8 +48,8 @@ class TabCashTextFile (
 
     fun showFileInTreeEvent() = ShowFileInTree(_file)
 
-    override fun copy() : TabCashTextFile { //копия для конфига
-        val res = TabCashTextFile(id, File(_file.path), _extScope)
+    override fun copy() : TabCashFileText { //копия для конфига
+        val res = TabCashFileText(id, File(_file.path), _extScope)
         res._textFieldValue = _textFieldValue
         res._writeStatus = _writeStatus
         res._savedText = _savedText
@@ -87,7 +88,7 @@ class TabCashTextFile (
 
     override fun toSnapshot(): SnapshotTabCash? {
         if(!writeStatus.toConfig) return null
-        return SnapshotTabCash(_file.path, TypeTabSnapshot.TEXT_FILE)
+        return SnapshotTabCash(_file.path, typeFile)
     }
 
     fun updateTextFieldValue(newValue: TextFieldValue) {

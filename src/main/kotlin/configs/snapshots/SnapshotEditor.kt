@@ -1,24 +1,16 @@
 package non.era.aisdme.configs.dataclass.snapshots
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.store.ConfigStore
+import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
 import non.era.aisdme.utils.Log
-
-enum class TypeTabSnapshot {
-    @SerialName("textFile")
-    TEXT_FILE,
-
-    @SerialName("pasteTab")
-    PASTE_TAB,
-}
 
 @Serializable
 data class SnapshotTabCash(
     val pathStr: String? = null,
-    val type: TypeTabSnapshot? = null,
+    val type: TypeFile? = null,
 ) {
 }
 

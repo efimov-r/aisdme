@@ -9,7 +9,7 @@ import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
-import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.win.WindowState
@@ -41,7 +41,7 @@ class EditorController(
                 when (event) {
                     is FileOpened -> {
                         withContext(Dispatchers.Swing) {
-                            openFile(event.file)
+                            openNodes(listOf(event.node))
                         }
                     }
                     is MoveFile -> {
@@ -97,7 +97,7 @@ class EditorController(
 
     fun showInTree(id: Int) {
         val tab = _tabsCash[id]
-        if(tab is TabCashTextFile) bus.publish(tab.showFileInTreeEvent())
+        if(tab is TabCashFileText) bus.publish(tab.showFileInTreeEvent())
     }
 
     fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
@@ -114,7 +114,7 @@ class EditorController(
         snapshot?.let { snap ->
             if(!snap.leftTabs.isEmpty() || !snap.rightTabs.isEmpty()) {
                 snap.files.forEach { id, snapshotTab ->
-                    HalfViewModelFactory.createObservableOpened(id, snapshotTab, scope, winState)?.let{tabState ->
+                    HalfViewModelFactory.createTabFromSnapshot(id, snapshotTab, scope, winState)?.let{ tabState ->
                         _tabsCash[id] = tabState
                         scope.launch {
                             tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
@@ -128,30 +128,28 @@ class EditorController(
     }
 
     fun openNodes(nodes: List<ProjectNode>, panel: Panels = Panels.LEFT) {
-        nodes.forEach { node->
-            if(node is FileNode) openFile(node.getFile(), panel)
+        fun activateTab(id: Int) = when(panel){
+            Panels.RIGHT -> rightTabs.activateTab(id)
+            Panels.LEFT -> leftTabs.activateTab(id)
         }
-    }
 
-    private fun activateTab(id: Int, panel: Panels) = when(panel){
-        Panels.RIGHT -> rightTabs.activateTab(id)
-        Panels.LEFT -> leftTabs.activateTab(id)
+        nodes.forEach { node->
+            if(node is FileNode) {
+                _tabsCash.values.find { it is TabCashFileText && it.compareFile(node.getFile()) }?.id?.let { tabMapId ->
+                    activateTab(tabMapId)
+                } ?: run {
+                    val tab = HalfViewModelFactory.createFileTab(node.getFile(), scope)
+                    tabToCash(tab)
+                    activateTab(tab.id)
+                }
+            }
+        }
     }
 
     fun addFromCpipboardTab() : Int { //создание таба из ui
-        val tab = HalfViewModelFactory.createObservableOpenedPaste(scope, winState)
+        val tab = HalfViewModelFactory.createPasteTab(scope, winState)
         tabToCash(tab)
         return tab.id
-    }
-
-    private fun openFile(file: File, panel: Panels = Panels.LEFT) {
-        _tabsCash.values.find { it is TabCashTextFile && it.compareFile(file) }?.id?.let { tabMapId ->
-            activateTab(tabMapId, panel)
-        } ?: run {
-            val tab = HalfViewModelFactory.createObservableOpenedFile(file, scope)
-            tabToCash(tab)
-            activateTab(tab.id, panel)
-        }
     }
 
     private fun tabToCash(tab: TabCash) {
@@ -176,7 +174,7 @@ class EditorController(
 
     private fun getTabsFileFilter(eq: Path, startWith: Path? = null) =
         _tabsCash.filterValues {
-            it is TabCashTextFile &&
+            it is TabCashFileText &&
                     (it.getFile().toPath() == eq ||
                             if(startWith == null) false else it.getFile().path.startsWith(startWith.toString()))
         }
@@ -196,7 +194,7 @@ class EditorController(
         }
     }
 
-    suspend fun removeNotUsedFiles() { //оставлю на всякий случай, вроде пока не нужно чистить кэшь
+    suspend fun removeNotUsedFiles() { //оставлю на всякий случай
         withContext(Dispatchers.Swing) {
             _tabsCash.mapNotNull {
                 if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {

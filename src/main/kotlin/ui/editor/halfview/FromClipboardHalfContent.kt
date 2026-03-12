@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor.halfview.fromclipboard
+package non.era.aisdme.ui.editor.halfview
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.unit.dp
-import non.era.aisdme.ui.editor.halfview.AisDmeTextField
+import non.era.aisdme.ui.editor.halfview.components.AisDmeTextField
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 
 @Composable

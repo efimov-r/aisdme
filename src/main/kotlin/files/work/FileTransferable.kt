@@ -1,4 +1,4 @@
-package non.era.aisdme.files
+package non.era.aisdme.files.work
 
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable

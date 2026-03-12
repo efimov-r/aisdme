@@ -1,4 +1,4 @@
-package non.era.aisdme.files
+package non.era.aisdme.files.work
 
 import kotlinx.coroutines.launch
 import non.era.aisdme.bus.AppEventBus

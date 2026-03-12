@@ -13,9 +13,11 @@ import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
-import non.era.aisdme.ui.editor.halfview.fromclipboard.FromClipboardHalfContent
-import non.era.aisdme.ui.editor.halfview.texfield.TextEditorHalfContent
-import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
+import non.era.aisdme.ui.editor.halfview.FromClipboardHalfContent
+import non.era.aisdme.ui.editor.halfview.ImgHalfContent
+import non.era.aisdme.ui.editor.halfview.TextEditorHalfContent
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileImg
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 
 @Composable
@@ -72,7 +74,7 @@ fun EditorHalf(
             )
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
             when(activeTab) {
-                is TabCashTextFile -> {
+                is TabCashFileText -> {
                     TextEditorHalfContent(
                         activeTab,
                         half.inFocus,
@@ -84,6 +86,13 @@ fun EditorHalf(
                         activeTab,
                         half.inFocus,
                         { half.inFocus = it.isFocused },
+                    )
+                }
+                is TabCashFileImg -> {
+                    ImgHalfContent(
+                        activeTab,
+                        half.inFocus,
+                        { half.inFocus = it },
                     )
                 }
                 else -> {

@@ -15,7 +15,7 @@ import non.era.aisdme.ui.components.contexmenu.ContextMenuState
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
 import non.era.aisdme.ui.editor.HalfEditorTabs
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
-import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 
 @Composable
 fun EditorTabContextMenu(
@@ -103,7 +103,7 @@ private fun TabContextMenu(
             oppositeHalf.inFocus = true
         })
 
-        if(tab is TabCashTextFile) {
+        if(tab is TabCashFileText) {
             add(MenuEntry.Divider)
 
             add(MenuEntry.Item("Show in Tree") {

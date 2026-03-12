@@ -4,7 +4,7 @@ import androidx.compose.runtime.*
 import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
-import non.era.aisdme.files.FilesController
+import non.era.aisdme.files.work.FilesController
 import non.era.aisdme.ui.components.dialogs.elements.DialogsController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.Panels

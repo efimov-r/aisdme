@@ -6,7 +6,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import non.era.aisdme.di.AppController
-import non.era.aisdme.files.FileDolphinOpener
+import non.era.aisdme.files.work.FileDolphinOpener
 import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.editor.Panels

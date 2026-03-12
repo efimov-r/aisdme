@@ -15,7 +15,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.di.AppController
 import non.era.aisdme.di.LocalAppController
-import non.era.aisdme.files.FileDolphinOpener
+import non.era.aisdme.files.work.FileDolphinOpener
 import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState

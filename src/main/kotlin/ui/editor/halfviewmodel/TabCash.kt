@@ -2,6 +2,7 @@ package non.era.aisdme.ui.editor.halfviewmodel
 
 import kotlinx.coroutines.CoroutineScope
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
+import non.era.aisdme.files.TypeFile
 import java.io.File
 
 abstract class TabCash(
@@ -11,6 +12,8 @@ abstract class TabCash(
     enum class OpenFileType {
         OPEN_NEW_FILE, OPEN_FROM_CASH
     }
+
+    protected abstract val typeFile: TypeFile
 
     protected abstract var _name: String
     val name get() = _name

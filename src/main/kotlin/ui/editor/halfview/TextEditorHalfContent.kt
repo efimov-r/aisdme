@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor.halfview.texfield
+package non.era.aisdme.ui.editor.halfview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,15 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
-import non.era.aisdme.ui.editor.halfview.AisDmeTextField
-import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
+import non.era.aisdme.ui.editor.halfview.components.AisDmeTextField
+import non.era.aisdme.ui.editor.halfview.components.BottomPanel
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 import non.era.aisdme.utils.PathHelper
 import java.nio.file.Path
 
 @Composable
 fun TextEditorHalfContent(
-    file: TabCashTextFile,
+    file: TabCashFileText,
     inFocus: Boolean,
     onFocusChanged: (FocusState) -> Unit,
 ) {
@@ -68,56 +69,5 @@ fun TextEditorHalfContent(
         }
         Spacer(Modifier.fillMaxWidth().height(1.dp).background(LocalAisDmeColors.current.surfaceBorder))
         BottomPanel(file.path, writeStatus)
-    }
-}
-
-@Composable
-private fun BottomPanel(path: Path?, writeStatus: WriteStatus,) {
-    Row(modifier = Modifier.fillMaxWidth().height(36.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Spacer(Modifier.width(4.dp))
-        Path(path)
-        Spacer(Modifier.weight(1f))
-        WriteStatus(writeStatus)
-        Spacer(Modifier.width(4.dp))
-    }
-}
-
-@Composable
-private fun Path(path: Path?) {
-    Box(modifier = Modifier.height(24.dp)
-        .clip(AisDmeShapes.large)
-        .background(LocalAisDmeColors.current.surface)
-        .border(1.dp, LocalAisDmeColors.current.surfaceBorder, AisDmeShapes.large),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = path?.let{ PathHelper.pathToStrFormat(it)} ?: "",
-            modifier = Modifier.padding(bottom = 1.dp).padding(horizontal = 16.dp),
-            fontSize = 11.sp,
-            lineHeight = 12.sp,
-            maxLines = 1,
-            color = LocalAisDmeColors.current.onSurface
-        )
-    }
-}
-
-@Composable
-private fun WriteStatus(writeStatus: WriteStatus) {
-    Box(modifier = Modifier.width(76.dp).height(24.dp)
-        .clip(AisDmeShapes.large)
-        .background(writeStatus.back)
-        .border(1.dp, LocalAisDmeColors.current.surfaceBorder, AisDmeShapes.large),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = writeStatus.text,
-            modifier = Modifier.padding(bottom = 1.dp),
-            fontSize = 11.sp,
-            lineHeight = 12.sp,
-            maxLines = 1,
-            color = writeStatus.te
-        )
     }
 }

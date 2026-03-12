@@ -9,8 +9,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
-import non.era.aisdme.configs.dataclass.snapshots.TypeTabSnapshot
 import non.era.aisdme.configs.store.ConfigPaths.PROJECT_CONFIG_DIR
+import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
 import non.era.aisdme.ui.win.WindowState
 import non.era.aisdme.utils.ClipboardHelper
@@ -31,6 +31,7 @@ class TabCashPaste(
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
+    override val typeFile: TypeFile = TypeFile.PASTE_TAB
     override var _name  by mutableStateOf("From Clipboard")
 
     override fun copy(): TabCash {
@@ -90,7 +91,7 @@ class TabCashPaste(
     }
 
     override fun toSnapshot(): SnapshotTabCash =
-        SnapshotTabCash(null, TypeTabSnapshot.PASTE_TAB)
+        SnapshotTabCash(null, typeFile)
 
     override fun refile(file: File) {
     }
