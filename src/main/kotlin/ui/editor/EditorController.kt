@@ -113,11 +113,12 @@ class EditorController(
         HalfViewModelFactory.clearNexTabId()
         snapshot?.let { snap ->
             if(!snap.leftTabs.isEmpty() || !snap.rightTabs.isEmpty()) {
-                snap.files.forEach { id, filePath ->
-                    val tabState = HalfViewModelFactory.createObservableOpened(id, filePath, scope, winState)
-                    _tabsCash[id] = tabState
-                    scope.launch {
-                        tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
+                snap.files.forEach { id, snapshotTab ->
+                    HalfViewModelFactory.createObservableOpened(id, snapshotTab, scope, winState)?.let{tabState ->
+                        _tabsCash[id] = tabState
+                        scope.launch {
+                            tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
+                        }
                     }
                 }
                 updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)

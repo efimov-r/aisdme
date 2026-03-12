@@ -1,17 +1,30 @@
 package non.era.aisdme.configs.dataclass.snapshots
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.store.ConfigStore
-import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
-import non.era.aisdme.ui.editor.halfviewmodel.ITabIsFiled
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
-import non.era.aisdme.ui.editor.halfviewmodel.TabCashPaste
 import non.era.aisdme.utils.Log
+
+enum class TypeTabSnapshot {
+    @SerialName("textFile")
+    TEXT_FILE,
+
+    @SerialName("pasteTab")
+    PASTE_TAB,
+}
+
+@Serializable
+data class SnapshotTabCash(
+    val pathStr: String? = null,
+    val type: TypeTabSnapshot? = null,
+) {
+}
 
 @Serializable
 data class SnapshotEditor(
-    val files: Map<Int, String> = mapOf(),
+    val files: Map<Int, SnapshotTabCash> = mapOf(),
     val leftTabs: List<Int> = listOf(),
     val leftTabsSelect: Int? = null,
     val rightTabs: List<Int> = listOf(),
@@ -33,18 +46,10 @@ data class SnapshotEditor(
             rightActive: Int?,
             projectStore: ConfigStore<ProjectConfig>?,
         ): SnapshotEditor? {
-            val trueFiles = files?.mapNotNull {
-                when(val half = it.value) {
-                    is ITabIsFiled -> {
-                        if(!half.needSaveToCash()) return@mapNotNull null
-                        it.key to half.getFilePath()
-                    }
-                    is TabCashPaste -> {
-                        Log.d("Save editor snapshot, paste")
-                        it.key to HalfViewModelFactory.clipboarTypePath
-                    }
-                    else -> return@mapNotNull null
-                }
+            val trueFiles = files?.mapNotNull { file ->
+                file.value.toSnapshot()?.let { snap->
+                    file.key to snap
+                } ?: return null
             }?.toMap()
             val snapFromCash = projectStore?.getFromCashe()?.snapshotEditor
             if(snapFromCash == null) { //старой версии нет

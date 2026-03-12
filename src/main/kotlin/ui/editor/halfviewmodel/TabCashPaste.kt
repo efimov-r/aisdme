@@ -8,6 +8,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
+import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
+import non.era.aisdme.configs.dataclass.snapshots.TypeTabSnapshot
 import non.era.aisdme.configs.store.ConfigPaths.PROJECT_CONFIG_DIR
 import non.era.aisdme.ui.win.WindowState
 import non.era.aisdme.utils.ClipboardHelper
@@ -84,6 +86,9 @@ class TabCashPaste(
             }
         }
     }
+
+    override fun toSnapshot(): SnapshotTabCash =
+        SnapshotTabCash(null, TypeTabSnapshot.PASTE_TAB)
 
     private fun getPathClipFile(): Path? {
         val rootProjPath = winState.getProjectRootSafe() ?: return null

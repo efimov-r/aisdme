@@ -1,12 +1,13 @@
 package non.era.aisdme.ui.editor.halfviewmodel
 
 import kotlinx.coroutines.CoroutineScope
+import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
+import non.era.aisdme.configs.dataclass.snapshots.TypeTabSnapshot
 import non.era.aisdme.ui.win.WindowState
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 object HalfViewModelFactory {
-    val clipboarTypePath = "clipboard" //todo перейти на класс
     private var nextTabId = AtomicInteger(0)
 
     fun clearNexTabId() {
@@ -24,25 +25,28 @@ object HalfViewModelFactory {
             extScope = extScope
         )
 
-    fun createObservableOpened(id: Int, filePath: String, extScope: CoroutineScope, winState: WindowState): TabCash{
+    fun createObservableOpened(id: Int, snap: SnapshotTabCash, extScope: CoroutineScope, winState: WindowState): TabCash? {
         if(id >= nextTabId.get()){
             nextTabId.set(id+1)
         }
-        when(filePath) {
-            clipboarTypePath -> {
+        when(snap.type) {
+            TypeTabSnapshot.PASTE_TAB -> {
                 return TabCashPaste(
                     id = id,
                     extScope = extScope,
                     winState = winState
                 )
             }
-            else -> {
-                return TabCashTextFile(
-                    id = id,
-                    _file = File(filePath),
-                    extScope = extScope
-                )
+            TypeTabSnapshot.TEXT_FILE -> {
+                return snap.pathStr?.let { pathStr ->
+                    TabCashTextFile(
+                        id = id,
+                        _file = File(pathStr),
+                        extScope = extScope
+                    )
+                }
             }
+            null -> return null
         }
     }
 }

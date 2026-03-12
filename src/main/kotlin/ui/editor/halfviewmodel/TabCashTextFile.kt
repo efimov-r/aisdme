@@ -11,6 +11,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.BuildConfig
 import non.era.aisdme.bus.ShowFileInTree
+import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
+import non.era.aisdme.configs.dataclass.snapshots.TypeTabSnapshot
 import java.io.File
 import java.nio.file.Files
 
@@ -27,7 +29,7 @@ class TabCashTextFile (
     id: Int,
     private var _file: File,
     extScope: CoroutineScope,
-) : ITabIsFiled, TabCash(id, extScope) {
+) : TabCash(id, extScope) {
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
@@ -49,8 +51,6 @@ class TabCashTextFile (
         _name = _file.name
     }
     fun getFile() = _file
-    override fun getFilePath() = _file.toPath().toString()
-    override fun needSaveToCash(): Boolean = writeStatus.toConfig
     fun compareFile(file: File) = (_file == file)
 
     fun showFileInTreeEvent() = ShowFileInTree(_file)
@@ -91,6 +91,11 @@ class TabCashTextFile (
         } catch(_: Throwable) {
             writeStatus(WriteStatus.LOCKED)
         }
+    }
+
+    override fun toSnapshot(): SnapshotTabCash? {
+        if(!writeStatus.toConfig) return null
+        return SnapshotTabCash(_file.path, TypeTabSnapshot.TEXT_FILE)
     }
 
     fun updateTextFieldValue(newValue: TextFieldValue) {
