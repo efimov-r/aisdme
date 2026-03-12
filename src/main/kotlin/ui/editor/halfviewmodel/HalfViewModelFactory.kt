@@ -3,6 +3,8 @@ package non.era.aisdme.ui.editor.halfviewmodel
 import kotlinx.coroutines.CoroutineScope
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.configs.dataclass.snapshots.TypeTabSnapshot
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
 import non.era.aisdme.ui.win.WindowState
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger

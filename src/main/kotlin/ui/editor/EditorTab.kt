@@ -26,7 +26,7 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.over.NodeIcon
 import non.era.aisdme.ui.components.over.SvgButton
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
-import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
 
 @Composable
 fun EditorTab(

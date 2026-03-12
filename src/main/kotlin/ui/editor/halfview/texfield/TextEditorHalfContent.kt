@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.editor.halfview.AisDmeTextField
-import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
 import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 import non.era.aisdme.utils.PathHelper
 import java.nio.file.Path

@@ -1,9 +1,8 @@
-package non.era.aisdme.ui.editor.halfviewmodel
+package non.era.aisdme.ui.editor.halfviewmodel.realizations
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -13,17 +12,10 @@ import non.era.aisdme.BuildConfig
 import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.configs.dataclass.snapshots.TypeTabSnapshot
+import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 import java.io.File
 import java.nio.file.Files
-
-enum class WriteStatus(val text: String, val back: Color, val te: Color, val toConfig: Boolean, val readOnly: Boolean) {
-    LOAD("load", Color(0xFFaca700), Color.Black, true, true),
-    NOT_SAVE("save not", Color(0xFFffc908), Color.Black, true, false),
-    WRITABLE("writable", Color(0xFF06c000), Color.Black, true, false),
-    READ_ONLY_FS("read only", Color(0xFFffc908), Color.Black, true, true), //!Files.isWritable(getFilepath())
-    LOCKED("locked", Color(0xFFf38100), Color.Black, false, true),//error write
-    ERROR("error", Color(0xFFe20300), Color.Black, false, true) //!file.exists()
-}
 
 class TabCashTextFile (
     id: Int,

@@ -15,8 +15,8 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 import non.era.aisdme.ui.editor.halfview.fromclipboard.FromClipboardHalfContent
 import non.era.aisdme.ui.editor.halfview.texfield.TextEditorHalfContent
-import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
-import non.era.aisdme.ui.editor.halfviewmodel.TabCashPaste
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 
 @Composable
 fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {

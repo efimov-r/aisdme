@@ -11,7 +11,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.ui.editor.halfview.AisDmeTextField
-import non.era.aisdme.ui.editor.halfviewmodel.TabCashPaste
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 
 @Composable
 fun FromClipboardHalfContent(

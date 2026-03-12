@@ -1,4 +1,4 @@
-package non.era.aisdme.ui.editor.halfviewmodel
+package non.era.aisdme.ui.editor.halfviewmodel.realizations
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.configs.dataclass.snapshots.TypeTabSnapshot
 import non.era.aisdme.configs.store.ConfigPaths.PROJECT_CONFIG_DIR
+import non.era.aisdme.ui.editor.halfviewmodel.TabCash
 import non.era.aisdme.ui.win.WindowState
 import non.era.aisdme.utils.ClipboardHelper
 import non.era.aisdme.utils.Log

@@ -9,7 +9,7 @@ import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
-import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.win.WindowState

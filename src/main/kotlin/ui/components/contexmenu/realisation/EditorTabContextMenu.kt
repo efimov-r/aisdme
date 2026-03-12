@@ -15,7 +15,7 @@ import non.era.aisdme.ui.components.contexmenu.ContextMenuState
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
 import non.era.aisdme.ui.editor.HalfEditorTabs
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
-import non.era.aisdme.ui.editor.halfviewmodel.TabCashTextFile
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashTextFile
 
 @Composable
 fun EditorTabContextMenu(
