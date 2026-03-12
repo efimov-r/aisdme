@@ -25,7 +25,7 @@ import java.nio.file.Path
 
 @Composable
 fun BottomPanel(tab: TabCashFile) {
-    Row(modifier = Modifier.fillMaxWidth().height(36.dp), //todo сделать данные о img
+    Row(modifier = Modifier.fillMaxWidth().height(36.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(Modifier.width(4.dp))

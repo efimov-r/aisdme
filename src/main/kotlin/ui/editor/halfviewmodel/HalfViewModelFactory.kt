@@ -24,7 +24,7 @@ object HalfViewModelFactory {
 
 
     fun createFileTab(file: File, extScope: CoroutineScope): TabCash {
-        if(isImageFile(file.toPath())) {
+        if(TypeFile.isImageFile(file.toPath())) {
             return TabCashFileImg(
                 id = nextTabId.getAndIncrement(),
                 file = file,
@@ -77,20 +77,20 @@ object HalfViewModelFactory {
         }
     }
 
-    private fun isImageFile(path: Path): Boolean {
-
-        val ext = path.fileName.toString()
-            .substringAfterLast('.', "")
-            .lowercase()
-
-        val imageExt = setOf(
-            "png","jpg","jpeg","gif","bmp","webp","tif","tiff"
-        )
-
-        if (ext in imageExt) return true
-
-        val mime = Files.probeContentType(path)
-
-        return mime?.startsWith("image/") == true
-    }
+//    private fun isImageFile(path: Path): Boolean {
+//
+//        val ext = path.fileName.toString()
+//            .substringAfterLast('.', "")
+//            .lowercase()
+//
+//        val imageExt = setOf(
+//            "png","jpg","jpeg","gif","bmp","webp","tif","tiff"
+//        )
+//
+//        if (ext in imageExt) return true
+//
+//        val mime = Files.probeContentType(path)
+//
+//        return mime?.startsWith("image/") == true
+//    }
 }
