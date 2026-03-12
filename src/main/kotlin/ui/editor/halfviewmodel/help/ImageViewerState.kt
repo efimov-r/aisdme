@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.unit.IntSize
+import kotlin.math.max
 import kotlin.math.min
 
 class ImageViewerState(
@@ -38,13 +39,17 @@ class ImageViewerState(
         val oldSize = viewportSize
         viewportSize = newSize
         if (oldSize == IntSize.Zero) {  // Только при первом измерении
-            val fit = min(
+            var fit = min(
                 viewportSize.width / imgW,
                 viewportSize.height / imgH
             )
+            fit = min(fit, 1f)
             scale = fit
-            offsetX = 0f
-            offsetY = 0f
+
+            val scaledWidth = imgW * fit
+            val scaledHeight = imgH * fit
+            offsetX = (viewportSize.width - scaledWidth) / 2f
+            offsetY = (viewportSize.height - scaledHeight) / 2f
         }
     }
 }
