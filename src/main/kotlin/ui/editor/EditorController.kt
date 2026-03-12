@@ -46,7 +46,7 @@ class EditorController(
                     }
                     is MoveFile -> {
                         getTabsFileFilter(event.oldFile).forEach { (_, file) ->
-                            (file as TabCashTextFile).refile(File(event.newFile.toString()))
+                            file.refile(File(event.newFile.toString()))
                         }
                         saveToConfig()
                     }

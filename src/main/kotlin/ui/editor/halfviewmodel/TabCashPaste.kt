@@ -14,6 +14,7 @@ import non.era.aisdme.configs.store.ConfigPaths.PROJECT_CONFIG_DIR
 import non.era.aisdme.ui.win.WindowState
 import non.era.aisdme.utils.ClipboardHelper
 import non.era.aisdme.utils.Log
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -89,6 +90,9 @@ class TabCashPaste(
 
     override fun toSnapshot(): SnapshotTabCash =
         SnapshotTabCash(null, TypeTabSnapshot.PASTE_TAB)
+
+    override fun refile(file: File) {
+    }
 
     private fun getPathClipFile(): Path? {
         val rootProjPath = winState.getProjectRootSafe() ?: return null

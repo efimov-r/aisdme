@@ -45,7 +45,7 @@ class TabCashTextFile (
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()
 
-    fun refile(file: File) {
+    override fun refile(file: File) {
         _file = file
         _path = _file.toPath()
         _name = _file.name

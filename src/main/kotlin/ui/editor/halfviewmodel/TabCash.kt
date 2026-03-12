@@ -2,6 +2,7 @@ package non.era.aisdme.ui.editor.halfviewmodel
 
 import kotlinx.coroutines.CoroutineScope
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
+import java.io.File
 
 abstract class TabCash(
     val id: Int,
@@ -23,4 +24,6 @@ abstract class TabCash(
     abstract suspend fun openFile(typeOpen: OpenFileType)
 
     abstract fun toSnapshot() : SnapshotTabCash?
+
+    abstract fun refile(file: File)
 }
