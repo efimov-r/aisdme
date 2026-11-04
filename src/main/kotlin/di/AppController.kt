@@ -1,0 +1,77 @@
+package non.era.aisdme.di
+
+import androidx.compose.runtime.*
+import non.era.aisdme.configs.ConfigController
+import non.era.aisdme.configs.dataclass.AppConfig
+import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.files.work.FilesController
+import non.era.aisdme.ui.components.dialogs.elements.DialogsController
+import non.era.aisdme.ui.editor.EditorController
+import non.era.aisdme.ui.editor.Panels
+import non.era.aisdme.ui.errors.GlobalMessage
+import non.era.aisdme.ui.move.MoveController
+import non.era.aisdme.ui.project.ProjectController
+import non.era.aisdme.ui.reload.TreeReloadWatcher
+import non.era.aisdme.ui.win.WindowState
+import java.io.File
+
+val LocalAppController = staticCompositionLocalOf<AppController> {
+    error("AppController not provided")
+}
+
+class AppController(
+    val editorController: EditorController,
+    val projectController: ProjectController,
+    val filesController: FilesController,
+    val moveController: MoveController,
+    private val reloadWatcher: TreeReloadWatcher,
+    val configController: ConfigController,
+    val dialogController: DialogsController,
+    startGlobalConfig: AppConfig?,
+    val winState: WindowState
+)  {
+    private val _globalMess = mutableStateListOf<GlobalMessage>()
+    val globalMess: List<GlobalMessage> get() = _globalMess
+    fun clearGlobalMess() { _globalMess.clear() }
+    fun removeMess(id: Int) { _globalMess.removeIf { it.id == id } }
+
+    var isDarkTheme by mutableStateOf(startGlobalConfig?.isDarkTheme ?: false)
+
+    init {
+        editorController.subscriptionError { _globalMess += it }
+        projectController.subscriptionError { _globalMess += it }
+        filesController.subscriptionError { _globalMess += it }
+        moveController.subscriptionError { _globalMess += it }
+        reloadWatcher.subscriptionError { _globalMess += it }
+        configController.subscriptionError { _globalMess += it }
+        dialogController.subscriptionError { _globalMess += it }
+    }
+
+    fun reselectProject(root: File): ProjectConfig? { //открыть новый проект
+        winState.openProject(root.toPath())
+        val res = configController.reselectProject(root) //первый всегда!
+        reloadWatcher.switchProject(root.toPath())
+        projectController.reselectRootProject(res?.treeState, root)
+        editorController.reselectProject(res?.snapshotEditor)
+        return res
+    }
+    fun openSelectedNodesInEditor(panel: Panels) = editorController.openNodes(projectController.treeState.getSelectedNodes(), panel)
+    fun createFileInSelected(name: String) = filesController.createFile(projectController.treeState.getSelectedNodes(), name)
+    fun createDirectoryInSelected(name: String) = filesController.createDirectory(projectController.treeState.getSelectedNodes(), name)
+    fun deleteSelected() = filesController.delete(projectController.treeState.getSelectedNodes())
+    fun copySelectedToClipboard(cut: Boolean) {
+        val selected = projectController.treeState.getSelectedNodes()
+        if(cut) selected.forEach { projectController.treeState.cutNoteMarkRecursive(it) }
+        filesController.copyToClipboard(selected, cut)
+    }
+
+    fun dispose() {
+        editorController.dispose()
+        projectController.dispose()
+        filesController.dispose()
+        moveController.dispose()
+        reloadWatcher.dispose()
+        configController.dispose()
+        dialogController.dispose()
+    }
+}

@@ -1,126 +1,215 @@
 package non.era.aisdme.ui.editor
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import androidx.compose.ui.geometry.Offset
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
+import non.era.aisdme.bus.*
+import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
+import non.era.aisdme.configs.repositories.EditorStateRepository
+import non.era.aisdme.ui.UiController
+import non.era.aisdme.ui.editor.halfviewmodel.HalfViewModelFactory
+import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
+import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
+import non.era.aisdme.ui.project.data.FileNode
+import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.ui.win.WindowState
 import java.io.File
+import java.nio.file.Path
 
-data class EditorState(
-    val file: File?,
-    val savedText: String,
-    val text: String,
-    val error: String? = null,
-) {
-    val isModified: Boolean
-        get() = text != savedText
+enum class Panels{
+    LEFT, RIGHT
 }
 
 class EditorController(
-    initialFile: File?,
-    private val autosaveDelayMs: Long = 2000
-) {
-    private val saveMutex = Mutex()
+    private val bus: AppEventBus,
+    private val rep: EditorStateRepository,
+    private val winState: WindowState,
+) : UiController() {
+    private var _tabsCash: MutableMap<Int, TabCash> = mutableMapOf()
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var autosaveJob: Job? = null
+    private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) } }
+    private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) } }
+    private val updateLeftActive: (Int?) -> Unit = { scope.launch { rep.updateLeftActiveTabs(it) } }
+    private val updateRightActive: (Int?) -> Unit = { scope.launch { rep.updateRightActiveTabs(it) } }
 
-    var state by mutableStateOf(
-        runCatching {
-            val text = initialFile?.takeIf { it.exists() }?.readText() ?: ""
-            EditorState(
-                file = initialFile,
-                text = text,
-                savedText = text
-            )
-        }.getOrElse {
-            EditorState(
-                file = initialFile,
-                text = "",
-                savedText = "",
-                error = it.message
-            )
-        }
-    )
-        private set
+    var leftTabs = HalfEditorTabs( updateLeftTabs, updateLeftActive)
+    var rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
 
-    fun openFile(file: File) {
-        state = runCatching {
-            val t = if (file.exists()) file.readText() else ""
-            EditorState(
-                file = file,
-                text = t,
-                savedText = t
-            )
-        }.getOrElse {
-            state.copy(error = it.message)
-        }
-    }
-
-    fun updateText(newText: String) {
-        state = state.copy(text = newText)
-
-        scheduleAutosave()
-    }
-
-    private fun scheduleAutosave() {
-        autosaveJob?.cancel()
-
-        autosaveJob = scope.launch {
-            delay(autosaveDelayMs)
-
-            if (!state.isModified) return@launch
-
-            val result = saveMutex.withLock {
-                runCatching {
-                    val file = state.file ?: return@runCatching null
-                    val text = state.text
-                    file.writeText(text)
-                    return@runCatching text
-                }
-            }
-
-            withContext(Dispatchers.Main) {
-                state = result.fold(
-                    onSuccess = { savedText ->
-                        if (savedText == null) state
-                        else state.copy(savedText = savedText, error = null)
-                    },
-                    onFailure = {
-                        state.copy(error = it.message)
+    init {
+        scope.launch {
+            bus.events.collect { event ->
+                when (event) {
+                    is FileOpened -> {
+                        withContext(Dispatchers.Swing) {
+                            openNodes(listOf(event.node))
+                        }
                     }
-                )
-            }
-        }
-    }
-
-    fun saveNow() {
-        autosaveJob?.cancel()
-        CoroutineScope(Dispatchers.IO).launch {
-            saveMutex.withLock {
-                val file = state.file ?: return@withLock
-
-                state = runCatching {
-                    file.writeText(state.text)
-                    state.copy(savedText = state.text, error = null)
-                }.getOrElse {
-                    state.copy(error = it.message)
+                    is MoveFile -> {
+                        getTabsFileFilter(event.oldFile).forEach { (_, file) ->
+                            file.refile(File(event.newFile.toString()))
+                        }
+                        saveToConfig()
+                    }
+                    is DeleteFile -> {
+                        getTabsFileFilter(event.file).keys.forEach { id->
+                            leftTabs.closeTab(id)
+                            rightTabs.closeTab(id)
+                        }
+                    }
+                    is DeleteDir -> {
+                        getTabsFileFilter(event.dir, event.dir).keys.forEach { id->
+                            leftTabs.closeTab(id)
+                            rightTabs.closeTab(id)
+                        }
+                    }
+                    else -> {}
                 }
             }
         }
     }
 
+    fun dropOutsideTree(src: List<ProjectNode>, position: Offset) {
+        when {
+            leftTabs.rect?.contains(position) == true -> Panels.LEFT
+            rightTabs.rect?.contains(position) == true -> Panels.RIGHT
+            else -> null
+        }?.let { openNodes(src, it) }
+    }
 
-    fun dispose() {
-        scope.cancel()
+    fun dragPosition(position: Offset?) {
+        if(position == null) {
+            leftTabs.dragDest = false; rightTabs.dragDest = false
+            return
+        }
+        leftTabs.dragDest = (leftTabs.rect?.contains(position) == true)
+        rightTabs.dragDest = (rightTabs.rect?.contains(position) == true)
+    }
+
+    fun getTab(id: Int) = _tabsCash[id]
+
+    fun showSelectedInTree() {
+        when {
+            leftTabs.inFocus -> leftTabs.activeTabId
+            rightTabs.inFocus -> rightTabs.activeTabId
+            else -> null
+        }?.let { showInTree(it) }
+    }
+
+    fun showInTree(id: Int) {
+        val tab = _tabsCash[id]
+        if(tab is TabCashFile) bus.publish(tab.showFileInTreeEvent())
+    }
+
+    fun reselectProject(snapshot: SnapshotEditor?) { //предпологаем что поток ui
+
+        fun updateHalf(half: HalfEditorTabs, tabs: MutableList<Int>, sel: Int?) {
+            var _sel = sel
+            tabs.removeIf { !_tabsCash.keys.contains(it) }
+            if(!tabs.contains(_sel)) _sel = null
+            half.reselectProject(tabs, _sel ?: tabs.lastOrNull())
+        }
+
+        _tabsCash.clear()
+        HalfViewModelFactory.clearNexTabId()
+        snapshot?.let { snap ->
+            if(!snap.leftTabs.isEmpty() || !snap.rightTabs.isEmpty()) {
+                snap.files.forEach { id, snapshotTab ->
+                    HalfViewModelFactory.createTabFromSnapshot(id, snapshotTab, scope, winState)?.let{ tabState ->
+                        _tabsCash[id] = tabState
+                        scope.launch {
+                            tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
+                        }
+                    }
+                }
+                updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
+                updateHalf(rightTabs, snap.rightTabs.toMutableList(), snap.rightTabsSelect)
+            }
+        }
+    }
+
+    fun openNodes(nodes: List<ProjectNode>, panel: Panels = Panels.LEFT) {
+        fun activateTab(id: Int) = when(panel){
+            Panels.RIGHT -> rightTabs.activateTab(id)
+            Panels.LEFT -> leftTabs.activateTab(id)
+        }
+
+        nodes.forEach { node->
+            if(node is FileNode) {
+                _tabsCash.values.find { it is TabCashFile && it.compareFile(node.getFile()) }?.id?.let { tabMapId ->
+                    activateTab(tabMapId)
+                } ?: run {
+                    val tab = HalfViewModelFactory.createFileTab(node.getFile(), scope)
+                    tabToCash(tab)
+                    activateTab(tab.id)
+                }
+            }
+        }
+    }
+
+    fun addFromCpipboardTab() : Int { //создание таба из ui
+        val tab = HalfViewModelFactory.createPasteTab(scope, winState)
+        tabToCash(tab)
+        return tab.id
+    }
+
+    private fun tabToCash(tab: TabCash) {
+        _tabsCash[tab.id] = tab
+        scope.launch {
+            tab.openFile(TabCash.OpenFileType.OPEN_NEW_FILE)
+        }
+        scope.launch {
+            saveToConfig()
+        }
+    }
+
+    private suspend fun saveToConfig() {
+        rep.updateFiles( //уходит на сохранение в конфиг
+            withContext(Dispatchers.Swing) {
+                _tabsCash.mapValues { (_, value) ->
+                    value.copy()
+                }.toMap()
+            }
+        )
+    }
+
+    private fun getTabsFileFilter(eq: Path, startWith: Path? = null) =
+        _tabsCash.filterValues {
+            it is TabCashFile &&
+                    (it.getFile().toPath() == eq ||
+                            if(startWith == null) false else it.getFile().path.startsWith(startWith.toString()))
+        }
+
+    fun rightToLeftHalf() {
+        leftTabs = rightTabs.copy(updateLeftTabs, updateLeftActive)
+        rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
+    }
+
+    override fun disposeBefore() {
+        runBlocking {
+            _tabsCash.values.map { ta ->
+                scope.launch {
+                    ta.disposeBeforeBlocked()
+                }
+            }.joinAll()
+        }
+    }
+
+    suspend fun removeNotUsedFiles() { //оставлю на всякий случай
+        withContext(Dispatchers.Swing) {
+            _tabsCash.mapNotNull {
+                if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {
+                    return@mapNotNull it.key
+                }
+                return@mapNotNull null
+            }
+        }.map { fid->
+            scope.launch {
+                _tabsCash[fid]?.beforeRemove()
+                withContext(Dispatchers.Swing) {
+                    _tabsCash.remove(fid)
+                }
+            }
+        }.joinAll()
     }
 }

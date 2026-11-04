@@ -1,0 +1,68 @@
+package non.era.aisdme.ui.components.over
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import non.era.aisdme.theme.LocalAisDmeColors
+
+@Composable
+fun ErrorableTextField(
+    modifier: Modifier = Modifier,
+    placeholder: String = "",
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    error: String?,
+) {
+    val focusRequester = remember { FocusRequester() }
+
+    Column(modifier = modifier
+        .fillMaxWidth()
+        .height(90.dp)) {
+        TextField(
+            value = value,
+            onValueChange = {
+                onValueChange(it)
+            },
+            isError = error != null,
+            singleLine = true,
+            placeholder = { Text(placeholder) }, // Вместо label используем placeholder
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
+            colors = TextFieldDefaults.textFieldColors(
+                focusedIndicatorColor = LocalAisDmeColors.current.primary, // Цвет черты при фокусе
+                unfocusedIndicatorColor = LocalAisDmeColors.current.surfaceBorder, // Цвет черты без фокуса
+                disabledIndicatorColor = LocalAisDmeColors.current.surfaceBorder, // Цвет черты для disabled
+                errorIndicatorColor = LocalAisDmeColors.current.error, // Цвет черты при ошибке
+                cursorColor = LocalAisDmeColors.current.primary, // Цвет курсора
+                backgroundColor = LocalAisDmeColors.current.transparent // Прозрачный фон
+            ),
+            textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
+        )
+
+        if (error != null) {
+            Text(
+                error,
+                color = LocalAisDmeColors.current.error,
+                style = LocalTextStyle.current.copy(fontSize = 12.sp, lineHeight = 20.sp)
+            )
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+}
