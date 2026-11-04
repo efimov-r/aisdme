@@ -17,7 +17,7 @@ gradlew run -Prelease     # запуск, release-сборка (BuildConfig.DEBU
 gradlew build             # сборка
 ```
 
-TODO: сборка на Windows ещё не проверялась.
+На Windows `gradlew build` и `gradlew run` работают с JDK 17, если задан `JAVA_HOME` (проверено 2026-11-05).
 
 - `BuildConfig` генерирует задача `generateBuildConfig` в `build/generated/buildconfig`, перед каждой компиляцией Kotlin. Руками его не создавать.
 - Главный класс — `non.era.aisdme.MainKt`.

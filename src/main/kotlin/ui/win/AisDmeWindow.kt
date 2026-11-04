@@ -32,6 +32,7 @@ import java.io.File
 
 sealed interface AppStartState {
     object Loading : AppStartState
+    data class ChooseProject(val config: AppConfig) : AppStartState //последнего проекта нет
     data class Ready(val config: AppConfig, val lastProject: File) : AppStartState
 }
 
@@ -48,7 +49,7 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
 
         if(config.lastOpenProject!= null) {
             val file = File(config.lastOpenProject)
-            if(file.exists()) {
+            if(file.isDirectory) {
                 lastProject = file
             }
         }
@@ -58,15 +59,31 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
 
         delay(delayLeft)
 
-        startState = AppStartState.Ready(config, lastProject!!)
+        startState = lastProject?.let { AppStartState.Ready(config, it) }
+            ?: AppStartState.ChooseProject(config)
     }
 
-    when (val state = startState) {
-        is AppStartState.Loading -> SplashWindow()
-        is AppStartState.Ready -> MainWindow(state.config,
+    // заставка одна на Loading и ChooseProject, чтобы окно не пересоздавалось.
+    // без окон application завершается, поэтому заставка держится, пока открыт выбор
+    val state = startState
+    if (state is AppStartState.Ready) {
+        MainWindow(state.config,
             onCloseRequest,
             state.lastProject,
             content)
+    } else {
+        SplashWindow {
+            if (state is AppStartState.ChooseProject) {
+                LaunchedEffect(state) {
+                    val dir = ProjectChooserHelper.chooseProjectDir(window)
+                    if (dir == null) { //отмена — выходим
+                        onCloseRequest()
+                        return@LaunchedEffect
+                    }
+                    startState = AppStartState.Ready(state.config, dir)
+                }
+            }
+        }
     }
 }
 
@@ -86,7 +103,7 @@ fun MainWindow(globalConf: AppConfig,
 }
 
 @Composable
-fun SplashWindow() {
+fun SplashWindow(content: @Composable FrameWindowScope.() -> Unit = {}) {
     var isOpen by remember { mutableStateOf(true) }
 
     if(isOpen) {
@@ -126,6 +143,7 @@ fun SplashWindow() {
                     )
                 }
             }
+            content()
         }
     }
 }
