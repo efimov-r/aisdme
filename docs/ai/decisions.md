@@ -13,6 +13,13 @@
 
 ---
 
+## 2026-11-05 — Выбор проекта при старте через `JFileChooser`
+- **Статус:** принято, оформление — [#21](https://github.com/efimov-r/aisdme/issues/21)
+- **Контекст:** без последнего проекта приложение падало ([#2](https://github.com/efimov-r/aisdme/issues/2))
+- **Решение:** `JFileChooser` с `DIRECTORIES_ONLY`, системный look & feel — только на время создания диалога (`ui/win/ProjectChooserHelper.kt`). Отмена закрывает приложение
+- **Почему:** есть в JDK, работает на Linux и Windows, без зависимостей
+- **Альтернативы:** `java.awt.FileDialog` — на Windows не выбирает папки; нативные диалоги (LWJGL `tinyfd`, `nfd`) — нативная библиотека на каждую ОС; проект по умолчанию — скрытое поведение
+
 ## 2026-11-05 — Настройки IDE из `.idea/` не коммитятся
 - **Статус:** принято
 - **Контекст:** IntelliJ создала `.idea/gradle.xml`, `misc.xml`, `kotlinc.xml`, `vcs.xml`

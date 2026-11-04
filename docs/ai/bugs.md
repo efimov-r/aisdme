@@ -4,12 +4,9 @@
 
 ## Открытые
 
-### Падение при первом запуске без последнего проекта
-- **Симптом:** если в глобальном конфиге нет `lastOpenProject` или папка проекта удалена, приложение должно упасть с `NullPointerException` после окна загрузки
-- **Где:** `ui/win/AisDmeWindow.kt`, `AppStartState.Ready(config, lastProject!!)`
-- **Статус:** открыт; найдено по коду, запуском не проверено. Issue [#2](https://github.com/efimov-r/aisdme/issues/2)
-- **Что пробовали:** ничего; нужен выбор проекта при старте (диалог или проект по умолчанию)
+- нет
 
 ## Решённые
 
 <!-- - YYYY-MM-DD — что было — как решили -->
+- 2026-11-05 — падение с `NullPointerException` при запуске без последнего проекта ([#2](https://github.com/efimov-r/aisdme/issues/2)) — выбор папки через `JFileChooser` поверх заставки (`AppStartState.ChooseProject`, `ProjectChooserHelper`); ловушка с закрытием приложения — [gotchas.md](gotchas.md)
