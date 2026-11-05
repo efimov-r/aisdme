@@ -3,6 +3,8 @@ package non.era.aisdme.ui.editor
 import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.bus.*
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
 import non.era.aisdme.configs.repositories.EditorStateRepository
@@ -27,9 +29,10 @@ class EditorController(
     private val winState: WindowState,
 ) : UiController() {
     private var _tabsCash: MutableMap<Int, TabCash> = mutableMapOf()
+    private val removeMutex = Mutex()
 
-    private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) } }
-    private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) } }
+    private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) }; removeClosedTabs() }
+    private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) }; removeClosedTabs() }
     private val updateLeftActive: (Int?) -> Unit = { scope.launch { rep.updateLeftActiveTabs(it) } }
     private val updateRightActive: (Int?) -> Unit = { scope.launch { rep.updateRightActiveTabs(it) } }
 
@@ -113,18 +116,22 @@ class EditorController(
         _tabsCash.clear()
         HalfViewModelFactory.clearNexTabId()
         snapshot?.let { snap ->
-            if(!snap.leftTabs.isEmpty() || !snap.rightTabs.isEmpty()) {
-                snap.files.forEach { id, snapshotTab ->
-                    HalfViewModelFactory.createTabFromSnapshot(id, snapshotTab, scope, winState)?.let{ tabState ->
-                        _tabsCash[id] = tabState
-                        scope.launch {
-                            tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
-                        }
+            val open = snap.leftTabs + snap.rightTabs
+            snap.files.forEach { id, snapshotTab ->
+                val tabState = HalfViewModelFactory.createTabFromSnapshot(id, snapshotTab, scope, winState)
+                    ?: return@forEach
+                if(id in open) {
+                    _tabsCash[id] = tabState
+                    scope.launch {
+                        tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
                     }
+                } else {
+                    scope.launch { tabState.beforeRemove() } //закрытая вкладка из старого конфига: удалить её .clip
                 }
-                updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
-                updateHalf(rightTabs, snap.rightTabs.toMutableList(), snap.rightTabsSelect)
             }
+            updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
+            updateHalf(rightTabs, snap.rightTabs.toMutableList(), snap.rightTabsSelect)
+            scope.launch { saveToConfig() } //без закрытых вкладок
         }
     }
 
@@ -195,21 +202,22 @@ class EditorController(
         }
     }
 
-    suspend fun removeNotUsedFiles() { //оставлю на всякий случай
-        withContext(Dispatchers.Swing) {
-            _tabsCash.mapNotNull {
-                if(!leftTabs.listTabs.contains(it.key) && !rightTabs.listTabs.contains(it.key)) {
-                    return@mapNotNull it.key
-                }
-                return@mapNotNull null
+    internal fun removeClosedTabs() = scope.launch { //вкладки, которых нет ни в одной половине
+        removeMutex.withLock { //по очереди: иначе вкладка обрабатывается дважды
+            val closed = withContext(Dispatchers.Swing) {
+                _tabsCash.values.filter { !isTabOpen(it.id) }
             }
-        }.map { fid->
-            scope.launch {
-                _tabsCash[fid]?.beforeRemove()
+            if(closed.isEmpty()) return@launch
+
+            closed.forEach { tab ->
+                tab.beforeRemove() //сохранить текст, удалить .clip
                 withContext(Dispatchers.Swing) {
-                    _tabsCash.remove(fid)
+                    if(!isTabOpen(tab.id)) _tabsCash.remove(tab.id) //вкладку могли открыть снова
                 }
             }
-        }.joinAll()
+            saveToConfig()
+        }
     }
+
+    private fun isTabOpen(id: Int) = leftTabs.listTabs.contains(id) || rightTabs.listTabs.contains(id)
 }

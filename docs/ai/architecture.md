@@ -28,7 +28,7 @@
 | `FilesController`, `FilesExecutor` | файловые операции | создать, удалить, переименовать, скопировать, переместить; проверка имени (`FileNameValidator`) |
 | Буфер обмена | копировать, вырезать, вставить | `FileTransferable`: файлы — `javaFileListFlavor` и `text/uri-list`; пометка «вырезано» — формат ОС из `IPlatform.clipboardCutNative` (Windows — `Preferred DropEffect`, KDE — `application/x-kde-cutselection`), связан с `cutFlavor` через `SystemFlavorMap`. Работает с Explorer в обе стороны |
 | `MoveController` | drag & drop | перетаскивание внутри дерева и из дерева в редактор с подсветкой цели; `DragPreviewLayer` — превью; автоскролл у края |
-| `ConfigStore<T>` | конфиги | kotlinx.serialization, атомарная запись, `Mutex`, сохранение не чаще раза в секунду |
+| `ConfigStore<T>` | конфиги | kotlinx.serialization, атомарная запись, `Mutex`, кэш; пишет на диск при каждом `update`, без задержки |
 | `DialogsController` | диалоги и подсказки | новый файл, переименование, удаление, перемещение, вставка; `DialogsStarter`, `TooltipStarter` |
 | `Platform` | всё, что зависит от ОС | интерфейс `IPlatform`, реализации `WindowsPlatform` и `LinuxPlatform` (macOS тоже идёт в неё); `Platform.current` выбирается по `os.name` один раз. Остальной код от ОС не зависит |
 | `AisDmeTheme` | тема | светлая и тёмная, цвета через `LocalAisDmeColors`, фирменный зелёный `0xFF35F074`; вкладки в форме трапеции |
@@ -41,6 +41,8 @@
 | Проекта (`ProjectConfig`) | `<корень проекта>/.aisdme/config.json` | состояние дерева и редактора (открытые вкладки — объектами), размеры панелей (`keyValue`) |
 
 Пути — в `ConfigPaths`, папка конфигов ОС — `IPlatform.configRoot()`.
+
+Сохранение состояния проекта: `EditorController` и `ProjectController` пишут в `EditorStateRepository` и `TreeStateRepository`, `ConfigController` собирает из них снимки (`SnapshotEditor`, `SnapshotTree`) и пишет с задержкой (`debounce`: редактор — 4 с, дерево — 2 с). Задачи автосохранения запускаются на каждый проект со своим `ConfigStore`; при смене проекта и выходе они останавливаются, текущее состояние сразу пишется в конфиг этого проекта, репозитории сбрасываются. В конфиг попадают только открытые вкладки: закрытая удаляется из кэша `EditorController` (`removeClosedTabs`), перед этим `beforeRemove` сохраняет текст или удаляет `.clip`.
 
 ## Редактор
 

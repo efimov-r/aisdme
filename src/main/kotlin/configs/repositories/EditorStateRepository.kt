@@ -24,4 +24,12 @@ class EditorStateRepository {
     private val _rightActive = MutableStateFlow<Int?>(null)
     val rightActive get() = _rightActive.asStateFlow()
     suspend fun updateRightActiveTabs(rightActive: Int?) { _rightActive.emit(rightActive) }
+
+    fun reset() { //новый проект: состояние старого не должно попасть в его конфиг
+        _files.value = null
+        _leftTabs.value = null
+        _rightTabs.value = null
+        _leftActive.value = null
+        _rightActive.value = null
+    }
 }
