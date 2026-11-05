@@ -6,7 +6,7 @@
 
 - **Язык и версии:** Kotlin 1.9.22, JDK 17 (`jvmToolchain(17)`), Gradle 8.14 (wrapper), Kotlin DSL
 - **Фреймворки и библиотеки:** Compose for Desktop 1.6.10 (`org.jetbrains.compose`), `kotlinx-coroutines-swing`, `kotlinx-serialization-json` 1.6.3
-- **Платформы:** Linux и Windows: буфер обмена, пути конфигов, открытие в файловом менеджере. Разрабатывался в Manjaro Linux
+- **Платформы:** Linux и Windows. Различия — буфер обмена, пути конфигов, отслеживание диска, открытие в файловом менеджере; весь такой код — в `platform/`. Разрабатывался в Manjaro Linux
 - **Тестов нет:** папки `src/test` нет
 
 ## Сборка, запуск, тесты
