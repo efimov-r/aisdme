@@ -38,25 +38,23 @@ class ProjectController(
     val treeState = ProjectTreeState()
 
     init {
-        scope.launch {
-            bus.events.collect { event ->
-                when (event) {
-                    is RebuilDirRiff -> {
-                        scope.launch {
-                            treeState.rebuildDirDiff(event.dir) {
-                                scope.launch {
-                                    newGlobalError("The directory ${event.dir} was not found during the update.")
-                                }
+        bus.subscribe(scope) { event ->
+            when (event) {
+                is RebuilDirRiff -> {
+                    scope.launch {
+                        treeState.rebuildDirDiff(event.dir) {
+                            scope.launch {
+                                newGlobalError("The directory ${event.dir} was not found during the update.")
                             }
                         }
                     }
-                    is ShowFileInTree -> {
-                        scope.launch(Dispatchers.Swing) {
-                            treeState.showNode(event.file)
-                        }
-                    }
-                    else ->{}
                 }
+                is ShowFileInTree -> {
+                    scope.launch(Dispatchers.Swing) {
+                        treeState.showNode(event.file)
+                    }
+                }
+                else ->{}
             }
         }
         scope.launch(Dispatchers.Swing) {

@@ -46,21 +46,19 @@ class EditorController(
         private set
 
     init {
-        scope.launch(Dispatchers.Swing) { //вкладки и _tabsCash меняются только на ui-потоке
-            bus.events.collect { event ->
-                when (event) {
-                    is FileOpened -> openNodes(listOf(event.node))
-                    is MoveFile -> {
-                        tabsInside(event.oldFile).forEach { tab -> //файл или папка с открытыми файлами внутри
-                            val path = tab.getFile().toPath()
-                            tab.refile(event.newFile.resolve(event.oldFile.relativize(path)).toFile())
-                        }
-                        saveToConfig()
+        bus.subscribe(scope, Dispatchers.Swing) { event -> //вкладки и _tabsCash меняются только на ui-потоке
+            when (event) {
+                is FileOpened -> openNodes(listOf(event.node))
+                is MoveFile -> {
+                    tabsInside(event.oldFile).forEach { tab -> //файл или папка с открытыми файлами внутри
+                        val path = tab.getFile().toPath()
+                        tab.refile(event.newFile.resolve(event.oldFile.relativize(path)).toFile())
                     }
-                    is DeleteFile -> closeTabs(tabsInside(event.file))
-                    is DeleteDir -> closeTabs(tabsInside(event.dir))
-                    else -> {}
+                    saveToConfig()
                 }
+                is DeleteFile -> closeTabs(tabsInside(event.file))
+                is DeleteDir -> closeTabs(tabsInside(event.dir))
+                else -> {}
             }
         }
     }

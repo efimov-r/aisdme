@@ -1,5 +1,8 @@
 package non.era.aisdme.files.work
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -24,13 +27,19 @@ class FilesControllerTest {
     private val bus = AppEventBus()
     private val controller = FilesController(bus)
     private val errors = CopyOnWriteArrayList<GlobalMessage>() //пишется на ui-потоке
+    private val events = CopyOnWriteArrayList<AppEvent>()
+    private val eventsScope = CoroutineScope(Dispatchers.IO)
 
     init {
         controller.subscribeMessages { errors += it }
+        bus.subscribe(eventsScope) { events += it }
     }
 
     @AfterEach
-    fun dispose() = controller.dispose()
+    fun dispose() {
+        controller.dispose()
+        eventsScope.cancel()
+    }
 
     private fun waitUntil(check: () -> Boolean) = runBlocking {
         withTimeout(5000) {
@@ -38,7 +47,7 @@ class FilesControllerTest {
         }
     }
 
-    private fun lastEvent(): AppEvent? = bus.events.replayCache.lastOrNull()
+    private fun lastEvent(): AppEvent? = events.lastOrNull()
 
     // удаление папки удаляет её с содержимым и публикует DeleteDir
     @Test
