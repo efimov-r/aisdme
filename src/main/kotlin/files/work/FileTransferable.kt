@@ -1,8 +1,11 @@
 package non.era.aisdme.files.work
 
+import non.era.aisdme.platform.Platform
 import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.SystemFlavorMap
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
+import java.io.ByteArrayInputStream
 import java.io.File
 
 class FileTransferable(
@@ -10,18 +13,13 @@ class FileTransferable(
     private val cut: Boolean
 ) : Transferable {
 
-    private val uriFlavor = DataFlavor("text/uri-list;class=java.lang.String")
-    private val cutFlavor = DataFlavor("application/x-kde-cutselection;class=java.lang.String")
-
     override fun getTransferDataFlavors(): Array<DataFlavor> {
         val flavors = mutableListOf(
             DataFlavor.javaFileListFlavor,
             uriFlavor
         )
 
-        if (cut) {
-            flavors.add(cutFlavor)   // ← ТОЛЬКО если cut!
-        }
+        if (cut) flavors.add(cutFlavor)
 
         return flavors.toTypedArray()
     }
@@ -37,9 +35,19 @@ class FileTransferable(
                 it.toURI().toString()
             }
 
-            cutFlavor -> "1"
+            cutFlavor -> ByteArrayInputStream(Platform.current.clipboardCutBytes())
 
             else -> throw UnsupportedFlavorException(flavor)
+        }
+    }
+
+    companion object {
+        val uriFlavor = DataFlavor("text/uri-list;class=java.lang.String")
+
+        val cutFlavor = DataFlavor("application/x-aisdme-cut;class=java.io.InputStream").also {
+            val map = SystemFlavorMap.getDefaultFlavorMap() as SystemFlavorMap
+            map.addUnencodedNativeForFlavor(it, Platform.current.clipboardCutNative) //байты пишутся в буфер как есть, без обёртки Java
+            map.addFlavorForUnencodedNative(Platform.current.clipboardCutNative, it)
         }
     }
 }

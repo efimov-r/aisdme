@@ -7,6 +7,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.files.work.FilesExecutor
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
 import non.era.aisdme.ui.components.over.ErrorableTextField
@@ -66,6 +67,7 @@ private fun pasteDialogTargetDirValidate(text: String): String? {
         val f = File(text)
         if(!f.exists()) return "not found"
         if(!f.isDirectory) return "its not directory"
+        if(FilesExecutor.findPasteIntoItself(f.toPath()) != null) return "Cannot paste directory into itself"
         return null
     } catch (_: Throwable) {
         return "not found"

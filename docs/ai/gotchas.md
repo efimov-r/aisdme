@@ -2,10 +2,30 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## Свой формат буфера обмена не виден в содержимом, полученном раньше регистрации
+- **Что случилось:** пометка «вырезано» из Explorer (`Preferred DropEffect`) читается через свой `DataFlavor`, связанный с форматом ОС в `SystemFlavorMap`
+- **Причина:** `Clipboard.getContents` переводит форматы ОС в `DataFlavor` в момент вызова. Если связь ещё не зарегистрирована, своего flavor в содержимом не будет
+- **Как правильно:** обратиться к `FileTransferable.cutFlavor` (регистрация — в его инициализации) до `getContents`, как в `FilesExecutor.getClipboardFiles`
+
+## Windows: `WatchService` блокирует переименование папок
+- **Что случилось:** папка с подпапками не переименовывалась, `AccessDeniedException`
+- **Причина:** на Windows каждая зарегистрированная в `WatchService` папка остаётся открытой, а папку с открытой подпапкой переименовать нельзя
+- **Как правильно:** на Windows регистрировать только корень проекта с `ExtendedWatchEventModifier.FILE_TREE` (`WindowsPlatform.registerWatch`); новые папки не регистрировать
+
 ## Приложение закрывается, когда нет ни одного окна
 - **Что случилось:** при старте без проекта сначала закрывали заставку, потом открывали `JFileChooser` из `LaunchedEffect`. После выбора папки приложение закрывалось, в логах ничего ([#2](https://github.com/efimov-r/aisdme/issues/2))
 - **Причина:** предположение: `application {}` завершается, когда в композиции нет окон, а последний эффект закончился. Новое состояние после этого уже не применяется
 - **Как правильно:** пока идёт работа вне Compose (модальный диалог Swing и т. п.), держать в композиции хотя бы одно окно. Окно, которое должно жить в нескольких состояниях, вызывать в одном месте, а не в разных ветках `when`: иначе оно пересоздаётся и моргает
+
+## «Composable function call without Compose plugin» на `remember` и других `@Composable`
+- **Что случилось:** IDEA 2026.2 подсвечивает вызовы `@Composable`, хотя Gradle собирает проект
+- **Причина:** инспекция `ComposableCallWithoutComposePlugin` ищет плагин `org.jetbrains.kotlin.plugin.compose`, а он есть только с Kotlin 2.0. На Kotlin 1.9 компилятор Compose подключает плагин `org.jetbrains.compose`, его инспекция не видит
+- **Как правильно:** отключить инспекцию (Alt+Enter → стрелка у пункта → Disable inspection). Quick-fix «добавить плагин» не применять: он добавит плагин Kotlin 2.x в проект на 1.9 и сломает сборку. Окончательно уйдёт при переходе на Kotlin 2.x
+
+## Классы JDK (`File`, `System`) красные в IDEA
+- **Что случилось:** IDE не находит классы JDK, хотя Gradle собирает проект
+- **Причина:** у SDK проекта (`17`) в настройках IDEA пустой classPath: нет корней `jrt://`. SDK был зарегистрирован из JDK, который скачал Gradle toolchain (`~/.gradle/jdks/`). Нормальный Project SDK (например, `ms-17`) не спасает: из-за `jvmToolchain(17)` IDEA при синхронизации с Gradle назначает модулю SDK toolchain, а Gradle JVM в `.idea/gradle.xml` тоже ссылается на `17`
+- **Как правильно:** Project Structure → SDKs: удалить SDK и добавить заново с той же папки или выбрать другой JDK 17; затем Reload Gradle. Проверка: в `jdk.table.xml` настроек IDEA у SDK есть строки `jrt://`
 
 ## Пакет не совпадает с папкой
 - **Что случилось:** файлы из `configs/configs/` объявлены в пакете `non.era.aisdme.configs.dataclass`, `configs/snapshots/SnapshotTree.kt` — в `configs.dataclass.child`, `SnapshotEditor.kt` — в `configs.dataclass.snapshots`
@@ -24,4 +44,4 @@
 
 ## Различия Linux и Windows
 - **Что случилось:** буфер обмена, пути конфигов и открытие файла в файловом менеджере работают в ОС по-разному
-- **Как правильно:** при правке `ConfigPaths`, `FileTransferable`, `ClipboardHelper`, `FileDolphinOpener` проверять обе ветки кода — для Linux и для Windows
+- **Как правильно:** всё, что зависит от ОС, — только в `platform/`, в обеих реализациях: `WindowsPlatform` и `LinuxPlatform`. Вне `platform/` `os.name` не читать

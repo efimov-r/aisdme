@@ -5,6 +5,7 @@ import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.work.FilesController
+import non.era.aisdme.platform.Platform
 import non.era.aisdme.ui.components.dialogs.elements.DialogsController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.Panels
@@ -13,6 +14,7 @@ import non.era.aisdme.ui.move.MoveController
 import non.era.aisdme.ui.project.ProjectController
 import non.era.aisdme.ui.reload.TreeReloadWatcher
 import non.era.aisdme.ui.win.WindowState
+import non.era.aisdme.utils.Log
 import java.io.File
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
@@ -59,6 +61,12 @@ class AppController(
     fun createFileInSelected(name: String) = filesController.createFile(projectController.treeState.getSelectedNodes(), name)
     fun createDirectoryInSelected(name: String) = filesController.createDirectory(projectController.treeState.getSelectedNodes(), name)
     fun deleteSelected() = filesController.delete(projectController.treeState.getSelectedNodes())
+    fun showSelectedInFileManager() = projectController.treeState.getSelectedNodes()
+        .map { it.getFile() }
+        .filter { it.exists() }
+        .forEach { f ->
+            runCatching { Platform.current.showInFileManager(f) }.onFailure { e -> Log.e(e) }
+        }
     fun copySelectedToClipboard(cut: Boolean) {
         val selected = projectController.treeState.getSelectedNodes()
         if(cut) selected.forEach { projectController.treeState.cutNoteMarkRecursive(it) }

@@ -6,7 +6,7 @@
 
 - **Язык и версии:** Kotlin 1.9.22, JDK 17 (`jvmToolchain(17)`), Gradle 8.14 (wrapper), Kotlin DSL
 - **Фреймворки и библиотеки:** Compose for Desktop 1.6.10 (`org.jetbrains.compose`), `kotlinx-coroutines-swing`, `kotlinx-serialization-json` 1.6.3
-- **Платформы:** Linux и Windows: буфер обмена, пути конфигов, открытие в файловом менеджере. Разрабатывался в Manjaro Linux
+- **Платформы:** Linux и Windows. Различия — буфер обмена, пути конфигов, отслеживание диска, открытие в файловом менеджере; весь такой код — в `platform/`. Разрабатывался в Manjaro Linux
 - **Тестов нет:** папки `src/test` нет
 
 ## Сборка, запуск, тесты
@@ -30,7 +30,8 @@ gradlew build             # сборка
 - `di/` — `AppController` (фасад над всеми контроллерами, доступен через `LocalAppController`) и `AppControllerBuilder`, где контроллеры собираются вручную
 - `bus/` — `AppEventBus` на `MutableSharedFlow`: события между контроллерами
 - `configs/` — `ConfigController`, `GlobalConfig`, `store/` (`ConfigStore`, `ConfigPaths`), `configs/` (`AppConfig`, `ProjectConfig`), `snapshots/` (сохранённое состояние редактора и дерева), `repositories/`
-- `files/` — `TypeFile`, `work/`: `FilesController`, `FilesExecutor`, `FileTransferable` (буфер обмена), `FileDolphinOpener` (показать в файловом менеджере)
+- `files/` — `TypeFile`, `work/`: `FilesController`, `FilesExecutor`, `FileTransferable` (буфер обмена)
+- `platform/` — всё, что зависит от ОС: папка конфигов, отслеживание диска, показ в файловом менеджере. `IPlatform`, `WindowsPlatform`, `LinuxPlatform`, выбор — `Platform.current`
 - `settings/` — `Hotkeys`
 - `theme/` — `AisDmeTheme`, `AisDmeColors`, `AisDmeShapes`, `AisDmeSpacing`
 - `ui/editor/` — `EditorController`, `HalfEditorTabs`, `TabsBar`, `EditField`; `halfview/` — содержимое вкладок; `halfviewmodel/` — состояние вкладок: `TabCash` → `TabCashFile` → `TabCashFileText`, `TabCashFileImg`, а также `TabCashPaste`
@@ -51,7 +52,7 @@ gradlew build             # сборка
 - Репозиторий считается публичным: в памяти проекта не должно быть ни секретов, ни личной информации.
 - Этот файл — до 200 строк; подробности — в `docs/ai/`.
 - Файлы памяти — на русском.
-- **Коммиты:** коммитит сам пользователь, агент не коммитит. Новые файлы, которые агент создал в задаче, он сам добавляет в git (`git add <файлы>`); чужие файлы, например созданные IDE в `.idea/`, не добавляет. Когда завершена осмысленная задача (законченный кусок работы в рабочем состоянии), агент напоминает закоммитить: коротко перечисляет изменённые файлы и всегда, не дожидаясь просьбы, готовит сообщение коммита в стиле [docs/ai/style.md](docs/ai/style.md): заголовок и описание, готовые к копированию. Посреди задачи не напоминать. Push делает только пользователь.
+- **Коммиты:** агент коммитит сам, когда решена одна логическая задача и код в рабочем состоянии. Посреди задачи не коммитить. Сообщение — в стиле [docs/ai/style.md](docs/ai/style.md), в конце строка `Co-Authored-By`. В коммит — только свои изменения; чужие файлы, например созданные IDE в `.idea/`, не добавлять. После коммита — коротко сообщить, что в нём. Push делает только пользователь.
 - **Ветки:** основная ветка — `master`, `dev` в неё слита. Ветки не создавать и не переключать без просьбы.
 
 ## Память проекта
