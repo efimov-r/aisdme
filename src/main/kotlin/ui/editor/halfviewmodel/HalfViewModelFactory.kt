@@ -8,12 +8,10 @@ import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.win.WindowState
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 
-object HalfViewModelFactory {
-    private var nextTabId = AtomicInteger(0)
+class HalfViewModelFactory { //своя у каждого EditorController: нумерация вкладок не общая
+    private val nextTabId = AtomicInteger(0)
 
     fun clearNexTabId() {
         nextTabId.set(0)
@@ -76,21 +74,4 @@ object HalfViewModelFactory {
             null -> return null
         }
     }
-
-//    private fun isImageFile(path: Path): Boolean {
-//
-//        val ext = path.fileName.toString()
-//            .substringAfterLast('.', "")
-//            .lowercase()
-//
-//        val imageExt = setOf(
-//            "png","jpg","jpeg","gif","bmp","webp","tif","tiff"
-//        )
-//
-//        if (ext in imageExt) return true
-//
-//        val mime = Files.probeContentType(path)
-//
-//        return mime?.startsWith("image/") == true
-//    }
 }

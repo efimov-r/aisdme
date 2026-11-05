@@ -33,6 +33,7 @@ class EditorController(
 ) : UiController() {
     private val _tabsCash = mutableStateMapOf<Int, TabCash>() //state: getTab читается в derivedStateOf
     private val removeMutex = Mutex()
+    private val tabFactory = HalfViewModelFactory()
 
     private val updateLeftTabs: (List<Int>) -> Unit = { rep.updateLeftTabs(it); removeClosedTabs() }
     private val updateRightTabs: (List<Int>) -> Unit = { rep.updateRightTabs(it); removeClosedTabs() }
@@ -106,11 +107,11 @@ class EditorController(
         }
 
         _tabsCash.clear()
-        HalfViewModelFactory.clearNexTabId()
+        tabFactory.clearNexTabId()
         snapshot?.let { snap ->
             val open = snap.leftTabs + snap.rightTabs
             snap.files.forEach { id, snapshotTab ->
-                val tabState = HalfViewModelFactory.createTabFromSnapshot(id, snapshotTab, scope, winState)
+                val tabState = tabFactory.createTabFromSnapshot(id, snapshotTab, scope, winState)
                     ?: return@forEach
                 if(id in open) {
                     _tabsCash[id] = tabState
@@ -140,7 +141,7 @@ class EditorController(
                 _tabsCash.values.find { it is TabCashFile && it.compareFile(node.getFile()) }?.id?.let { tabMapId ->
                     activateTab(tabMapId)
                 } ?: run {
-                    val tab = HalfViewModelFactory.createFileTab(node.getFile(), scope)
+                    val tab = tabFactory.createFileTab(node.getFile(), scope)
                     tabToCash(tab)
                     activateTab(tab.id)
                 }
@@ -149,7 +150,7 @@ class EditorController(
     }
 
     fun addFromCpipboardTab() : Int { //создание таба из ui
-        val tab = HalfViewModelFactory.createPasteTab(scope, winState)
+        val tab = tabFactory.createPasteTab(scope, winState)
         tabToCash(tab)
         return tab.id
     }

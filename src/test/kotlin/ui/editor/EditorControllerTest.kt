@@ -158,6 +158,39 @@ class EditorControllerTest {
         assertNotNull(tab.value)
     }
 
+    // нумерация вкладок у каждого контроллера своя: первая вкладка второго — тоже 0
+    @Test
+    fun tabIdsIndependentPerController() {
+        val other = EditorController(AppEventBus(), EditorStateRepository(), WindowState())
+        try {
+            val file = File(dir, "b.asm").apply { writeText("b") }
+            onUi {
+                controller.openNodes(listOf(FileNode(file, 0)))
+                other.openNodes(listOf(FileNode(file, 0)))
+            }
+
+            assertEquals(0, controller.leftTabs.activeTabId)
+            assertEquals(0, other.leftTabs.activeTabId)
+        } finally {
+            other.dispose()
+        }
+    }
+
+    // после открытия проекта новая вкладка получает id больше, чем у вкладок из конфига
+    @Test
+    fun newTabIdAfterSnapshotIds() {
+        val a = File(dir, "a.asm").apply { writeText("a") }
+        onUi {
+            controller.reselectProject(
+                SnapshotEditor(files = mapOf(5 to SnapshotTabCash(a.path, TypeFile.TEXT_FILE)), leftTabs = listOf(5))
+            )
+        }
+
+        val id = openFile("b.asm")
+
+        assertEquals(6, id)
+    }
+
     // вкладка файла внутри переименованной папки получает новый путь
     @Test
     fun movedDirRefilesTabsInside() {
