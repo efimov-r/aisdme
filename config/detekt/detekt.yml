@@ -1,0 +1,17 @@
+# Отличия от стандартного конфига detekt: только то, что противоречит docs/ai/style.md
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable'] # @Composable называются с большой буквы
+  InvalidPackageDeclaration:
+    rootPackage: 'non.era.aisdme' # код лежит в src/main/kotlin без папок non/era/aisdme
+
+style:
+  MagicNumber:
+    ignoreAnnotated: ['Composable'] # размеры и отступы в UI
+  WildcardImport:
+    active: false # IDEA сама сворачивает импорты в *
+  NewLineAtEndOfFile:
+    active: false # по style.md последняя строка — без перевода строки
+  ReturnCount:
+    excludeGuardClauses: true # ранние `?: return` и `if (...) return`

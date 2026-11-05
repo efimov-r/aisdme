@@ -14,15 +14,24 @@
 ```
 gradlew run               # запуск, debug-сборка (BuildConfig.DEBUG = true)
 gradlew run -Prelease     # запуск, release-сборка (BuildConfig.DEBUG = false)
-gradlew build             # сборка
+gradlew build             # сборка + check: тесты, detekt, порог покрытия
 gradlew test              # модульные тесты
+gradlew detekt            # статический анализ, отчёт — build/reports/detekt/
+gradlew koverLog          # текущее покрытие; koverHtmlReport — отчёт в build/reports/kover/
 ```
 
 На Windows `gradlew build` и `gradlew run` работают с JDK 17, если задан `JAVA_HOME` (проверено 2026-11-05).
 
 - `BuildConfig` генерирует задача `generateBuildConfig` в `build/generated/buildconfig`, перед каждой компиляцией Kotlin. Руками его не создавать.
 - Главный класс — `non.era.aisdme.MainKt`.
-- CI — `.github/workflows/ci.yml`: `gradlew build` (с тестами) на Linux и Windows при push в `master` и в каждом PR. Упавший прогон: `gh run view --log-failed`.
+- CI — `.github/workflows/ci.yml`: `gradlew build` на Linux и Windows при push в `master` и в каждом PR. Actions закреплены по SHA, рядом — версия. Упавший прогон: `gh run view --log-failed`, отчёты — artifact `reports-<ОС>`.
+
+### Quality gates
+
+- **Перед каждым коммитом** с кодом — `gradlew build`, он должен пройти. Не прошёл — не коммитить.
+- **detekt:** конфиг — `config/detekt/detekt.yml`, там только отличия от стандарта под [docs/ai/style.md](docs/ai/style.md). Старые нарушения — в `config/detekt/baseline.xml`; новые роняют сборку.
+- **Kover:** порог покрытия строк — `minBound` в `build.gradle.kts`, без `@Composable` и `theme/`. Порог только растёт: после новых тестов — поднять до нового значения, округлённого вниз.
+- **Нельзя без решения пользователя:** отключать или ослаблять правила detekt, пересоздавать baseline (`gradlew detektBaseline`), добавлять `@Suppress`, понижать порог Kover. Исключение — узкое (файл и правило) и с причиной в комментарии.
 
 ## Структура кода
 
@@ -56,7 +65,9 @@ gradlew test              # модульные тесты
 - Этот файл — до 200 строк; подробности — в `docs/ai/`.
 - Файлы памяти — на русском.
 - **Коммиты:** агент коммитит сам, когда решена одна логическая задача и код в рабочем состоянии. Посреди задачи не коммитить. Коммит — только если в нём есть код: правки одной документации и памяти (`AGENTS.md`, `docs/ai/`) отдельно не коммитить, они лежат локально и входят в следующий коммит с кодом. Сообщение — в стиле [docs/ai/style.md](docs/ai/style.md), в конце строка `Co-Authored-By`. В коммит — только свои изменения; чужие файлы, например созданные IDE в `.idea/`, не добавлять. После коммита — коротко сообщить, что в нём. Push делает только пользователь.
-- **Ветки:** основная ветка — `master`, `dev` в неё слита. Каждая новая задача — в новой ветке от свежего `master`, агент создаёт её сам до первой правки кода: `git fetch --prune`, затем `git switch --no-track -c issue-<N>-<кратко> origin/master`. Слияние — через PR, его делает пользователь. Других веток без просьбы не создавать и не переключать. Локальные ветки, которые слиты в `master` и удалены на GitHub, удалять всегда, без вопроса: `git fetch --prune`, затем `git branch -d` для веток с `gone` в `git branch -vv --merged master`.
+- **Ветки:** основная ветка — `master`, `dev` в неё слита. Каждая новая задача — в новой ветке от свежего `master`, агент создаёт её сам до первой правки кода: `git fetch --prune`, затем `git switch --no-track -c issue-<N>-<кратко> origin/master`. Переключать ветки агент может сам, без просьбы; других веток без просьбы не создавать. Локальные ветки, которые слиты в `master` и удалены на GitHub, удалять всегда, без вопроса: `git fetch --prune`, затем `git branch -d` для веток с `gone` в `git branch -vv --merged master`. Если стоишь на такой ветке — сначала `git switch master` и `git pull --rebase`.
+- **Pull request:** после push пользователя PR создаёт агент: `gh pr create --base master`. Описание — по навыку `pr`, если он есть; в описании — `Closes #<N>`, чтобы issue закрылась при слиянии; в конце — строка `Generated with Claude Code`. Слияние делает пользователь, после зелёного CI.
+- **Статус задачи:** взял задачу (в том числе когда пользователь просит план по ней) — вместе с веткой повесить на issue метку `in progress` (`gh issue edit <N> --add-label "in progress"`) и записать её в «В работе» в [docs/ai/todo.md](docs/ai/todo.md). При удалении слитой ветки — снять метку (`--remove-label "in progress"`) и убрать задачу из `todo.md`. GitHub Projects не используются: fine-grained токен `gh` к ним доступа не даёт.
 
 ## Память проекта
 

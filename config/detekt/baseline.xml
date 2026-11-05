@@ -1,0 +1,126 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:TreeReloadWatcher.kt$TreeReloadWatcher$fullPath != null &amp;&amp; !Platform.current.watchSubtree &amp;&amp; event.kind() == StandardWatchEventKinds.ENTRY_CREATE &amp;&amp; Files.isDirectory(fullPath)</ID>
+    <ID>ConstructorParameterNaming:ProjectNode.kt$ProjectNode$protected val _file: File</ID>
+    <ID>ConstructorParameterNaming:TabCash.kt$TabCash$protected val _extScope: CoroutineScope</ID>
+    <ID>ConstructorParameterNaming:TabCashFile.kt$TabCashFile$protected var _file: File</ID>
+    <ID>CyclomaticComplexMethod:ImageViewer.kt$@Composable fun ImageViewer( bitmap: ImageBitmap, modifier: Modifier = Modifier, state: ImageViewerState, focusRequester: FocusRequester, onFocusChanged: (Boolean) -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:ProjectController.kt$ProjectController$fun clickNode(node: ProjectNode, typeClick: TypeClickNode)</ID>
+    <ID>CyclomaticComplexMethod:ProjectTreeKeyFocusWorker.kt$private fun treeKeyFocusWork( event: KeyEvent, app: AppController, showDelDialog: ()-&gt;Unit, showRenameDialog: ()-&gt;Unit ): Boolean</ID>
+    <ID>CyclomaticComplexMethod:ProjectTreeNode.kt$@Composable fun ProjectTreeNode( hasFocus: Boolean, node: ProjectNode )</ID>
+    <ID>EmptyFunctionBlock:TabCashFileImg.kt$TabCashFileImg${ }</ID>
+    <ID>EmptyFunctionBlock:TabCashPaste.kt$TabCashPaste${ }</ID>
+    <ID>InvalidPackageDeclaration:AppConfig.kt$package non.era.aisdme.configs.dataclass</ID>
+    <ID>InvalidPackageDeclaration:ProjectConfig.kt$package non.era.aisdme.configs.dataclass</ID>
+    <ID>InvalidPackageDeclaration:SnapshotEditor.kt$package non.era.aisdme.configs.dataclass.snapshots</ID>
+    <ID>InvalidPackageDeclaration:SnapshotTree.kt$package non.era.aisdme.configs.dataclass.child</ID>
+    <ID>LongMethod:AisDmeTextField.kt$@Composable fun AisDmeTextField( focusRequester: FocusRequester, onFocusChanged: (FocusState) -&gt; Unit, textFieldValue: TextFieldValue, readOnly: Boolean, onValueChange: (TextFieldValue) -&gt; Unit, )</ID>
+    <ID>LongMethod:EditField.kt$@Composable fun EditorHalf( half: HalfEditorTabs, oppositeHalf: HalfEditorTabs, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:ErrorOverlay.kt$@Composable fun ErrorOverlay()</ID>
+    <ID>LongMethod:ImageViewer.kt$@Composable fun ImageViewer( bitmap: ImageBitmap, modifier: Modifier = Modifier, state: ImageViewerState, focusRequester: FocusRequester, onFocusChanged: (Boolean) -&gt; Unit, )</ID>
+    <ID>LongMethod:ProjectTreeKeyFocusWorker.kt$private fun treeKeyFocusWork( event: KeyEvent, app: AppController, showDelDialog: ()-&gt;Unit, showRenameDialog: ()-&gt;Unit ): Boolean</ID>
+    <ID>LongMethod:ProjectTreeNode.kt$@Composable fun ProjectTreeNode( hasFocus: Boolean, node: ProjectNode )</ID>
+    <ID>LongMethod:TabsBar.kt$@Composable fun TabsBar( half: HalfEditorTabs, oppositeHalf: HalfEditorTabs, modifier: Modifier = Modifier, )</ID>
+    <ID>LongParameterList:AppController.kt$AppController$( val editorController: EditorController, val projectController: ProjectController, val filesController: FilesController, val moveController: MoveController, private val reloadWatcher: TreeReloadWatcher, val configController: ConfigController, val dialogController: DialogsController, startGlobalConfig: AppConfig?, val winState: WindowState )</ID>
+    <ID>LongParameterList:DualButtonDialog.kt$( modifier: Modifier = Modifier, title: String, onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, enterActive: () -&gt; Boolean, content: @Composable (() -&gt; Unit) )</ID>
+    <ID>LongParameterList:EditorTab.kt$( tab: TabCash, halfInFocus: Boolean, isActive: Boolean, onSelect: (Int) -&gt; Unit, onClose: (Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongParameterList:ProjectTreeContextMenu.kt$( state: ContextMenuState, showDelDialog: () -&gt; Unit, showRenameDialog: () -&gt; Unit, showNewFileDialog: () -&gt; Unit, showNewDirectoryDialog: () -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
+    <ID>LongParameterList:SnapshotEditor.kt$SnapshotEditor.Companion$( files: Map&lt;Int, TabCash&gt;?, leftTabs: List&lt;Int&gt;?, rightTabs: List&lt;Int&gt;?, leftActive: Int?, rightActive: Int?, projectStore: ConfigStore&lt;ProjectConfig&gt;?, )</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF00B034</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF03DAC6</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF0A3017</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF191A1C</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF1B783A</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF35F074</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF3700B3</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF373129</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF6A6A6A</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF858585</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFF9AF8BA</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFFD2F3DD</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFFD5D5D5</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFFEAEAEA</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFFFFFFFF</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFFb0b0b0</ID>
+    <ID>MagicNumber:AisDmeColors.kt$0xFFf0f0f0</ID>
+    <ID>MagicNumber:AisDmeTheme.kt$0xFF03DAC6</ID>
+    <ID>MagicNumber:AisDmeTheme.kt$0xFF121212</ID>
+    <ID>MagicNumber:AisDmeTheme.kt$0xFF1E1E1E</ID>
+    <ID>MagicNumber:AisDmeTheme.kt$0xFF3700B3</ID>
+    <ID>MagicNumber:AisDmeTheme.kt$0xFF6200EE</ID>
+    <ID>MagicNumber:AisDmeTheme.kt$0xFFBB86FC</ID>
+    <ID>MagicNumber:AisDmeTheme.kt$0xFFD5D5D5</ID>
+    <ID>MagicNumber:AisDmeTheme.kt$0xFFFFFFFF</ID>
+    <ID>MagicNumber:ConfigController.kt$ConfigController$2000</ID>
+    <ID>MagicNumber:ConfigController.kt$ConfigController$4000</ID>
+    <ID>MagicNumber:FileNameValidator.kt$FileNameValidator$255</ID>
+    <ID>MagicNumber:ImageViewerState.kt$ImageViewerState$0.9f</ID>
+    <ID>MagicNumber:ImageViewerState.kt$ImageViewerState$1.1f</ID>
+    <ID>MagicNumber:MoveController.kt$MoveController$16</ID>
+    <ID>MagicNumber:MoveController.kt$MoveController$50f</ID>
+    <ID>MagicNumber:MoveController.kt$MoveController$5f</ID>
+    <ID>MagicNumber:ProjectController.kt$ProjectController$200</ID>
+    <ID>MagicNumber:TabCashFile.kt$TabCashFile$300</ID>
+    <ID>MagicNumber:TabCashFileText.kt$TabCashFileText$2000</ID>
+    <ID>MagicNumber:TreeReloadWatcher.kt$TreeReloadWatcher$200</ID>
+    <ID>MagicNumber:WriteStatus.kt$WriteStatus.ERROR$0xFFe20300</ID>
+    <ID>MagicNumber:WriteStatus.kt$WriteStatus.LOAD$0xFFaca700</ID>
+    <ID>MagicNumber:WriteStatus.kt$WriteStatus.LOCKED$0xFFf38100</ID>
+    <ID>MagicNumber:WriteStatus.kt$WriteStatus.NOT_SAVE$0xFFffc908</ID>
+    <ID>MagicNumber:WriteStatus.kt$WriteStatus.READ_ONLY_FS$0xFFffc908</ID>
+    <ID>MagicNumber:WriteStatus.kt$WriteStatus.WRITABLE$0xFF06c000</ID>
+    <ID>MatchingDeclarationName:AisDmeWindow.kt$AppStartState</ID>
+    <ID>MatchingDeclarationName:MenuItem.kt$MenuEntry</ID>
+    <ID>MatchingDeclarationName:NewNodeDialog.kt$TypeNew</ID>
+    <ID>MatchingDeclarationName:SvgIcon.kt$IconRepository</ID>
+    <ID>MaxLineLength:AppController.kt$AppController$fun createDirectoryInSelected(name: String)</ID>
+    <ID>MaxLineLength:AppController.kt$AppController$fun createFileInSelected(name: String)</ID>
+    <ID>MaxLineLength:AppController.kt$AppController$fun openSelectedNodesInEditor(panel: Panels)</ID>
+    <ID>MaxLineLength:FileTransferable.kt$FileTransferable.Companion$map.addUnencodedNativeForFlavor(it, Platform.current.clipboardCutNative)</ID>
+    <ID>MaxLineLength:FilesExecutor.kt$FilesExecutor$throw IOException("Cannot paste directory into itself: $it") //иначе Files.walk копирует уже скопированное, вложенность бесконечная</ID>
+    <ID>MaxLineLength:FilesExecutor.kt$FilesExecutor$val cutFlavor = FileTransferable.cutFlavor //до getContents: связь с форматом ОС должна быть уже зарегистрирована</ID>
+    <ID>MaxLineLength:MoveDialog.kt$app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Selected file to move does not exist."))</ID>
+    <ID>MaxLineLength:PasteDialog.kt$app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Directory for paste is not selected"))</ID>
+    <ID>MaxLineLength:PasteDialog.kt$app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Pasting is only available in directory."))</ID>
+    <ID>MaxLineLength:PasteDialog.kt$app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Pasting is only available in one directory."))</ID>
+    <ID>MaxLineLength:ProjectTreeContextMenu.kt$showNewDirectoryDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY)) }</ID>
+    <ID>MaxLineLength:ProjectTreeHelper.kt$ProjectTreeHelper$private const val MAX_DEPTH = 100 //глубже — без детей, иначе StackOverflowError и дерево не строится даже после перезапуска</ID>
+    <ID>MaxLineLength:ProjectTreeNode.kt$SvgIcon("chevronDown", Modifier.padding(top = 2.dp).align(Alignment.CenterStart).requiredSize(20.dp))</ID>
+    <ID>MaxLineLength:ProjectTreeNode.kt$SvgIcon("chevronRight", Modifier.padding(top = 2.dp).align(Alignment.CenterStart).requiredSize(20.dp))</ID>
+    <ID>MaxLineLength:TreeReloadWatcher.kt$TreeReloadWatcher$val changedDir = fullPath?.parent?.toFile() ?: dir.toFile() //OVERFLOW без пути — перечитать всю папку ключа</ID>
+    <ID>MaxLineLength:WindowsPlatform.kt$WindowsPlatform$override val watchSubtree = true //каждая зарегистрированная папка остаётся открытой, а открытая подпапка не даёт переименовать родителя</ID>
+    <ID>NestedBlockDepth:EditorController.kt$EditorController$fun reselectProject(snapshot: SnapshotEditor?)</ID>
+    <ID>NestedBlockDepth:FilesExecutor.kt$FilesExecutor$fun pasteFromClipboard(targetDir: Path)</ID>
+    <ID>ReturnCount:FileNameValidator.kt$FileNameValidator$fun validateFileName(name: String): String?</ID>
+    <ID>ReturnCount:HalfViewModelFactory.kt$HalfViewModelFactory$fun createTabFromSnapshot( id: Int, snap: SnapshotTabCash, extScope: CoroutineScope, winState: WindowState ): TabCash?</ID>
+    <ID>ReturnCount:MoveDialog.kt$private fun dialogTargetDirValidate(src: List&lt;ProjectNode&gt;, text: String): String?</ID>
+    <ID>ReturnCount:PasteDialog.kt$@Composable fun PasteDialog(onDismiss: () -&gt; Unit)</ID>
+    <ID>ReturnCount:PasteDialog.kt$private fun pasteDialogTargetDirValidate(text: String): String?</ID>
+    <ID>ReturnCount:ProjectListLineHelper.kt$ProjectListLineHelper$fun fromAndTo(nodes: List&lt;ProjectNode&gt;, selected: List&lt;ProjectNode&gt;, to: ProjectNode)</ID>
+    <ID>ReturnCount:ProjectListLineHelper.kt$ProjectListLineHelper$fun shiftBottom(nodes: List&lt;ProjectNode&gt;, selected: List&lt;ProjectNode&gt;, firstMovement: Movement?)</ID>
+    <ID>ReturnCount:ProjectListLineHelper.kt$ProjectListLineHelper$fun shiftTop(nodes: List&lt;ProjectNode&gt;, selected: List&lt;ProjectNode&gt;, firstMovement: Movement?)</ID>
+    <ID>ReturnCount:ProjectTreeHelper.kt$ProjectTreeHelper$fun findDirNode( nodes: List&lt;ProjectNode&gt;, dir: File ): DirNode?</ID>
+    <ID>ReturnCount:ProjectTreeHelper.kt$ProjectTreeHelper$fun findNode( nodes: List&lt;ProjectNode&gt;, file: File ): ProjectNode?</ID>
+    <ID>ReturnCount:ProjectTreeHelper.kt$ProjectTreeHelper$private fun findPath( node: ProjectNode, target: Path, path: MutableList&lt;ProjectNode&gt; ): Boolean</ID>
+    <ID>ReturnCount:ProjectTreeKeyFocusWorker.kt$private fun treeKeyFocusWork( event: KeyEvent, app: AppController, showDelDialog: ()-&gt;Unit, showRenameDialog: ()-&gt;Unit ): Boolean</ID>
+    <ID>ReturnCount:SnapshotEditor.kt$SnapshotEditor.Companion$fun buildFromOldVersion( files: Map&lt;Int, TabCash&gt;?, leftTabs: List&lt;Int&gt;?, rightTabs: List&lt;Int&gt;?, leftActive: Int?, rightActive: Int?, projectStore: ConfigStore&lt;ProjectConfig&gt;?, ): SnapshotEditor?</ID>
+    <ID>SpreadOperator:LinuxPlatform.kt$LinuxPlatform$(service, *kinds)</ID>
+    <ID>SwallowedException:FilesExecutor.kt$FilesExecutor$e: AtomicMoveNotSupportedException</ID>
+    <ID>TooGenericExceptionCaught:ConfigStore.kt$ConfigStore$ex: Throwable</ID>
+    <ID>TooGenericExceptionCaught:ProjectChooserHelper.kt$ProjectChooserHelper$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TabCashFile.kt$TabCashFile$ex: Throwable</ID>
+    <ID>TooGenericExceptionCaught:TabCashPaste.kt$TabCashPaste$ex: Exception</ID>
+    <ID>TooManyFunctions:EditorController.kt$EditorController : UiController</ID>
+    <ID>TooManyFunctions:FilesExecutor.kt$FilesExecutor</ID>
+    <ID>TooManyFunctions:MoveController.kt$MoveController : UiController</ID>
+    <ID>TooManyFunctions:ProjectTreeContextMenu.kt$non.era.aisdme.ui.components.contexmenu.realisation.ProjectTreeContextMenu.kt</ID>
+    <ID>TooManyFunctions:ProjectTreeState.kt$ProjectTreeState</ID>
+    <ID>TooManyFunctions:UiController.kt$UiController</ID>
+    <ID>VariableNaming:EditorController.kt$EditorController$var _sel = sel</ID>
+    <ID>VariableNaming:TabCash.kt$TabCash$protected abstract var _name: String</ID>
+    <ID>VariableNaming:TabCashFile.kt$TabCashFile$protected var _writeStatus by mutableStateOf(WriteStatus.LOAD)</ID>
+    <ID>VariableNaming:TabCashFileImg.kt$TabCashFileImg$var _imageViewerState: ImageViewerState = ImageViewerState()</ID>
+  </CurrentIssues>
+</SmellBaseline>

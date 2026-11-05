@@ -2,6 +2,8 @@ plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22"
     id("org.jetbrains.compose") version "1.6.10"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("org.jetbrains.kotlinx.kover") version "0.9.11"
 }
 
 group = "non.era.aisdme"
@@ -66,4 +68,29 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 tasks.test {
     useJUnitPlatform()
+}
+
+detekt {
+    buildUponDefaultConfig = true //свои правила поверх стандартных
+    config.setFrom("config/detekt/detekt.yml")
+    baseline = file("config/detekt/baseline.xml") //старые нарушения, новые роняют сборку
+    parallel = true
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                annotatedBy("androidx.compose.runtime.Composable") //UI модульными тестами не покрываем
+                classes("*ComposableSingletons*", "non.era.aisdme.BuildConfig")
+                packages("non.era.aisdme.theme")
+            }
+        }
+
+        verify {
+            rule {
+                minBound(1) //% строк; только растёт, поднимать после новых тестов (#15–17)
+            }
+        }
+    }
 }
