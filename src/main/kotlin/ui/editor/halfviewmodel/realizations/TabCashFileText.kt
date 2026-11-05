@@ -40,14 +40,20 @@ class TabCashFileText (
         return res
     }
 
-    override suspend fun disposeBeforeBlocked() {
+    override suspend fun disposeBeforeBlocked() { //без writeStatus: вызывается из runBlocking на EDT
         autosaveJob?.cancel()
+        if (!canSave()) return //не загружен или ошибка: иначе файл затрётся
+        val text = _textFieldValue.text
+        if (text == _savedText || !_file.exists()) return
+
         saveMutex.withLock {
             runCatching {
-                _file.writeText(_textFieldValue.text)
+                _file.writeText(text)
             }
         }
     }
+
+    private fun canSave() = _writeStatus == WriteStatus.WRITABLE || _writeStatus == WriteStatus.NOT_SAVE
 
     override suspend fun openExistFile(typeOpen: OpenFileType) {
         val textIn = _file.readText()
@@ -89,10 +95,11 @@ class TabCashFileText (
             return
         }
 
+        val text = _textFieldValue.text //один раз: ввод во время записи не должен считаться сохранённым
         try{
             saveMutex.withLock {
-                _file.writeText(_textFieldValue.text)
-                _savedText = _textFieldValue.text
+                _file.writeText(text)
+                _savedText = text
             }
             writeStatus(WriteStatus.WRITABLE)
         } catch (_: Throwable) {

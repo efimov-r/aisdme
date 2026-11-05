@@ -25,6 +25,7 @@ gradlew koverLog          # текущее покрытие; koverHtmlReport —
 - `BuildConfig` генерирует задача `generateBuildConfig` в `build/generated/buildconfig`, перед каждой компиляцией Kotlin. Руками его не создавать.
 - Главный класс — `non.era.aisdme.MainKt`.
 - CI — `.github/workflows/ci.yml`: `gradlew build` на Linux и Windows при push в `master` и в каждом PR. Actions закреплены по SHA, рядом — версия. Упавший прогон: `gh run view --log-failed`, отчёты — artifact `reports-<ОС>`.
+- `master` защищён ruleset `master`: только через PR, обязательные проверки `build (ubuntu-latest)` и `build (windows-latest)`, ветка должна быть свежей. Переименовал job или ОС в матрице — обновить проверки в ruleset (Settings → Rules), иначе PR будет ждать проверку, которой нет.
 
 ### Quality gates
 
