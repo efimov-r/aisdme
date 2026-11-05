@@ -5,16 +5,14 @@ import non.era.aisdme.configs.ConfigController
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.work.FilesController
-import non.era.aisdme.platform.Platform
 import non.era.aisdme.ui.components.dialogs.elements.DialogsController
 import non.era.aisdme.ui.editor.EditorController
-import non.era.aisdme.ui.editor.Panels
-import non.era.aisdme.ui.errors.GlobalMessage
+import non.era.aisdme.ui.errors.GlobalMessages
 import non.era.aisdme.ui.move.MoveController
 import non.era.aisdme.ui.project.ProjectController
+import non.era.aisdme.ui.project.TreeActions
 import non.era.aisdme.ui.reload.TreeReloadWatcher
 import non.era.aisdme.ui.win.WindowState
-import non.era.aisdme.utils.Log
 import java.io.File
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
@@ -31,22 +29,22 @@ class AppController(
     val dialogController: DialogsController,
     startGlobalConfig: AppConfig?,
     val winState: WindowState
-)  {
-    private val _globalMess = mutableStateListOf<GlobalMessage>()
-    val globalMess: List<GlobalMessage> get() = _globalMess
-    fun clearGlobalMess() { _globalMess.clear() }
-    fun removeMess(id: Int) { _globalMess.removeIf { it.id == id } }
+)  { //корень композиции: контроллеры, их связи, открытие проекта и dispose
+    val messages = GlobalMessages()
+    val treeActions = TreeActions(projectController.treeState, editorController, filesController)
 
     var isDarkTheme by mutableStateOf(startGlobalConfig?.isDarkTheme ?: false)
 
     init {
-        editorController.subscriptionError { _globalMess += it }
-        projectController.subscriptionError { _globalMess += it }
-        filesController.subscriptionError { _globalMess += it }
-        moveController.subscriptionError { _globalMess += it }
-        reloadWatcher.subscriptionError { _globalMess += it }
-        configController.subscriptionError { _globalMess += it }
-        dialogController.subscriptionError { _globalMess += it }
+        messages.collectFrom(
+            editorController,
+            projectController,
+            filesController,
+            moveController,
+            reloadWatcher,
+            configController,
+            dialogController,
+        )
         projectController.treeState.onDirsLoaded = reloadWatcher::dirsLoaded //напрямую: шина может потерять событие
     }
 
@@ -57,18 +55,6 @@ class AppController(
         projectController.reselectRootProject(res.treeState, root)
         editorController.reselectProject(res.snapshotEditor)
         return res
-    }
-    fun openSelectedNodesInEditor(panel: Panels) = editorController.openNodes(projectController.treeState.getSelectedNodes(), panel)
-    fun showSelectedInFileManager() = projectController.treeState.getSelectedNodes()
-        .map { it.getFile() }
-        .filter { it.exists() }
-        .forEach { f ->
-            runCatching { Platform.current.showInFileManager(f) }.onFailure { e -> Log.e(e) }
-        }
-    fun copySelectedToClipboard(cut: Boolean) {
-        val selected = projectController.treeState.getSelectedNodes()
-        if(cut) projectController.treeState.markCut(selected)
-        filesController.copyToClipboard(selected.map { it.getFilePath() }, cut)
     }
 
     fun dispose() {
