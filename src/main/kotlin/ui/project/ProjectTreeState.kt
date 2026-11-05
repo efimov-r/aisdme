@@ -115,9 +115,12 @@ class ProjectTreeState {
 
     fun findNodes(file: File) = ProjectTreeHelper.findNode(_nodes, file)
 
+    private fun findNearestDirNode(dir: File): DirNode? =
+        generateSequence(dir) { it.parentFile }.firstNotNullOfOrNull { ProjectTreeHelper.findDirNode(_nodes, it) }
+
     suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit) {
         Log.d("rebuildDirDiff: ${deer.path}")
-        val node = withContext(Dispatchers.Swing) { ProjectTreeHelper.findDirNode(_nodes, deer) }
+        val node = withContext(Dispatchers.Swing) { findNearestDirNode(deer) } //нет в дереве — ближайший предок
         if (node != null) {
             val fresh = withContext(Dispatchers.IO) { ProjectTreeHelper.readChildren(node) }
             withContext(Dispatchers.Swing) { ProjectTreeHelper.applyDirDiff(node, fresh) }
@@ -126,9 +129,10 @@ class ProjectTreeState {
 
         notFoundErr()
         Log.e("findDirNode is null, reload all")
+        val config = withContext(Dispatchers.Swing) { getCashForConfig() } //раскрытые папки не сворачиваются
         val newTree = withContext(Dispatchers.IO) {
             rootProject?.let {
-                ProjectTreeHelper.buildProjectTree(null, it)
+                ProjectTreeHelper.buildProjectTree(config, it)
             } ?: run {
                 Log.e("rootProject in project tree is null")
                 null

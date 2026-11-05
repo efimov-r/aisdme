@@ -1,5 +1,6 @@
 package non.era.aisdme.ui.reload
 
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -30,11 +31,11 @@ class TreeReloadWatcher(
 
     private val pendingDirs = mutableSetOf<File>()
     private val pendingMutex = Mutex()
-
-    private val applyMutex = Mutex()
+    private val pendingSignal = Channel<Unit>(Channel.CONFLATED) //сигнал, пришедший во время пакета, не теряется
 
     init {
         watchLoop()
+        applyLoop()
     }
 
     private fun watchLoop() = scope.launch {
@@ -51,7 +52,7 @@ class TreeReloadWatcher(
                     pendingDirs += changedDir
                 }
 
-                launch { applyBatch() }
+                pendingSignal.trySend(Unit)
 
                 if (
                     fullPath != null &&
@@ -102,11 +103,10 @@ class TreeReloadWatcher(
         }
     }
 
-    private suspend fun applyBatch() {
-        if (!applyMutex.tryLock()) return
-
-        try {
-            delay(200)
+    private fun applyLoop() = scope.launch {
+        while (isActive) {
+            pendingSignal.receive()
+            delay(200) //собрать пачку событий
 
             val dirs = pendingMutex.withLock {
                 val list = pendingDirs.toList()
@@ -119,9 +119,6 @@ class TreeReloadWatcher(
                     bus.publish(RebuilDirRiff(it))
                 }
             }
-
-        } finally {
-            applyMutex.unlock()
         }
     }
 

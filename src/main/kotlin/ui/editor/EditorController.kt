@@ -16,7 +16,6 @@ import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.win.WindowState
-import java.io.File
 import java.nio.file.Path
 
 enum class Panels{
@@ -45,23 +44,14 @@ class EditorController(
                 when (event) {
                     is FileOpened -> openNodes(listOf(event.node))
                     is MoveFile -> {
-                        getTabsFileFilter(event.oldFile).forEach { (_, file) ->
-                            file.refile(File(event.newFile.toString()))
+                        tabsInside(event.oldFile).forEach { tab -> //файл или папка с открытыми файлами внутри
+                            val path = tab.getFile().toPath()
+                            tab.refile(event.newFile.resolve(event.oldFile.relativize(path)).toFile())
                         }
                         saveToConfig()
                     }
-                    is DeleteFile -> {
-                        getTabsFileFilter(event.file).keys.forEach { id->
-                            leftTabs.closeTab(id)
-                            rightTabs.closeTab(id)
-                        }
-                    }
-                    is DeleteDir -> {
-                        getTabsFileFilter(event.dir, event.dir).keys.forEach { id->
-                            leftTabs.closeTab(id)
-                            rightTabs.closeTab(id)
-                        }
-                    }
+                    is DeleteFile -> closeTabs(tabsInside(event.file))
+                    is DeleteDir -> closeTabs(tabsInside(event.dir))
                     else -> {}
                 }
             }
@@ -176,12 +166,14 @@ class EditorController(
         )
     }
 
-    private fun getTabsFileFilter(eq: Path, startWith: Path? = null) =
-        _tabsCash.filterValues {
-            it is TabCashFile &&
-                    (it.getFile().toPath() == eq ||
-                            if(startWith == null) false else it.getFile().path.startsWith(startWith.toString()))
-        }
+    private fun tabsInside(path: Path) = _tabsCash.values //путь и всё внутри; по частям: не /a/foobar для /a/foo
+        .filterIsInstance<TabCashFile>()
+        .filter { it.getFile().toPath().startsWith(path) }
+
+    private fun closeTabs(tabs: List<TabCash>) = tabs.forEach { tab ->
+        leftTabs.closeTab(tab.id)
+        rightTabs.closeTab(tab.id)
+    }
 
     fun rightToLeftHalf() {
         leftTabs = rightTabs.copy(updateLeftTabs, updateLeftActive)

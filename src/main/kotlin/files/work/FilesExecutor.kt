@@ -69,12 +69,13 @@ object FilesExecutor {
         clipboard.setContents(transferable, null)
     }
 
-    fun pasteFromClipboard(targetDir: Path) {
+    fun pasteFromClipboard(targetDir: Path): List<Pair<Path, Path>> {
         val (paths, isCut) = getClipboardFiles()
-        paste(paths, isCut, targetDir)
+        return paste(paths, isCut, targetDir)
     }
 
-    fun paste(paths: List<Path>, isCut: Boolean, targetDir: Path) {
+    /** Возвращает перемещённые при вырезании пары «откуда — куда»: вкладки редактора должны за ними следовать */
+    fun paste(paths: List<Path>, isCut: Boolean, targetDir: Path): List<Pair<Path, Path>> {
         findPasteIntoItself(paths, targetDir)?.let {
             throw IOException("Cannot paste directory into itself: $it") //иначе Files.walk копирует уже скопированное, вложенность бесконечная
         }
@@ -84,7 +85,9 @@ object FilesExecutor {
             throw FileAlreadyExistsException(it.toString()) //до копирования: не оставлять вставку наполовину
         }
 
-        existing.forEach { pasteOne(it, targetDir.resolve(it.fileName), isCut) }
+        val res = existing.map { it to targetDir.resolve(it.fileName) }
+        res.forEach { (src, dst) -> pasteOne(src, dst, isCut) }
+        return if (isCut) res else emptyList()
     }
 
     private fun pasteOne(src: Path, dst: Path, isCut: Boolean) {
