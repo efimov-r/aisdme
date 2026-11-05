@@ -48,14 +48,19 @@ class TreeActionsTest {
 
     private fun open() = runBlocking { treeState.reselectRootProject(null, dir) }
 
-    // выделенные файлы открываются в правой половине
+    private fun onUi(block: () -> Unit) = runBlocking(Dispatchers.Swing) { block() }
+
+    // выделенные файлы открываются в правой половине (левая не пустая: иначе правая переедет в левую)
     @Test
     fun openSelectedInRightHalf() {
         File(dir, "a.asm").writeText("a")
+        File(dir, "b.asm").writeText("b")
         open()
+        onUi { editor.openNodes(listOf(child("b.asm")), Panels.LEFT) }
         treeState.reselectNode(child("a.asm"))
 
-        runBlocking(Dispatchers.Swing) { actions.openSelectedInEditor(Panels.RIGHT) }
+        onUi { actions.openSelectedInEditor(Panels.RIGHT) }
+        onUi {} //объединение половин — отложенно, в очереди ui-потока: дождаться
 
         val id = editor.rightTabs.activeTabId!!
         assertEquals(File(dir, "a.asm"), (editor.getTab(id) as TabCashFile).getFile())

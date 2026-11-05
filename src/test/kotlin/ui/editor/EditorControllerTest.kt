@@ -49,6 +49,7 @@ class EditorControllerTest {
     private fun openFile(name: String, panel: Panels = Panels.LEFT): Int {
         val file = File(dir, name).apply { parentFile.mkdirs(); writeText(name) }
         onUi { controller.openNodes(listOf(FileNode(file, 0)), panel) }
+        onUi {} //объединение половин — отложенно, в очереди ui-потока: дождаться
         val half = if(panel == Panels.LEFT) controller.leftTabs else controller.rightTabs
         val id = half.activeTabId!!
         waitUntil { rep.files.value?.containsKey(id) == true } //открытие дошло до конфига
@@ -107,6 +108,19 @@ class EditorControllerTest {
         assertEquals(listOf(id), rep.leftTabs.value)
         assertEquals(emptyList(), rep.rightTabs.value)
         assertEquals(id, rep.leftActive.value)
+    }
+
+    // файл, открытый справа при пустой левой половине, оказывается слева
+    @Test
+    fun openInRightWithEmptyLeftGoesLeft() {
+        val file = File(dir, "a.asm").apply { writeText("a") }
+
+        onUi { controller.openNodes(listOf(FileNode(file, 0)), Panels.RIGHT) }
+        onUi {} //объединение половин — в очереди ui-потока
+
+        val id = controller.leftTabs.activeTabId!!
+        assertEquals(file, (controller.getTab(id) as TabCashFile).getFile())
+        assertTrue(controller.rightTabs.listTabs.isEmpty())
     }
 
     // «Split and Move» последней вкладки слева: вкладка не теряется, хотя половины объединяются
