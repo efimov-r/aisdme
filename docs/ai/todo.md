@@ -43,9 +43,8 @@
 - [ ] Убрать все `copy(alpha = …)` у цветов — [#11](https://github.com/efimov-r/aisdme/issues/11)
 - [ ] Подсветка синтаксиса — [#13](https://github.com/efimov-r/aisdme/issues/13)
 
-Тесты и качество (#12 сделан, можно начинать):
+Тесты и качество (тесты подключены в #14, запуск — `gradlew test`):
 
-- [ ] Подключить модульные тесты — [#14](https://github.com/efimov-r/aisdme/issues/14)
 - [ ] Тесты конфигов — [#15](https://github.com/efimov-r/aisdme/issues/15)
 - [ ] Тесты файловых операций — [#16](https://github.com/efimov-r/aisdme/issues/16)
 - [ ] Тесты логики дерева проекта — [#17](https://github.com/efimov-r/aisdme/issues/17)

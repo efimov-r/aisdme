@@ -52,6 +52,13 @@
 - Compose: состояние — `mutableStateOf` / `mutableStateListOf` в контроллерах, доступ — через `LocalAppController.current`, `val x by remember { mutableStateOf(...) }`, цвета — только через `LocalAisDmeColors.current`, отступы — `AisDmeSpacing`, формы — `AisDmeShapes`.
 - Глобальное состояние — `object` (`GlobalConfig`), без DI-фреймворка.
 
+### Тесты
+
+- JUnit 5 + `kotlin.test`: `@Test`, `assertEquals`, `assertNull` и др. — из `kotlin.test`, не из `org.junit`.
+- Класс — `<Класс>Test`, в той же папке и том же `package`, что тестируемый класс, но в `src/test/kotlin/`.
+- Имя теста — на английском, camelCase, что проверяется и что ожидается: `blankNameReturnsError`.
+- Перед каждым тестом — строка комментария на русском: что проверяет тест (исключение из правила «комментарий в конце строки»).
+
 ## Тексты
 
 - Сообщения коммитов — на русском, коротко, со строчной буквы, без точки в конце: `горизонтальный скролл редактора`, `фиксы самообновления дерева`.

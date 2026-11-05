@@ -7,7 +7,7 @@
 - **Язык и версии:** Kotlin 1.9.22, JDK 17 (`jvmToolchain(17)`), Gradle 8.14 (wrapper), Kotlin DSL
 - **Фреймворки и библиотеки:** Compose for Desktop 1.6.10 (`org.jetbrains.compose`), `kotlinx-coroutines-swing`, `kotlinx-serialization-json` 1.6.3
 - **Платформы:** Linux и Windows. Различия — буфер обмена, пути конфигов, отслеживание диска, открытие в файловом менеджере; весь такой код — в `platform/`. Разрабатывался в Manjaro Linux
-- **Тестов нет:** папки `src/test` нет
+- **Тесты:** JUnit 5 + `kotlin.test`, в `src/test/kotlin/`
 
 ## Сборка, запуск, тесты
 
@@ -15,6 +15,7 @@
 gradlew run               # запуск, debug-сборка (BuildConfig.DEBUG = true)
 gradlew run -Prelease     # запуск, release-сборка (BuildConfig.DEBUG = false)
 gradlew build             # сборка
+gradlew test              # модульные тесты
 ```
 
 На Windows `gradlew build` и `gradlew run` работают с JDK 17, если задан `JAVA_HOME` (проверено 2026-11-05).
@@ -42,6 +43,7 @@ gradlew build             # сборка
 - `ui/errors/` — глобальные сообщения, `ErrorOverlay`
 - `ui/win/` — окно загрузки и главное окно, сохранение размеров и положения окна
 - `utils/` — `Log`, `ClipboardHelper`, `PathHelper`
+- `src/test/kotlin/` — модульные тесты: папки и пакеты — как у тестируемого класса, имя — `<Класс>Test`
 - `src/main/resources/` — `icons/` (SVG в стиле IntelliJ, светлая и тёмная версии), `logos/`
 
 Подробнее об устройстве — [docs/ai/architecture.md](docs/ai/architecture.md).

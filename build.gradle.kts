@@ -18,6 +18,9 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    testImplementation(kotlin("test"))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 val generateBuildConfig = tasks.register("generateBuildConfig") {
@@ -59,4 +62,8 @@ compose.desktop {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     dependsOn(generateBuildConfig)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
