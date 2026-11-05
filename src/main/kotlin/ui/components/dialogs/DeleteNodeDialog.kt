@@ -31,7 +31,7 @@ import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 @Composable
 fun DeleteSelectedNodeDialog(onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val nodes = app.projectController.treeState.getSelectedNodes()
+    val nodes = remember { app.projectController.treeState.getSelectedNodes() } //удаляются те, что показаны
     val title = "Delete object${if(nodes.size > 1) "s" else ""}?"
     val scrollState = rememberLazyListState()
     val focusRequester = remember { FocusRequester() }
@@ -47,7 +47,7 @@ fun DeleteSelectedNodeDialog(onDismiss: () -> Unit) {
     DualButtonDialog(
         Modifier.focusRequester(focusRequester).focusable(),
         title,
-        { app.deleteSelected() },
+        { app.filesController.delete(nodes) },
         onDismiss,
         enterActive = { true }
     ) {

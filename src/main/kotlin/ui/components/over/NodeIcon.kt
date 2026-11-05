@@ -6,6 +6,7 @@ import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
+import java.nio.file.Path
 
 @Composable
 fun NodeIcon(
@@ -14,14 +15,18 @@ fun NodeIcon(
 ) {
     val icon: String = when(node) {
         is DirNode -> "folder"
-        is FileNode ->  {
-            if(TypeFile.isImageFile(node.getFilePath())) {
-                "image"
-            } else {
-                "anyType"
-            }
-        }
+        is FileNode -> fileIconName(node.getFilePath())
         else -> "unknown"
     }
     SvgIcon(icon, modifier)
 }
+
+@Composable
+fun FileIcon( //для вкладки: по типу файла, без поиска узла в дереве
+    modifier: Modifier = Modifier,
+    path: Path
+) {
+    SvgIcon(fileIconName(path), modifier)
+}
+
+private fun fileIconName(path: Path) = if(TypeFile.isImageFile(path)) "image" else "anyType"

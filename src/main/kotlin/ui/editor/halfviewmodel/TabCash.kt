@@ -18,8 +18,6 @@ abstract class TabCash(
     protected abstract var _name: String
     val name get() = _name
 
-    abstract fun copy() : TabCash
-
     abstract suspend fun beforeRemove()
 
     abstract suspend fun disposeBeforeBlocked()

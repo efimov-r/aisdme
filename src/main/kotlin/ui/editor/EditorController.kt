@@ -16,7 +16,6 @@ import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import non.era.aisdme.ui.win.WindowState
-import java.io.File
 import java.nio.file.Path
 
 enum class Panels{
@@ -31,41 +30,28 @@ class EditorController(
     private var _tabsCash: MutableMap<Int, TabCash> = mutableMapOf()
     private val removeMutex = Mutex()
 
-    private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) }; removeClosedTabs() }
-    private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) }; removeClosedTabs() }
-    private val updateLeftActive: (Int?) -> Unit = { scope.launch { rep.updateLeftActiveTabs(it) } }
-    private val updateRightActive: (Int?) -> Unit = { scope.launch { rep.updateRightActiveTabs(it) } }
+    private val updateLeftTabs: (List<Int>) -> Unit = { rep.updateLeftTabs(it); removeClosedTabs() }
+    private val updateRightTabs: (List<Int>) -> Unit = { rep.updateRightTabs(it); removeClosedTabs() }
+    private val updateLeftActive: (Int?) -> Unit = { rep.updateLeftActiveTabs(it) }
+    private val updateRightActive: (Int?) -> Unit = { rep.updateRightActiveTabs(it) }
 
     var leftTabs = HalfEditorTabs( updateLeftTabs, updateLeftActive)
     var rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
 
     init {
-        scope.launch {
+        scope.launch(Dispatchers.Swing) { //вкладки и _tabsCash меняются только на ui-потоке
             bus.events.collect { event ->
                 when (event) {
-                    is FileOpened -> {
-                        withContext(Dispatchers.Swing) {
-                            openNodes(listOf(event.node))
-                        }
-                    }
+                    is FileOpened -> openNodes(listOf(event.node))
                     is MoveFile -> {
-                        getTabsFileFilter(event.oldFile).forEach { (_, file) ->
-                            file.refile(File(event.newFile.toString()))
+                        tabsInside(event.oldFile).forEach { tab -> //файл или папка с открытыми файлами внутри
+                            val path = tab.getFile().toPath()
+                            tab.refile(event.newFile.resolve(event.oldFile.relativize(path)).toFile())
                         }
                         saveToConfig()
                     }
-                    is DeleteFile -> {
-                        getTabsFileFilter(event.file).keys.forEach { id->
-                            leftTabs.closeTab(id)
-                            rightTabs.closeTab(id)
-                        }
-                    }
-                    is DeleteDir -> {
-                        getTabsFileFilter(event.dir, event.dir).keys.forEach { id->
-                            leftTabs.closeTab(id)
-                            rightTabs.closeTab(id)
-                        }
-                    }
+                    is DeleteFile -> closeTabs(tabsInside(event.file))
+                    is DeleteDir -> closeTabs(tabsInside(event.dir))
                     else -> {}
                 }
             }
@@ -124,6 +110,7 @@ class EditorController(
                     _tabsCash[id] = tabState
                     scope.launch {
                         tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
+                        saveToConfig()
                     }
                 } else {
                     scope.launch { tabState.beforeRemove() } //закрытая вкладка из старого конфига: удалить её .clip
@@ -164,28 +151,28 @@ class EditorController(
         _tabsCash[tab.id] = tab
         scope.launch {
             tab.openFile(TabCash.OpenFileType.OPEN_NEW_FILE)
-        }
-        scope.launch {
-            saveToConfig()
+            saveToConfig() //после открытия: вкладка с ошибкой в конфиг не попадёт
         }
     }
 
     private suspend fun saveToConfig() {
-        rep.updateFiles( //уходит на сохранение в конфиг
+        rep.updateFiles( //уходит на сохранение в конфиг: только путь и тип, без текста
             withContext(Dispatchers.Swing) {
-                _tabsCash.mapValues { (_, value) ->
-                    value.copy()
+                _tabsCash.mapNotNull { (id, tab) ->
+                    tab.toSnapshot()?.let { id to it } //вкладка с ошибкой пропускается, остальные сохраняются
                 }.toMap()
             }
         )
     }
 
-    private fun getTabsFileFilter(eq: Path, startWith: Path? = null) =
-        _tabsCash.filterValues {
-            it is TabCashFile &&
-                    (it.getFile().toPath() == eq ||
-                            if(startWith == null) false else it.getFile().path.startsWith(startWith.toString()))
-        }
+    private fun tabsInside(path: Path) = _tabsCash.values //путь и всё внутри; по частям: не /a/foobar для /a/foo
+        .filterIsInstance<TabCashFile>()
+        .filter { it.getFile().toPath().startsWith(path) }
+
+    private fun closeTabs(tabs: List<TabCash>) = tabs.forEach { tab ->
+        leftTabs.closeTab(tab.id)
+        rightTabs.closeTab(tab.id)
+    }
 
     fun rightToLeftHalf() {
         leftTabs = rightTabs.copy(updateLeftTabs, updateLeftActive)

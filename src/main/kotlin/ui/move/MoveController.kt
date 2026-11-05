@@ -3,15 +3,15 @@ package non.era.aisdme.ui.move
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable.isActive
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
@@ -23,7 +23,8 @@ import java.io.File
 class MoveController : UiController() {
     private var _draggingNode by mutableStateOf(false)
     private var _dragPosition by mutableStateOf(Offset.Zero)
-    private val _nodeBounds = mutableStateMapOf<ProjectNode, Rect>()
+    private val _nodeBounds = mutableMapOf<ProjectNode, Rect>() //не state: пишется на каждом layout
+    private var _dropTarget by mutableStateOf<ProjectNode?>(null)
     private var _selectedNodeOnStart: List<ProjectNode>? = null
 
     private var _listBounds: Rect? = null
@@ -43,26 +44,31 @@ class MoveController : UiController() {
 
     fun disposeElement(node: ProjectNode) {
         _nodeBounds.remove(node)
+        if(_dropTarget == node) updateDropTarget()
     }
 
     fun setNodeBounds(node: ProjectNode, rect: Rect) {
         _nodeBounds[node] = rect
+        if(_draggingNode) updateDropTarget() //при автоскролле узлы едут под неподвижным курсором
     }
 
     fun onDragStart(offset: Offset, selectedNode: List<ProjectNode>) {
         _draggingNode = true
         _dragPosition = offset
         _selectedNodeOnStart = selectedNode
+        updateDropTarget()
     }
 
     fun setDragPosition(position: Offset) {
         _dragPosition = position
+        updateDropTarget()
         checkAutoScroll()
     }
 
     fun cancelDrag() {
         Log.d("cancel drop")
         _draggingNode = false
+        _dropTarget = null
         _autoScrollJob?.cancel()
     }
 
@@ -70,15 +76,18 @@ class MoveController : UiController() {
         if(!_draggingNode) return
         Log.d("force finish drop")
         _draggingNode = false
+        _dropTarget = null
         _autoScrollJob?.cancel()
     }
 
-    fun isDropTarget(node: ProjectNode) =
-        if(_draggingNode) {
-            _nodeBounds[node]?.contains(_dragPosition) == true
-        } else {
-            false
-        }
+    fun isDropTarget(node: ProjectNode) = _dropTarget == node
+
+    private fun findTarget() = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key
+
+    private fun updateDropTarget() {
+        val target = if(_draggingNode) findTarget() else null
+        if(target != _dropTarget) _dropTarget = target //state меняется, только когда курсор перешёл на другой узел
+    }
 
     fun finishDrop(
         resultDropOnTree: (src: List<ProjectNode>, file: File) -> Unit,
@@ -87,11 +96,12 @@ class MoveController : UiController() {
         Log.d("finish drop")
         if(!_draggingNode) return
         _draggingNode = false
+        _dropTarget = null
         _autoScrollJob?.cancel()
         if(_selectedNodeOnStart == null) return
 
 
-        val target = _nodeBounds.entries.firstOrNull { it.value.contains(_dragPosition) }?.key ?: run {
+        val target = findTarget() ?: run {
             resultDropOutsideTree(_selectedNodeOnStart!!, _dragPosition)
             return@finishDrop
         }
@@ -133,13 +143,18 @@ class MoveController : UiController() {
         }
     }
 
+    internal fun isAutoScrolling() = _autoScrollJob?.isActive == true
+
     private suspend fun autoScrollLoop(dir: Int) {
         val state = _scrollState ?: return
 
-        while (isActive) {
-            withContext(Dispatchers.Swing) {
-                state.scrollBy(dir * 5f) // скорость
+        while (currentCoroutineContext().isActive) {
+            val scrolled = withContext(Dispatchers.Swing) {
+                val canScroll = if (dir > 0) state.canScrollForward else state.canScrollBackward
+                if (canScroll) state.scrollBy(dir * 5f) // скорость
+                canScroll
             }
+            if (!scrolled) break //дошли до конца списка
             delay(16) // ~60 FPS
         }
     }

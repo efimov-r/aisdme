@@ -32,14 +32,6 @@ class TabCashFileText (
     private var _savedText by mutableStateOf("")
     private val saveMutex: Mutex = Mutex()
 
-    override fun copy() : TabCashFileText { //копия для конфига
-        val res = TabCashFileText(id, File(_file.path), _extScope)
-        res._textFieldValue = _textFieldValue
-        res._savedText = _savedText
-        copyCashFile(res)
-        return res
-    }
-
     override suspend fun disposeBeforeBlocked() { //без writeStatus: вызывается из runBlocking на EDT
         autosaveJob?.cancel()
         if (!canSave()) return //не загружен или ошибка: иначе файл затрётся

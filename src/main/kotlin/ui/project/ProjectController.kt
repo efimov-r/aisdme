@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
-import kotlinx.coroutines.withContext
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
 import non.era.aisdme.bus.RebuilDirRiff
@@ -52,7 +51,7 @@ class ProjectController(
                         }
                     }
                     is ShowFileInTree -> {
-                        scope.launch {
+                        scope.launch(Dispatchers.Swing) {
                             treeState.showNode(event.file)
                         }
                     }
@@ -64,11 +63,22 @@ class ProjectController(
             snapshotFlow { ProjectListLineHelper.buildLinearExpandedNodes(treeState.getNodes()) } //как в ui подписка
                 .debounce(200)
                 .collectLatest {
-                    withContext(Dispatchers.IO) {
-                        rep.updateTree(treeState.getCashForConfig())
-                    }
+                    rep.updateTree(treeState.getCashForConfig()) //на ui-потоке: читает состояние дерева
                 }
         }
+        scope.launch(Dispatchers.Swing) { //раскрытая, но не прочитанная папка — читается с диска
+            snapshotFlow {
+                ProjectListLineHelper.buildLinearExpandedNodes(treeState.getNodes())
+                    .filterIsInstance<DirNode>()
+                    .filter { it.expanded && !it.loaded }
+            }.collect { dirs ->
+                dirs.forEach { if (!it.loaded) treeState.loadChildren(it) }
+            }
+        }
+    }
+
+    fun expandSelected() = scope.launch {
+        treeState.expandSelected()
     }
 
     fun reselectRootProject(treeStateConfig: SnapshotTree?, root: File) = scope.launch {

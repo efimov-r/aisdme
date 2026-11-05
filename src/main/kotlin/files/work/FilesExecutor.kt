@@ -7,7 +7,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI
-import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.DirectoryNotEmptyException
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -48,12 +48,14 @@ object FilesExecutor {
     }
 
     private fun copyRecursive(src: Path, dst: Path) {
-        Files.walk(src).forEach { source ->
-            val target = dst.resolve(src.relativize(source))
-            if (Files.isDirectory(source)) {
-                Files.createDirectories(target)
-            } else {
-                Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES)
+        Files.walk(src).use { stream -> //закрыть: иначе папка остаётся открытой и не удаляется на Windows
+            stream.forEach { source ->
+                val target = dst.resolve(src.relativize(source))
+                if (Files.isDirectory(source)) {
+                    Files.createDirectories(target)
+                } else {
+                    Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES)
+                }
             }
         }
     }
@@ -69,12 +71,13 @@ object FilesExecutor {
         clipboard.setContents(transferable, null)
     }
 
-    fun pasteFromClipboard(targetDir: Path) {
+    fun pasteFromClipboard(targetDir: Path): List<Pair<Path, Path>> {
         val (paths, isCut) = getClipboardFiles()
-        paste(paths, isCut, targetDir)
+        return paste(paths, isCut, targetDir)
     }
 
-    fun paste(paths: List<Path>, isCut: Boolean, targetDir: Path) {
+    /** Возвращает перемещённые при вырезании пары «откуда — куда»: вкладки редактора должны за ними следовать */
+    fun paste(paths: List<Path>, isCut: Boolean, targetDir: Path): List<Pair<Path, Path>> {
         findPasteIntoItself(paths, targetDir)?.let {
             throw IOException("Cannot paste directory into itself: $it") //иначе Files.walk копирует уже скопированное, вложенность бесконечная
         }
@@ -84,27 +87,28 @@ object FilesExecutor {
             throw FileAlreadyExistsException(it.toString()) //до копирования: не оставлять вставку наполовину
         }
 
-        existing.forEach { pasteOne(it, targetDir.resolve(it.fileName), isCut) }
+        val res = existing.map { it to targetDir.resolve(it.fileName) }
+        res.forEach { (src, dst) -> pasteOne(src, dst, isCut) }
+        return if (isCut) res else emptyList()
     }
 
     private fun pasteOne(src: Path, dst: Path, isCut: Boolean) {
+        if (isCut) {
+            moveAnyDisk(src, dst)
+        } else if (Files.isDirectory(src)) {
+            copyRecursive(src, dst)
+        } else {
+            Files.copy(src, dst)
+        }
+    }
+
+    private fun moveAnyDisk(src: Path, dst: Path) {
         try {
-            if (isCut) {
-                Files.move(src, dst)
-            } else if (Files.isDirectory(src)) {
-                copyRecursive(src, dst)
-            } else {
-                Files.copy(src, dst)
-            }
-        } catch (e: AtomicMoveNotSupportedException) {// fallback для разных дисков / FS
-            if (!isCut) throw e
-            if (Files.isDirectory(src)) {
-                copyRecursive(src, dst)
-                deleteRecursive(src)
-            } else {
-                Files.copy(src, dst)
-                Files.deleteIfExists(src)
-            }
+            Files.move(src, dst) //файл на другой диск Files.move копирует сам
+        } catch (e: DirectoryNotEmptyException) { //непустую папку на другой диск — только копированием
+            if (!Files.isDirectory(src) || Files.exists(dst)) throw e
+            copyRecursive(src, dst)
+            deleteRecursive(src)
         }
     }
 
@@ -157,7 +161,7 @@ object FilesExecutor {
             if (!src.toFile().renameTo(target.toFile())) throw IOException("Cannot rename $src to $target")
             return
         }
-        Files.move(src, target) //без REPLACE_EXISTING: занятая цель — FileAlreadyExistsException
+        moveAnyDisk(src, target) //без REPLACE_EXISTING: занятая цель — FileAlreadyExistsException
     }
 
 //    fun copy(src: Path, dst: Path) {

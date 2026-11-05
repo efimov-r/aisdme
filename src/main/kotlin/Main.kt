@@ -41,9 +41,8 @@ fun main() = application {
     AisDmeWindow(onCloseRequest = ::exitApplication) { globalConf, project->
         val appController = buildAppController(globalConf)
 
-        val configProjectStart = remember {
-            appController.reselectProject(project)
-        }
+        var configProjectStart by remember { mutableStateOf<ProjectConfig?>(null) } //читается не на ui-потоке
+        LaunchedEffect(project) { configProjectStart = appController.reselectProject(project) }
 
         var activeDialog by remember { mutableStateOf<UiDialog?>(null) }
         LaunchedEffect(Unit) { appController.dialogController.effects.collect { activeDialog = it } }
@@ -59,7 +58,7 @@ fun main() = application {
             LocalAppController provides appController
         ) {
             AisDmeTheme(appController.isDarkTheme) {
-                AisDmeContent(configProjectStart)
+                configProjectStart?.let { AisDmeContent(it) } //до загрузки конфига — пустое окно
                 DialogsStarter(activeDialog) { activeDialog = null }
                 TooltipStarter(appController.dialogController.tolltipState)
             }

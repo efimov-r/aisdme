@@ -1,9 +1,8 @@
 package non.era.aisdme.ui.reload
 
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -20,21 +19,38 @@ class TreeReloadWatcher(
 ) : UiController() {
 
     private val watchService = FileSystems.getDefault().newWatchService()
-    private val watchKinds = arrayOf<WatchEvent.Kind<*>>(
+    private val watchKinds = arrayOf<WatchEvent.Kind<*>>( //без ENTRY_MODIFY: запись в файл не меняет дерево
         StandardWatchEventKinds.ENTRY_CREATE,
         StandardWatchEventKinds.ENTRY_DELETE,
-        StandardWatchEventKinds.ENTRY_MODIFY,
     )
     private val keysMutex = Mutex()
     private val keys = mutableSetOf<WatchKey>()
 
     private val pendingDirs = mutableSetOf<File>()
     private val pendingMutex = Mutex()
+    private val pendingSignal = Channel<Unit>(Channel.CONFLATED) //сигнал, пришедший во время пакета, не теряется
 
-    private val applyMutex = Mutex()
+    private val commands = Channel<suspend () -> Unit>(Channel.UNLIMITED) //смена проекта и регистрации — по порядку
+    private var root: Path? = null //меняется только в commandLoop
 
     init {
         watchLoop()
+        applyLoop()
+        commandLoop()
+    }
+
+    private fun commandLoop() = scope.launch {
+        for (command in commands) command()
+    }
+
+    fun dirsLoaded(dirs: List<File>) { //Linux: следим только за прочитанными в дерево папками, не за всем проектом
+        if (Platform.current.watchSubtree) return
+        commands.trySend { dirs.forEach { registerInRoot(it.toPath()) } }
+    }
+
+    private suspend fun registerInRoot(dir: Path) {
+        val r = root ?: return
+        if (dir.startsWith(r)) register(dir) //папки старого проекта не регистрируются
     }
 
     private fun watchLoop() = scope.launch {
@@ -51,16 +67,7 @@ class TreeReloadWatcher(
                     pendingDirs += changedDir
                 }
 
-                launch { applyBatch() }
-
-                if (
-                    fullPath != null &&
-                    !Platform.current.watchSubtree &&
-                    event.kind() == StandardWatchEventKinds.ENTRY_CREATE &&
-                    Files.isDirectory(fullPath)
-                ) {
-                    registerRecursively(fullPath)
-                }
+                pendingSignal.trySend(Unit) //новая папка регистрируется, когда её прочитают в дерево
             }
 
             if (!key.reset()) {
@@ -72,8 +79,9 @@ class TreeReloadWatcher(
         }
     }
 
-    fun switchProject(root: Path) {
-        scope.launch {
+    fun switchProject(newRoot: Path) {
+        commands.trySend { //в очередь сразу: раньше, чем придут прочитанные папки нового проекта
+            root = newRoot
             keysMutex.withLock {
                 keys.forEach { it.cancel() }// отменяем старые
                 keys.clear()
@@ -81,7 +89,7 @@ class TreeReloadWatcher(
 
             pendingMutex.withLock { pendingDirs.clear() }
 
-            if (Platform.current.watchSubtree) register(root) else registerRecursively(root)
+            register(newRoot) //Windows — всё поддерево, Linux — только корень, остальное в dirsLoaded
         }
     }
 
@@ -92,21 +100,10 @@ class TreeReloadWatcher(
         }
     }
 
-    private suspend fun registerRecursively(root: Path) = coroutineScope {
-        Files.walk(root).use { stream ->
-            val dirs = stream.filter { Files.isDirectory(it) && !Files.isSymbolicLink(it) }
-                .toList() // materialize list
-            dirs.map { dir ->
-                launch { register(dir) }
-            }.joinAll()
-        }
-    }
-
-    private suspend fun applyBatch() {
-        if (!applyMutex.tryLock()) return
-
-        try {
-            delay(200)
+    private fun applyLoop() = scope.launch {
+        while (isActive) {
+            pendingSignal.receive()
+            delay(200) //собрать пачку событий
 
             val dirs = pendingMutex.withLock {
                 val list = pendingDirs.toList()
@@ -119,9 +116,6 @@ class TreeReloadWatcher(
                     bus.publish(RebuilDirRiff(it))
                 }
             }
-
-        } finally {
-            applyMutex.unlock()
         }
     }
 

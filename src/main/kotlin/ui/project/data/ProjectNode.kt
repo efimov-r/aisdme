@@ -34,10 +34,12 @@ class DirNode(
     file: File,
     depth: Int,
     children: List<ProjectNode>,
-    expand: Boolean = true
+    expand: Boolean = true,
+    loaded: Boolean = true,
 ) : ProjectNode(file, depth) {
     val children: SnapshotStateList<ProjectNode> = mutableStateListOf()
     var expanded by mutableStateOf(expand)
+    var loaded by mutableStateOf(loaded) //false — содержимое с диска ещё не читалось, читается при раскрытии
 
     init {
         this.children.addAll(children)

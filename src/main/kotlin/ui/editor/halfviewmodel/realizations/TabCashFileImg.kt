@@ -34,14 +34,6 @@ class TabCashFileImg(
     var _imageViewerState: ImageViewerState = ImageViewerState()
     val imageViewerState get() = _imageViewerState
 
-    override fun copy(): TabCashFileImg {
-        val res = TabCashFileImg(id, File(_file.path), _extScope)
-        res._imgBitmap = _imgBitmap
-        res._imageViewerState = _imageViewerState.copy()
-        copyCashFile(res)
-        return res
-    }
-
     override suspend fun beforeRemove() {
     }
 

@@ -123,23 +123,25 @@ class FilesExecutorTest {
         file("from/src/b.asm", "b")
         val target = dir.resolve("to").createDirectories()
 
-        FilesExecutor.paste(listOf(a, dir.resolve("from/src")), false, target)
+        val moved = FilesExecutor.paste(listOf(a, dir.resolve("from/src")), false, target)
 
         assertEquals("a", target.resolve("a.asm").readText())
         assertEquals("b", target.resolve("src/b.asm").readText())
         assertTrue(a.exists())
+        assertEquals(emptyList(), moved)
     }
 
-    // вырезание: оригиналы исчезают
+    // вырезание: оригиналы исчезают, перемещённые пары возвращаются для вкладок редактора
     @Test
     fun pasteCutMovesFiles() {
         val a = file("from/a.asm", "a")
         val target = dir.resolve("to").createDirectories()
 
-        FilesExecutor.paste(listOf(a), true, target)
+        val moved = FilesExecutor.paste(listOf(a), true, target)
 
         assertEquals("a", target.resolve("a.asm").readText())
         assertFalse(a.exists())
+        assertEquals(listOf(a to target.resolve("a.asm")), moved)
     }
 
     // конфликт имён: ничего не вставляется, существующий файл не меняется

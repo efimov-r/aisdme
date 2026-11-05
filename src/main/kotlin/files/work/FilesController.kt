@@ -115,7 +115,9 @@ class FilesController(
 
     override fun pasteFromClipboard(target: Path) {
         safeLaunch {
-            FilesExecutor.pasteFromClipboard(target)
+            FilesExecutor.pasteFromClipboard(target).forEach { (src, dst) ->
+                bus.publish(MoveFile(src, dst))
+            }
         }
     }
 

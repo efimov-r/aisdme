@@ -12,7 +12,7 @@
 
 1. `main()` → `AisDmeWindow`: пока читается глобальный конфиг, показывается окно загрузки 500×500 без рамки, по центру экрана. В release окно держится не меньше 2 с, в debug — без задержки.
 2. Затем открывается главное окно, его размер и положение берутся из конфига (`rememberPersistentWindowState`). Иконка — `logos/AisDme.png`.
-3. `buildAppController` собирает контроллеры, `reselectProject` открывает последний проект: сначала конфиг проекта, затем `TreeReloadWatcher`, дерево и редактор.
+3. `buildAppController` собирает контроллеры, `reselectProject` (из `LaunchedEffect`, конфиг читается на IO) открывает последний проект: сначала конфиг проекта, затем `TreeReloadWatcher`, дерево и редактор. Пока конфиг не прочитан, главное окно пустое.
 
 ## Компоненты
 
@@ -23,8 +23,8 @@
 | `TabCashFileText` | текстовый файл во вкладке | `TextFieldValue` в `mutableStateOf`; автосохранение через 2 с после последнего ввода (корутина с `delay`, прошлая задача отменяется), сохранение перед закрытием вкладки; `Mutex` на запись; статус записи `WriteStatus`: можно писать, не сохранено, только чтение, заблокирован, ошибка |
 | `TabCashFileImg` | изображение во вкладке | зум к курсору, Ctrl + «+» / «−», перетаскивание средней кнопкой мыши; показываются размеры, есть кроп |
 | `TabCashPaste` | вкладка из содержимого буфера обмена | сохраняется в отдельную папку кэша вкладок |
-| `ProjectController`, `ProjectTreeState` | дерево файлов | узлы `ProjectNode` с глубиной, выделением и пометкой «вырезан»; `LazyColumn` из видимых узлов; при обновлении — дифф детей папки |
-| `TreeReloadWatcher` | изменения на диске | `WatchService`: на Linux регистрируется каждая папка, на Windows — только корень с `FILE_TREE` (`IPlatform.watchSubtree`); снятие старых `WatchKey`, отложенная перезагрузка изменённых папок |
+| `ProjectController`, `ProjectTreeState` | дерево файлов | узлы `ProjectNode` с глубиной, выделением и пометкой «вырезан»; `LazyColumn` из видимых узлов. Ленивая загрузка: свёрнутая папка с диска не читается (`DirNode.loaded = false`), содержимое читается при первом раскрытии (подписка `snapshotFlow` в `ProjectController`), «показать в дереве» читает папки на пути, «раскрыть всё» — всё поддерево. Диск — на IO, слияние (`applyDirDiff`) — на UI-потоке, по очереди (`diskMutex`); при событии перечитываются папка и прочитанные вложенные |
+| `TreeReloadWatcher` | изменения на диске | `WatchService`, только `CREATE` / `DELETE`. Windows — только корень с `FILE_TREE` (`IPlatform.watchSubtree`); Linux — корень и прочитанные в дерево папки (`ProjectTreeState.onDirsLoaded` → `dirsLoaded`, связаны в `AppController` напрямую, не шиной). Смена проекта и регистрации — одна очередь команд. Отложенная (200 мс) перезагрузка изменённых папок одним обработчиком пакетов, сигнал — conflated `Channel`; папки нет в дереве — перечитывается ближайший предок |
 | `FilesController`, `FilesExecutor` | файловые операции | создать, удалить, переименовать, скопировать, переместить; проверка имени (`FileNameValidator`) |
 | Буфер обмена | копировать, вырезать, вставить | `FileTransferable`: файлы — `javaFileListFlavor` и `text/uri-list`; пометка «вырезано» — формат ОС из `IPlatform.clipboardCutNative` (Windows — `Preferred DropEffect`, KDE — `application/x-kde-cutselection`), связан с `cutFlavor` через `SystemFlavorMap`. Работает с Explorer в обе стороны |
 | `MoveController` | drag & drop | перетаскивание внутри дерева и из дерева в редактор с подсветкой цели; `DragPreviewLayer` — превью; автоскролл у края |
@@ -38,11 +38,11 @@
 | Конфиг | Где лежит | Что в нём |
 |---|---|---|
 | Глобальный (`AppConfig`) | Linux — `~/.config/AisDme/config.json`, Windows — `%APPDATA%\AisDme\config.json` | тема, последний открытый проект, окно |
-| Проекта (`ProjectConfig`) | `<корень проекта>/.aisdme/config.json` | состояние дерева и редактора (открытые вкладки — объектами), размеры панелей (`keyValue`) |
+| Проекта (`ProjectConfig`) | `<корень проекта>/.aisdme/config.json` | состояние дерева (только корень и раскрытые папки) и редактора (открытые вкладки — путь и тип), размеры панелей (`keyValue`) |
 
 Пути — в `ConfigPaths`, папка конфигов ОС — `IPlatform.configRoot()`.
 
-Сохранение состояния проекта: `EditorController` и `ProjectController` пишут в `EditorStateRepository` и `TreeStateRepository`, `ConfigController` собирает из них снимки (`SnapshotEditor`, `SnapshotTree`) и пишет с задержкой (`debounce`: редактор — 4 с, дерево — 2 с). Задачи автосохранения запускаются на каждый проект со своим `ConfigStore`; при смене проекта и выходе они останавливаются, текущее состояние сразу пишется в конфиг этого проекта, репозитории сбрасываются. В конфиг попадают только открытые вкладки: закрытая удаляется из кэша `EditorController` (`removeClosedTabs`), перед этим `beforeRemove` сохраняет текст или удаляет `.clip`.
+Сохранение состояния проекта: `EditorController` (снимки вкладок `SnapshotTabCash`, после открытия файла) и `ProjectController` пишут в `EditorStateRepository` и `TreeStateRepository` присваиванием `value`, `ConfigController` собирает из них снимки (`SnapshotEditor`, `SnapshotTree`) и пишет с задержкой (`debounce`: редактор — 4 с, дерево — 2 с). Задачи автосохранения запускаются на каждый проект со своим `ConfigStore`; при смене проекта и выходе они останавливаются, текущее состояние сразу пишется в конфиг этого проекта, репозитории сбрасываются. В конфиг попадают только открытые вкладки: закрытая удаляется из кэша `EditorController` (`removeClosedTabs`), перед этим `beforeRemove` сохраняет текст или удаляет `.clip`.
 
 ## Редактор
 

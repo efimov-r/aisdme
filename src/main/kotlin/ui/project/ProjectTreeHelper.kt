@@ -32,7 +32,8 @@ object ProjectTreeHelper {
     private fun buildChildren(
         config: SnapshotTree?,
         root: File,
-        depth: Int
+        depth: Int,
+        expandAll: Boolean = false,
     ): List<ProjectNode> {
         if (!root.exists()) return mutableListOf()
         if (depth > MAX_DEPTH) {
@@ -47,12 +48,16 @@ object ProjectTreeHelper {
                     Files.isSymbolicLink(f.toPath()) -> //раньше isDirectory: ссылка на родителя зацикливает обход
                         LinkNode(f, depth)
 
-                    f.isDirectory -> DirNode(
-                        file = f,
-                        depth = depth,
-                        children = buildChildren(config, f, depth + 1),
-                        expand = config?.treeState?.get(f.path)?.expanded ?: false
-                    )
+                    f.isDirectory -> {
+                        val expand = expandAll || config?.treeState?.get(f.path)?.expanded ?: false
+                        DirNode( //свёрнутая папка не читается: её содержимое — при раскрытии
+                            file = f,
+                            depth = depth,
+                            children = if (expand) buildChildren(config, f, depth + 1, expandAll) else emptyList(),
+                            expand = expand,
+                            loaded = expand,
+                        )
+                    }
 
                     else ->
                         FileNode(f, depth)
@@ -95,21 +100,25 @@ object ProjectTreeHelper {
         return result
     }
 
-    fun rebuildDirDiff(node: DirNode) {
+    /** Диск, не на ui-потоке. expandAll — всё поддерево раскрытым, иначе один уровень: вложенные папки не читаются */
+    fun readChildren(node: DirNode, expandAll: Boolean = false) =
+        buildChildren(null, node.getFile(), node.depth + 1, expandAll)
+
+    /** Без диска, на ui-потоке. deep — и в прочитанные вложенные папки, иначе только этот уровень */
+    fun applyDirDiff(node: DirNode, fresh: List<ProjectNode>, deep: Boolean = false) {
         val old = node.children.associateBy { it.getFilePath() }
-        val fresh = buildChildren(null, node.getFile(), node.depth + 1)
 
         val result = mutableListOf<ProjectNode>()
 
         for (newNode in fresh) {
             val oldNode = old[newNode.getFilePath()]
             when {
-                oldNode == null -> result += newNode
+                oldNode == null -> result += newNode.also { it.isCutted = node.isCutted }
 
                 oldNode::class != newNode::class ->  result += newNode
 
                 oldNode is DirNode && newNode is DirNode -> {// сохраняем объект директории
-                    rebuildDirDiff(oldNode)
+                    if (deep && newNode.loaded) applyDirDiff(oldNode, newNode.children, deep = true)
                     result += oldNode
                 }
 
@@ -123,7 +132,12 @@ object ProjectTreeHelper {
             clear()
             addAll(result)
         }
+        node.loaded = true
     }
+
+    fun loadedDirs(node: DirNode): List<DirNode> = //папка и прочитанные вложенные: их содержимое есть в дереве
+        if (!node.loaded) emptyList()
+        else listOf(node) + node.children.filterIsInstance<DirNode>().flatMap { loadedDirs(it) }
 
     fun selectFileInTree(
         nodes: List<ProjectNode>,

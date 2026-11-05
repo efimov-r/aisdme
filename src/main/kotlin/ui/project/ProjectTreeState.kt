@@ -22,27 +22,51 @@ class ProjectTreeState {
 
     var inFocus by mutableStateOf(false)
 
+    var onDirsLoaded: (List<File>) -> Unit = {} //прочитанные с диска папки: watcher на Linux следит только за ними
+
     private val rootMutex = Mutex()
-    private var rootProject: File? = null
+    private val diskMutex = Mutex() //чтение папок по очереди: старое чтение не применится поверх нового
+    @Volatile private var rootProject: File? = null
 
     fun getSelectedNodes(): List<ProjectNode> {
-        return ProjectTreeHelper.findSelectedNodes(_nodes)
+        return ProjectTreeHelper.findSelectedNodes(_nodes) //обход только прочитанных папок
     }
 
-    fun showNode(file: File) {
-        inFocus = ProjectTreeHelper.selectFileInTree(_nodes, file)
+    suspend fun showNode(file: File) {
+        val root = rootProject ?: return
+        val dirs = generateSequence(file.parentFile) { it.parentFile } //папки на пути, от корня
+            .takeWhile { it.toPath().startsWith(root.toPath()) }
+            .toList()
+            .asReversed()
+        for (dir in dirs) {
+            val node = withContext(Dispatchers.Swing) { ProjectTreeHelper.findDirNode(_nodes, dir) } ?: break
+            if (!node.loaded) loadChildren(node)
+        }
+        withContext(Dispatchers.Swing) { inFocus = ProjectTreeHelper.selectFileInTree(_nodes, file) }
     }
 
-    fun expandSelected() {
-        fun exp(node: DirNode) {
-            node.expanded = true
-            node.children.forEach {
-                if (it is DirNode) exp(it)
+    suspend fun loadChildren(node: DirNode) = diskMutex.withLock {
+        val fresh = withContext(Dispatchers.IO) { ProjectTreeHelper.readChildren(node) }
+        withContext(Dispatchers.Swing) { ProjectTreeHelper.applyDirDiff(node, fresh) }
+        onDirsLoaded(listOf(node.getFile()))
+    }
+
+    suspend fun expandSelected() = diskMutex.withLock { //всё поддерево: читается с диска целиком
+        val dirs = withContext(Dispatchers.Swing) { getSelectedNodes().filterIsInstance<DirNode>() }
+        dirs.forEach { dir ->
+            val fresh = withContext(Dispatchers.IO) { ProjectTreeHelper.readChildren(dir, expandAll = true) }
+            val loaded = withContext(Dispatchers.Swing) {
+                ProjectTreeHelper.applyDirDiff(dir, fresh, deep = true)
+                expandAll(dir)
+                ProjectTreeHelper.loadedDirs(dir).map { it.getFile() }
             }
+            onDirsLoaded(loaded)
         }
-        ProjectTreeHelper.findSelectedNodes(_nodes).forEach { node->
-            if(node is DirNode) exp(node)
-        }
+    }
+
+    private fun expandAll(node: DirNode) {
+        node.expanded = true
+        node.children.forEach { if (it is DirNode) expandAll(it) }
     }
 
     fun collapseAll() {
@@ -59,13 +83,11 @@ class ProjectTreeState {
         }
     }
 
-    fun getCashForConfig() = SnapshotTree(
-        ProjectListLineHelper.buildLinearNodes(_nodes).associate { node ->
-            val isDirNode = node is DirNode
-            val expanded = isDirNode && (node as DirNode).expanded
-            val path: String = node.getFile().path
-            path to TreeStateElement(isDirNode, expanded)
-        }
+    fun getCashForConfig() = SnapshotTree( //только раскрытые папки и корень: остальные по умолчанию свёрнуты
+        ProjectListLineHelper.buildLinearNodes(_nodes)
+            .filterIsInstance<DirNode>()
+            .filter { it.expanded || it.depth == 0 }
+            .associate { it.getFile().path to TreeStateElement(true, it.expanded) }
     )
 
 
@@ -96,42 +118,58 @@ class ProjectTreeState {
     suspend fun reselectRootProject(config: SnapshotTree?, root: File) =
         rootMutex.withLock {
             rootProject = root
-            val newTree = ProjectTreeHelper.buildProjectTree(config, root)
-            withContext(Dispatchers.Swing) {
-                _nodes.clear()
-                newTree?.let { _nodes.add(it) }
-            }
+            val newTree = withContext(Dispatchers.IO) { ProjectTreeHelper.buildProjectTree(config, root) }
+            setTree(newTree)
         }
+
+    private suspend fun setTree(tree: DirNode?) {
+        withContext(Dispatchers.Swing) {
+            _nodes.clear()
+            tree?.let { _nodes.add(it) }
+        }
+        tree?.let { onDirsLoaded(ProjectTreeHelper.loadedDirs(it).map { d -> d.getFile() }) }
+    }
 
     //из контекстного меню обновление
     suspend fun reloadSelectedDirFromDisk() {
-        getSelectedNodes().forEach { dirNode ->
-            rebuildDirDiff(dirNode.getFile(), {})
+        val dirs = withContext(Dispatchers.Swing) {
+            getSelectedNodes().filterIsInstance<DirNode>().map { it.getFile() }
+        }
+        dirs.forEach { dir ->
+            rebuildDirDiff(dir, {})
         }
     }
 
-    fun findNodes(file: File) = ProjectTreeHelper.findNode(_nodes, file)
+    private fun findNearestDirNode(dir: File): DirNode? =
+        generateSequence(dir) { it.parentFile }.firstNotNullOfOrNull { ProjectTreeHelper.findDirNode(_nodes, it) }
 
-    suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit) =
-        withContext(Dispatchers.Swing) {
-            Log.d("rebuildDirDiff: ${deer.path}")
-           ProjectTreeHelper.findDirNode(_nodes, deer)?.let {
-               ProjectTreeHelper.rebuildDirDiff(it)
-           } ?: run {
-               notFoundErr()
-               Log.e("findDirNode is null, reload all")
-               val newTree = withContext(Dispatchers.IO) {
-                   rootProject?.let {
-                       ProjectTreeHelper.buildProjectTree(null, it)
-                   } ?: run {
-                       Log.e("rootProject in project tree is null")
-                       null
-                   }
-               }
-               withContext(Dispatchers.Swing) {
-                   _nodes.clear()
-                   newTree?.let { _nodes.add(it) }
-               }
-           }
+    suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit): Unit = diskMutex.withLock {
+        Log.d("rebuildDirDiff: ${deer.path}")
+        val node = withContext(Dispatchers.Swing) { findNearestDirNode(deer) } //нет в дереве — ближайший предок
+        if (node != null) {
+            if (node.loaded) refresh(node) //не прочитанная папка прочитается при раскрытии
+            return@withLock
         }
+
+        notFoundErr()
+        Log.e("findDirNode is null, reload all")
+        val config = withContext(Dispatchers.Swing) { getCashForConfig() } //раскрытые папки не сворачиваются
+        val newTree = withContext(Dispatchers.IO) {
+            rootProject?.let {
+                ProjectTreeHelper.buildProjectTree(config, it)
+            } ?: run {
+                Log.e("rootProject in project tree is null")
+                null
+            }
+        }
+        setTree(newTree)
+    }
+
+    private suspend fun refresh(node: DirNode) { //и прочитанные вложенные: после OVERFLOW изменения где угодно
+        val dirs = withContext(Dispatchers.Swing) { ProjectTreeHelper.loadedDirs(node) }
+        val fresh = withContext(Dispatchers.IO) { dirs.map { it to ProjectTreeHelper.readChildren(it) } }
+        withContext(Dispatchers.Swing) {
+            fresh.forEach { (dir, children) -> ProjectTreeHelper.applyDirDiff(dir, children) }
+        }
+    }
 }

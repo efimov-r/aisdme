@@ -1,10 +1,14 @@
 package non.era.aisdme.configs
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
@@ -20,11 +24,16 @@ class ConfigController(
     private val treeRep: TreeStateRepository,
     private val globalStore: ConfigStore<AppConfig> = GlobalConfig.store,
 ) : UiController() {
-    private var projectStore: ConfigStore<ProjectConfig>? = null
+    @Volatile private var projectStore: ConfigStore<ProjectConfig>? = null
     private var autosaveJobs: List<Job> = listOf()
+    private val projectMutex = Mutex() //смена проекта и выход — по очереди
 
-    fun reselectProject(projectRoot: File): ProjectConfig? {
-        saveNowAndStopBlocked() //снимки старого проекта — только в его конфиг
+    suspend fun reselectProject(projectRoot: File): ProjectConfig = withContext(Dispatchers.IO) {
+        projectMutex.withLock { openProject(projectRoot) }
+    }
+
+    private suspend fun openProject(projectRoot: File): ProjectConfig {
+        saveNowAndStop() //снимки старого проекта — только в его конфиг
         editorRep.reset()
         treeRep.reset()
 
@@ -44,7 +53,7 @@ class ConfigController(
                 }
             }
         }
-        val res = runBlocking { store.get() }
+        val res = store.get()
         autosaveJobs = startAutosave(store)
         return res
     }
@@ -63,18 +72,16 @@ class ConfigController(
     //store фиксируется при запуске: отложенное сохранение не уйдёт в конфиг другого проекта
     private fun startAutosave(store: ConfigStore<ProjectConfig>) = listOf(
         scope.launch {
-            combine(
+            merge(
                 editorRep.files,
                 editorRep.leftTabs,
                 editorRep.rightTabs,
                 editorRep.leftActive,
                 editorRep.rightActive
-            ) { files, leftTabs, rightTabs, leftActive, rightActive ->
-                SnapshotEditor.buildFromOldVersion(files, leftTabs, rightTabs, leftActive, rightActive, store)
-            }
+            )
             .debounce(4000)
-            .collectLatest { snapshot ->
-                snapshot?.saveToConfig(store)
+            .collectLatest { //снимок — в момент записи, из последних значений
+                SnapshotEditor.buildFromOldVersion(editorRep, store)?.saveToConfig(store)
             }
         },
         scope.launch {
@@ -86,22 +93,15 @@ class ConfigController(
         },
     )
 
-    private fun saveNowAndStopBlocked() = runBlocking {
+    private suspend fun saveNowAndStop() {
         autosaveJobs.forEach { it.cancelAndJoin() }
         autosaveJobs = listOf()
-        val store = projectStore ?: return@runBlocking
-        SnapshotEditor.buildFromOldVersion(
-            editorRep.files.value,
-            editorRep.leftTabs.value,
-            editorRep.rightTabs.value,
-            editorRep.leftActive.value,
-            editorRep.rightActive.value,
-            store,
-        )?.saveToConfig(store)
+        val store = projectStore ?: return
+        SnapshotEditor.buildFromOldVersion(editorRep, store)?.saveToConfig(store)
         treeRep.tree.value?.saveToConfig(store)
     }
 
     override fun disposeBefore() {
-        saveNowAndStopBlocked()
+        runBlocking { projectMutex.withLock { saveNowAndStop() } } //выход: дождаться записи конфига
     }
 }
