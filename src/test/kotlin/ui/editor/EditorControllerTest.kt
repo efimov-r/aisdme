@@ -1,5 +1,6 @@
 package non.era.aisdme.ui.editor
 
+import androidx.compose.runtime.derivedStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -106,6 +107,38 @@ class EditorControllerTest {
         assertEquals(listOf(id), rep.leftTabs.value)
         assertEquals(emptyList(), rep.rightTabs.value)
         assertEquals(id, rep.leftActive.value)
+    }
+
+    // derivedStateOf над левой половиной видит половину, перенесённую справа
+    @Test
+    fun derivedStateSeesRightToLeftHalf() {
+        val id = openFile("a.asm")
+        onUi {
+            controller.leftTabs.closeTab(id)
+            controller.rightTabs.activateTab(id)
+        }
+        val leftList = derivedStateOf { controller.leftTabs.listTabs.toList() }
+        assertEquals(emptyList(), leftList.value)
+
+        onUi { controller.rightToLeftHalf() }
+
+        assertEquals(listOf(id), leftList.value)
+    }
+
+    // derivedStateOf над getTab видит вкладку, добавленную в кэш позже
+    @Test
+    fun derivedStateSeesNewTab() {
+        val a = File(dir, "a.asm").apply { writeText("a") }
+        val tab = derivedStateOf { controller.getTab(0) }
+        assertNull(tab.value)
+
+        onUi {
+            controller.reselectProject(
+                SnapshotEditor(files = mapOf(0 to SnapshotTabCash(a.path, TypeFile.TEXT_FILE)), leftTabs = listOf(0))
+            )
+        }
+
+        assertNotNull(tab.value)
     }
 
     // вкладка файла внутри переименованной папки получает новый путь

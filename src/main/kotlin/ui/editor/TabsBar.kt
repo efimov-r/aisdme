@@ -46,7 +46,7 @@ fun TabsBar(
         modifier = modifier,
         contentAlignment = Alignment.BottomStart
     ) {
-        val tabs by remember {
+        val tabs by remember(half) { //без ключа после rightToLeftHalf смотрит в старую половину
             derivedStateOf {
                 half.listTabs.mapNotNull { tId -> editor.getTab(tId) }.toList()
             }

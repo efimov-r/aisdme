@@ -1,5 +1,9 @@
 package non.era.aisdme.ui.editor
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -27,7 +31,7 @@ class EditorController(
     private val rep: EditorStateRepository,
     private val winState: WindowState,
 ) : UiController() {
-    private var _tabsCash: MutableMap<Int, TabCash> = mutableMapOf()
+    private val _tabsCash = mutableStateMapOf<Int, TabCash>() //state: getTab читается в derivedStateOf
     private val removeMutex = Mutex()
 
     private val updateLeftTabs: (List<Int>) -> Unit = { rep.updateLeftTabs(it); removeClosedTabs() }
@@ -35,8 +39,10 @@ class EditorController(
     private val updateLeftActive: (Int?) -> Unit = { rep.updateLeftActiveTabs(it) }
     private val updateRightActive: (Int?) -> Unit = { rep.updateRightActiveTabs(it) }
 
-    var leftTabs = HalfEditorTabs( updateLeftTabs, updateLeftActive)
-    var rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
+    var leftTabs by mutableStateOf(HalfEditorTabs(updateLeftTabs, updateLeftActive))
+        private set //state: заменяется в rightToLeftHalf
+    var rightTabs by mutableStateOf(HalfEditorTabs(updateRightTabs, updateRightActive))
+        private set
 
     init {
         scope.launch(Dispatchers.Swing) { //вкладки и _tabsCash меняются только на ui-потоке

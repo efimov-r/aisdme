@@ -69,8 +69,8 @@
 
 ## `derivedStateOf` не обновляется
 - **Что случилось:** при рекомпозиции состояние в `derivedStateOf` иногда не пересчитывалось
-- **Причина:** TODO: точная причина не записана. Частая причина в Compose — внутри `derivedStateOf` читается обычное поле, а не `State`: тогда пересчёта не будет
-- **Как правильно:** всё, от чего зависит `derivedStateOf`, держать в `mutableStateOf` или `mutableStateListOf`. Используется в `TabsBar.kt` и `ProjectTreeView.kt`
+- **Причина:** в `TabsBar` `derivedStateOf` читал обычные поля: `EditorController.leftTabs` / `rightTabs` (обычные `var`, `rightToLeftHalf` заменяет объекты) и кэш вкладок в `MutableMap` (`getTab`). Плюс `remember` без ключа `half` — после замены половины вычисление смотрело в список старой ([#27](https://github.com/efimov-r/aisdme/issues/27))
+- **Как правильно:** всё, от чего зависит `derivedStateOf`, держать в `mutableStateOf`, `mutableStateListOf`, `mutableStateMapOf`; параметры composable, которые читаются внутри, — ключи `remember(x)`. Тесты — `EditorControllerTest.derivedStateSees*`
 
 ## Различия Linux и Windows
 - **Что случилось:** буфер обмена, пути конфигов и открытие файла в файловом менеджере работают в ОС по-разному
