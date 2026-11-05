@@ -13,6 +13,13 @@
 
 ---
 
+## 2026-11-05 — CI без `gradle/actions/setup-gradle`
+- **Статус:** принято, [#18](https://github.com/efimov-r/aisdme/issues/18)
+- **Контекст:** нужен CI на GitHub Actions с кэшем Gradle. В `gradle/actions` v6 кэширование вынесено в проприетарный компонент `gradle-actions-caching`: используя его, принимаешь отдельные Terms of Use Gradle
+- **Решение:** кэш — `actions/setup-java` с `cache: gradle`; проверка wrapper-jar — отдельный шаг `gradle/actions/wrapper-validation` (кэш не использует); запуск — `./gradlew build` в `bash` на обеих ОС
+- **Почему:** всё под MIT, без чужих условий использования; кэша зависимостей для одного модуля хватает
+- **Альтернативы:** `setup-gradle` v6 — условия использования; `setup-gradle` v5 — старая версия, обновляться всё равно придётся
+
 ## 2026-11-05 — Тесты на JUnit 5 + `kotlin.test`
 - **Статус:** принято, [#14](https://github.com/efimov-r/aisdme/issues/14)
 - **Контекст:** тестов не было, перед #15–17 нужен тестовый фреймворк

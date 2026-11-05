@@ -4,7 +4,7 @@
 
 ## В работе
 
-- ничего
+- [ ] CI на GitHub Actions — [#18](https://github.com/efimov-r/aisdme/issues/18), ветка `issue-18-ci`: проверить первый прогон в PR
 
 ## Проверить на Linux
 
@@ -48,5 +48,4 @@
 - [ ] Тесты конфигов — [#15](https://github.com/efimov-r/aisdme/issues/15)
 - [ ] Тесты файловых операций — [#16](https://github.com/efimov-r/aisdme/issues/16)
 - [ ] Тесты логики дерева проекта — [#17](https://github.com/efimov-r/aisdme/issues/17)
-- [ ] CI на GitHub Actions — [#18](https://github.com/efimov-r/aisdme/issues/18)
 - [ ] Quality gates — [#19](https://github.com/efimov-r/aisdme/issues/19)
