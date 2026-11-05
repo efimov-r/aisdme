@@ -1,5 +1,6 @@
 package non.era.aisdme.ui.components.dialogs.elements
 
+import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -16,6 +17,7 @@ import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 class DialogsControllerTest {
@@ -95,5 +97,15 @@ class DialogsControllerTest {
         selected = listOf()
 
         assertEquals(UiDialog.ShowDeleteDialog(listOf(file)), nextDialog())
+    }
+
+    // подсказка показывается с текстом и позицией и скрывается
+    @Test
+    fun tooltipShowAndClose() {
+        controller.tolltipShow("Expand", Offset(10f, 20f))
+        assertEquals(TolltipState(show = true, text = "Expand", position = Offset(10f, 20f)), controller.tolltipState)
+
+        controller.tolltipClose()
+        assertFalse(controller.tolltipState.show)
     }
 }

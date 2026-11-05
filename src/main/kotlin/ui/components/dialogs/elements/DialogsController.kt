@@ -29,10 +29,10 @@ sealed interface GlobalMessageReq {
     data class ShowGlobalError(val text: String): GlobalMessageReq
 }
 
-data class TolltipState (
-    var show: Boolean = false,
-    var text: String = "",
-    var position: Offset = Offset.Zero
+data class TolltipState ( //неизменяемый: меняется только заменой целиком, иначе Compose не увидит
+    val show: Boolean = false,
+    val text: String = "",
+    val position: Offset = Offset.Zero
 )
 
 class DialogsController(
@@ -42,6 +42,7 @@ class DialogsController(
     val effects = _effects.receiveAsFlow()
 
     var tolltipState by mutableStateOf(TolltipState())
+        private set
 
     fun tolltipShow(text: String, position: Offset) {
         tolltipState = tolltipState.copy(show = true, text = text, position = position)
