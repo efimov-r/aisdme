@@ -2,9 +2,9 @@ package non.era.aisdme.configs.dataclass.snapshots
 
 import kotlinx.serialization.Serializable
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.configs.store.ConfigStore
 import non.era.aisdme.files.TypeFile
-import non.era.aisdme.ui.editor.halfviewmodel.TabCash
 import non.era.aisdme.utils.Log
 
 @Serializable
@@ -29,41 +29,22 @@ data class SnapshotEditor(
     }
 
     companion object {
-        fun buildFromOldVersion(
-            files: Map<Int, TabCash>?,
-            leftTabs: List<Int>?,
-            rightTabs: List<Int>?,
-            leftActive: Int?,
-            rightActive: Int?,
+        fun buildFromOldVersion( //старый снимок обновляется тем, что есть в репозитории
+            rep: EditorStateRepository,
             projectStore: ConfigStore<ProjectConfig>?,
         ): SnapshotEditor? {
-            val trueFiles = files?.mapNotNull { (id, tab) ->
-                tab.toSnapshot()?.let { snap -> id to snap } //вкладка с ошибкой пропускается, остальные сохраняются
-            }?.toMap()
-            val snapFromCash = projectStore?.getFromCashe()?.snapshotEditor
-            if(snapFromCash == null) { //старой версии нет
-                if(trueFiles != null && leftTabs!= null) {
-                    val default = SnapshotEditor()
-                    Log.d("snapFromCash, new default")
-                    return default.copy(
-                        files = trueFiles,
-                        leftTabs = leftTabs,
-                        rightTabs = rightTabs ?: default.rightTabs,
-                        leftTabsSelect = leftActive ?: default.leftTabsSelect,
-                        rightTabsSelect = rightActive ?: default.rightTabsSelect
-                    )
-                } else {
-                    return null //нехуй сохранять
-                }
-            } else { //есть старая версия, обновляем
-                return snapFromCash.copy(
-                    files = trueFiles ?: snapFromCash.files,
-                    leftTabs = leftTabs ?: snapFromCash.leftTabs,
-                    rightTabs = rightTabs ?: snapFromCash.rightTabs,
-                    leftTabsSelect = leftActive ?: snapFromCash.leftTabsSelect,
-                    rightTabsSelect = rightActive ?: snapFromCash.rightTabsSelect
-                )
-            }
+            val files = rep.files.value
+            val leftTabs = rep.leftTabs.value
+            val old = projectStore?.getFromCashe()?.snapshotEditor
+                ?: if (files != null && leftTabs != null) SnapshotEditor() else return null //сохранять нечего
+
+            return old.copy(
+                files = files ?: old.files,
+                leftTabs = leftTabs ?: old.leftTabs,
+                rightTabs = rep.rightTabs.value ?: old.rightTabs,
+                leftTabsSelect = rep.leftActive.value ?: old.leftTabsSelect,
+                rightTabsSelect = rep.rightActive.value ?: old.rightTabsSelect
+            )
         }
 
     }

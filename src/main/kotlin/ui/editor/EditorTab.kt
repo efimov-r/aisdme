@@ -21,9 +21,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
-import non.era.aisdme.ui.components.over.NodeIcon
+import non.era.aisdme.ui.components.over.FileIcon
 import non.era.aisdme.ui.components.over.SvgButton
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
 import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
@@ -38,7 +37,6 @@ fun EditorTab(
     onClose: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val app = LocalAppController.current
     val colors = LocalAisDmeColors.current
     val colorSurfaceBorder = colors.surfaceBorder
     val colorBack = remember(colors, isActive, halfInFocus) {
@@ -80,7 +78,7 @@ fun EditorTab(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if(tab is TabCashFile) {
-            NodeIcon(Modifier.padding(top = 3.dp), app.projectController.treeState.findNodes(tab.getFile()))
+            FileIcon(Modifier.padding(top = 3.dp), tab.path)
         }
         Spacer(Modifier.width(2.dp))
         Text(

@@ -34,12 +34,6 @@ class TabCashPaste(
     override val typeFile: TypeFile = TypeFile.PASTE_TAB
     override var _name  by mutableStateOf("From Clipboard")
 
-    override fun copy(): TabCash {
-        val res = TabCashPaste(id, _extScope, winState)
-        res._textFieldValue = textFieldValue
-        return res
-    }
-
     override suspend fun beforeRemove() { //удалить файл
         try {
             val file = getPathClipFile() ?: return

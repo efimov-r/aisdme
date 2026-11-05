@@ -1,19 +1,16 @@
 package non.era.aisdme.configs
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.dataclass.child.SnapshotTree
 import non.era.aisdme.configs.dataclass.child.TreeStateElement
+import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.configs.repositories.TreeStateRepository
 import non.era.aisdme.configs.store.ConfigPaths
 import non.era.aisdme.configs.store.ConfigStore
-import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
-import org.junit.jupiter.api.AfterEach
+import non.era.aisdme.files.TypeFile
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
@@ -24,12 +21,8 @@ class ConfigControllerTest {
     @TempDir
     lateinit var dir: File
 
-    private val scope = CoroutineScope(SupervisorJob())
     private val editorRep = EditorStateRepository()
     private val treeRep = TreeStateRepository()
-
-    @AfterEach
-    fun cancelScope() = scope.cancel()
 
     private fun controller() = ConfigController(
         editorRep = editorRep,
@@ -65,7 +58,7 @@ class ConfigControllerTest {
     fun editorSnapshotStaysInItsProject() {
         val a = project("a")
         val b = project("b")
-        val tab = TabCashFileText(0, File(a, "main.asm"), scope)
+        val tab = SnapshotTabCash(File(a, "main.asm").path, TypeFile.TEXT_FILE)
         val controller = controller()
 
         runBlocking { controller.reselectProject(a) }

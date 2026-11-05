@@ -27,10 +27,6 @@ abstract class TabCashFile(
     private var _path by mutableStateOf(_file.toPath())
     val path get() = _path
 
-    protected fun copyCashFile(new: TabCashFile) {
-        new._writeStatus = _writeStatus
-    }
-
     override fun toSnapshot(): SnapshotTabCash? {
         if(!writeStatus.toConfig) return null
         return SnapshotTabCash(_file.path, typeFile)

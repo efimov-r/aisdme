@@ -21,10 +21,9 @@ class TreeReloadWatcher(
 ) : UiController() {
 
     private val watchService = FileSystems.getDefault().newWatchService()
-    private val watchKinds = arrayOf<WatchEvent.Kind<*>>(
+    private val watchKinds = arrayOf<WatchEvent.Kind<*>>( //без ENTRY_MODIFY: запись в файл не меняет дерево
         StandardWatchEventKinds.ENTRY_CREATE,
         StandardWatchEventKinds.ENTRY_DELETE,
-        StandardWatchEventKinds.ENTRY_MODIFY,
     )
     private val keysMutex = Mutex()
     private val keys = mutableSetOf<WatchKey>()

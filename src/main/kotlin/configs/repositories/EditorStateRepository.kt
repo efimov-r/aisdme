@@ -2,12 +2,12 @@ package non.era.aisdme.configs.repositories
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import non.era.aisdme.ui.editor.halfviewmodel.TabCash
+import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 
 class EditorStateRepository { //запись присваиванием value: потокобезопасно и в порядке вызовов; списки — копией
-    private val _files = MutableStateFlow<Map<Int, TabCash>?>(null)
+    private val _files = MutableStateFlow<Map<Int, SnapshotTabCash>?>(null) //снимки: путь и тип, без текста
     val files = _files.asStateFlow()
-    fun updateFiles(files: Map<Int, TabCash>) { _files.value = files }
+    fun updateFiles(files: Map<Int, SnapshotTabCash>) { _files.value = files }
 
     private val _leftTabs = MutableStateFlow<List<Int>?>(null)
     val leftTabs get() = _leftTabs.asStateFlow()

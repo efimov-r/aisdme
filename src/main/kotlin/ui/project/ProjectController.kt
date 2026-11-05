@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
-import kotlinx.coroutines.withContext
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.FileOpened
 import non.era.aisdme.bus.RebuilDirRiff
@@ -64,9 +63,7 @@ class ProjectController(
             snapshotFlow { ProjectListLineHelper.buildLinearExpandedNodes(treeState.getNodes()) } //как в ui подписка
                 .debounce(200)
                 .collectLatest {
-                    withContext(Dispatchers.IO) {
-                        rep.updateTree(treeState.getCashForConfig())
-                    }
+                    rep.updateTree(treeState.getCashForConfig()) //на ui-потоке: читает состояние дерева
                 }
         }
     }

@@ -59,13 +59,11 @@ class ProjectTreeState {
         }
     }
 
-    fun getCashForConfig() = SnapshotTree(
-        ProjectListLineHelper.buildLinearNodes(_nodes).associate { node ->
-            val isDirNode = node is DirNode
-            val expanded = isDirNode && (node as DirNode).expanded
-            val path: String = node.getFile().path
-            path to TreeStateElement(isDirNode, expanded)
-        }
+    fun getCashForConfig() = SnapshotTree( //только раскрытые папки и корень: остальные по умолчанию свёрнуты
+        ProjectListLineHelper.buildLinearNodes(_nodes)
+            .filterIsInstance<DirNode>()
+            .filter { it.expanded || it.depth == 0 }
+            .associate { it.getFile().path to TreeStateElement(true, it.expanded) }
     )
 
 
@@ -112,8 +110,6 @@ class ProjectTreeState {
             rebuildDirDiff(dir, {})
         }
     }
-
-    fun findNodes(file: File) = ProjectTreeHelper.findNode(_nodes, file)
 
     private fun findNearestDirNode(dir: File): DirNode? =
         generateSequence(dir) { it.parentFile }.firstNotNullOfOrNull { ProjectTreeHelper.findDirNode(_nodes, it) }

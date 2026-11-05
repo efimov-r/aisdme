@@ -38,11 +38,11 @@
 | Конфиг | Где лежит | Что в нём |
 |---|---|---|
 | Глобальный (`AppConfig`) | Linux — `~/.config/AisDme/config.json`, Windows — `%APPDATA%\AisDme\config.json` | тема, последний открытый проект, окно |
-| Проекта (`ProjectConfig`) | `<корень проекта>/.aisdme/config.json` | состояние дерева и редактора (открытые вкладки — объектами), размеры панелей (`keyValue`) |
+| Проекта (`ProjectConfig`) | `<корень проекта>/.aisdme/config.json` | состояние дерева (только корень и раскрытые папки) и редактора (открытые вкладки — путь и тип), размеры панелей (`keyValue`) |
 
 Пути — в `ConfigPaths`, папка конфигов ОС — `IPlatform.configRoot()`.
 
-Сохранение состояния проекта: `EditorController` и `ProjectController` пишут в `EditorStateRepository` и `TreeStateRepository`, `ConfigController` собирает из них снимки (`SnapshotEditor`, `SnapshotTree`) и пишет с задержкой (`debounce`: редактор — 4 с, дерево — 2 с). Задачи автосохранения запускаются на каждый проект со своим `ConfigStore`; при смене проекта и выходе они останавливаются, текущее состояние сразу пишется в конфиг этого проекта, репозитории сбрасываются. В конфиг попадают только открытые вкладки: закрытая удаляется из кэша `EditorController` (`removeClosedTabs`), перед этим `beforeRemove` сохраняет текст или удаляет `.clip`.
+Сохранение состояния проекта: `EditorController` (снимки вкладок `SnapshotTabCash`, после открытия файла) и `ProjectController` пишут в `EditorStateRepository` и `TreeStateRepository` присваиванием `value`, `ConfigController` собирает из них снимки (`SnapshotEditor`, `SnapshotTree`) и пишет с задержкой (`debounce`: редактор — 4 с, дерево — 2 с). Задачи автосохранения запускаются на каждый проект со своим `ConfigStore`; при смене проекта и выходе они останавливаются, текущее состояние сразу пишется в конфиг этого проекта, репозитории сбрасываются. В конфиг попадают только открытые вкладки: закрытая удаляется из кэша `EditorController` (`removeClosedTabs`), перед этим `beforeRemove` сохраняет текст или удаляет `.clip`.
 
 ## Редактор
 

@@ -110,6 +110,7 @@ class EditorController(
                     _tabsCash[id] = tabState
                     scope.launch {
                         tabState.openFile(TabCash.OpenFileType.OPEN_FROM_CASH)
+                        saveToConfig()
                     }
                 } else {
                     scope.launch { tabState.beforeRemove() } //закрытая вкладка из старого конфига: удалить её .clip
@@ -150,17 +151,15 @@ class EditorController(
         _tabsCash[tab.id] = tab
         scope.launch {
             tab.openFile(TabCash.OpenFileType.OPEN_NEW_FILE)
-        }
-        scope.launch {
-            saveToConfig()
+            saveToConfig() //после открытия: вкладка с ошибкой в конфиг не попадёт
         }
     }
 
     private suspend fun saveToConfig() {
-        rep.updateFiles( //уходит на сохранение в конфиг
+        rep.updateFiles( //уходит на сохранение в конфиг: только путь и тип, без текста
             withContext(Dispatchers.Swing) {
-                _tabsCash.mapValues { (_, value) ->
-                    value.copy()
+                _tabsCash.mapNotNull { (id, tab) ->
+                    tab.toSnapshot()?.let { id to it } //вкладка с ошибкой пропускается, остальные сохраняются
                 }.toMap()
             }
         )

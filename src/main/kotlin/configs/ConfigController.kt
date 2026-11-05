@@ -72,18 +72,16 @@ class ConfigController(
     //store фиксируется при запуске: отложенное сохранение не уйдёт в конфиг другого проекта
     private fun startAutosave(store: ConfigStore<ProjectConfig>) = listOf(
         scope.launch {
-            combine(
+            merge(
                 editorRep.files,
                 editorRep.leftTabs,
                 editorRep.rightTabs,
                 editorRep.leftActive,
                 editorRep.rightActive
-            ) { files, leftTabs, rightTabs, leftActive, rightActive ->
-                SnapshotEditor.buildFromOldVersion(files, leftTabs, rightTabs, leftActive, rightActive, store)
-            }
+            )
             .debounce(4000)
-            .collectLatest { snapshot ->
-                snapshot?.saveToConfig(store)
+            .collectLatest { //снимок — в момент записи, из последних значений
+                SnapshotEditor.buildFromOldVersion(editorRep, store)?.saveToConfig(store)
             }
         },
         scope.launch {
@@ -99,14 +97,7 @@ class ConfigController(
         autosaveJobs.forEach { it.cancelAndJoin() }
         autosaveJobs = listOf()
         val store = projectStore ?: return
-        SnapshotEditor.buildFromOldVersion(
-            editorRep.files.value,
-            editorRep.leftTabs.value,
-            editorRep.rightTabs.value,
-            editorRep.leftActive.value,
-            editorRep.rightActive.value,
-            store,
-        )?.saveToConfig(store)
+        SnapshotEditor.buildFromOldVersion(editorRep, store)?.saveToConfig(store)
         treeRep.tree.value?.saveToConfig(store)
     }
 

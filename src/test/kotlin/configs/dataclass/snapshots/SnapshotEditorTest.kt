@@ -1,15 +1,10 @@
 package non.era.aisdme.configs.dataclass.snapshots
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.configs.store.ConfigStore
 import non.era.aisdme.files.TypeFile
-import non.era.aisdme.ui.editor.halfviewmodel.TabCash.OpenFileType
-import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
@@ -20,32 +15,22 @@ class SnapshotEditorTest {
     @TempDir
     lateinit var dir: File
 
-    private val scope = CoroutineScope(SupervisorJob())
-
-    @AfterEach
-    fun cancelScope() = scope.cancel()
+    private val rep = EditorStateRepository()
 
     private fun projectStore() =
         ConfigStore(File(dir, "config.json").toPath(), ProjectConfig.serializer()) { ProjectConfig() }
 
-    // вкладка с ошибкой пропускается, остальные сохраняются
+    // без старого снимка — новый из пришедших вкладок
     @Test
-    fun brokenTabSkippedOthersSaved() {
-        val ok = TabCashFileText(0, File(dir, "a.asm").apply { writeText("a") }, scope)
-        val broken = TabCashFileText(1, File(dir, "missing.asm"), scope)
-        runBlocking { broken.openFile(OpenFileType.OPEN_NEW_FILE) } //файла нет — ERROR
+    fun newSnapshotFromTabs() {
+        val files = mapOf(0 to SnapshotTabCash("a.asm", TypeFile.TEXT_FILE))
+        rep.updateFiles(files)
+        rep.updateLeftTabs(listOf(0))
+        rep.updateLeftActiveTabs(0)
 
-        val res = SnapshotEditor.buildFromOldVersion(
-            files = mapOf(0 to ok, 1 to broken),
-            leftTabs = listOf(0, 1),
-            rightTabs = null,
-            leftActive = 0,
-            rightActive = null,
-            projectStore = projectStore(),
-        )
+        val res = SnapshotEditor.buildFromOldVersion(rep, projectStore())
 
-        assertEquals(setOf(0), res?.files?.keys)
-        assertEquals(listOf(0, 1), res?.leftTabs)
+        assertEquals(SnapshotEditor(files = files, leftTabs = listOf(0), leftTabsSelect = 0), res)
     }
 
     // старый снимок обновляется только тем, что пришло
@@ -57,8 +42,10 @@ class SnapshotEditorTest {
         )
         val store = projectStore()
         runBlocking { store.update { it.copy(snapshotEditor = old) } }
+        rep.updateRightTabs(listOf(5))
+        rep.updateRightActiveTabs(5)
 
-        val res = SnapshotEditor.buildFromOldVersion(null, null, listOf(5), null, 5, store)
+        val res = SnapshotEditor.buildFromOldVersion(rep, store)
 
         assertEquals(old.copy(rightTabs = listOf(5), rightTabsSelect = 5), res)
     }
@@ -66,6 +53,6 @@ class SnapshotEditorTest {
     // ни старого снимка, ни вкладок — сохранять нечего
     @Test
     fun nothingToSaveReturnsNull() {
-        assertNull(SnapshotEditor.buildFromOldVersion(null, null, null, null, null, projectStore()))
+        assertNull(SnapshotEditor.buildFromOldVersion(rep, projectStore()))
     }
 }

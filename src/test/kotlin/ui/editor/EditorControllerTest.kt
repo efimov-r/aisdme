@@ -13,6 +13,7 @@ import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
+import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.win.WindowState
 import org.junit.jupiter.api.AfterEach
@@ -76,6 +77,19 @@ class EditorControllerTest {
         runBlocking { controller.removeClosedTabs().join() }
 
         assertNotNull(controller.getTab(id))
+    }
+
+    // вкладка, файл которой не открылся, в конфиг не попадает
+    @Test
+    fun brokenTabNotSavedToConfig() {
+        val ok = openFile("a.asm")
+        onUi { controller.openNodes(listOf(FileNode(File(dir, "missing.asm"), 0))) }
+        val broken = controller.leftTabs.activeTabId!!
+
+        waitUntil { (controller.getTab(broken) as TabCashFile).writeStatus == WriteStatus.ERROR }
+        waitUntil { rep.files.value?.containsKey(ok) == true }
+        runBlocking { delay(100) } //сохранение после открытия
+        assertFalse(rep.files.value.orEmpty().containsKey(broken))
     }
 
     // перенос вкладок из правой половины в левую сохраняет их в репозитории
