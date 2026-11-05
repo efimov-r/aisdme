@@ -2,6 +2,11 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## Половины редактора нельзя объединять посреди операции
+- **Что случилось:** при переносе `rightToLeftHalf` из composition в контроллер объединение сначала делалось сразу, в `onChanged` закрытия вкладки. «Split and Move Other Half» терял вкладку
+- **Причина:** UI держит ссылки на половины и меняет их по очереди (`half.closeTab`, затем `oppositeHalf.activateTab`). После мгновенного объединения `oppositeHalf` — уже отвязанный объект; так же `closeTabs` не закрыл бы вкладку, открытую в обеих половинах
+- **Как правильно:** объединять после операции целиком — `mergeHalvesLater` через `Dispatchers.Swing`. Тест — `EditorControllerTest.splitAndMoveLastLeftTabKeepsTab`
+
 ## Тест класса, у которого пакет не совпадает с папкой
 - **Что случилось:** `SnapshotEditorTest` в `src/test/kotlin/configs/snapshots/` (как `SnapshotEditor`) уронил detekt: `InvalidPackageDeclaration`
 - **Причина:** у `SnapshotEditor` пакет `configs.dataclass.snapshots`; нарушение в `src/main` — в baseline, новые файлы detekt проверяет

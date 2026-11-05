@@ -10,7 +10,6 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.di.AppController
-import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.project.data.ProjectNode
 
 @Composable
@@ -62,7 +61,7 @@ fun DragailableTreeElement(app: AppController,
                 onDragEnd = {
                     app.editorController.dragPosition(null)
                     moveController.finishDrop({ src, f->
-                        app.dialogController.requestDialog(UiDialog.ShowMoveDialog(src, f))
+                        app.dialogController.requestMoveDialog(src, f)
                     }, { src, ofs->
                         app.editorController.dropOutsideTree(src, ofs)
                     })

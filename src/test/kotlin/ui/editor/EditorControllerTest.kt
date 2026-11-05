@@ -46,10 +46,11 @@ class EditorControllerTest {
         }
     }
 
-    private fun openFile(name: String): Int {
+    private fun openFile(name: String, panel: Panels = Panels.LEFT): Int {
         val file = File(dir, name).apply { parentFile.mkdirs(); writeText(name) }
-        onUi { controller.openNodes(listOf(FileNode(file, 0))) }
-        val id = controller.leftTabs.activeTabId!!
+        onUi { controller.openNodes(listOf(FileNode(file, 0)), panel) }
+        val half = if(panel == Panels.LEFT) controller.leftTabs else controller.rightTabs
+        val id = half.activeTabId!!
         waitUntil { rep.files.value?.containsKey(id) == true } //открытие дошло до конфига
         return id
     }
@@ -93,36 +94,52 @@ class EditorControllerTest {
         assertFalse(rep.files.value.orEmpty().containsKey(broken))
     }
 
-    // перенос вкладок из правой половины в левую сохраняет их в репозитории
+    // левая половина опустела, а в правой есть вкладки: правая переносится в левую, репозиторий тоже
     @Test
-    fun rightToLeftHalfKeepsTabsInRepository() {
+    fun emptyLeftHalfTakesRightTabs() {
         val id = openFile("a.asm")
-        onUi {
-            controller.leftTabs.closeTab(id)
-            controller.rightTabs.activateTab(id)
-        }
+        onUi { controller.rightTabs.activateTab(id) } //та же вкладка в обеих половинах
 
-        onUi { controller.rightToLeftHalf() }
+        onUi { controller.leftTabs.closeTab(id) }
 
+        waitUntil { controller.leftTabs.listTabs.toList() == listOf(id) }
+        assertTrue(controller.rightTabs.listTabs.isEmpty())
         assertEquals(listOf(id), rep.leftTabs.value)
         assertEquals(emptyList(), rep.rightTabs.value)
         assertEquals(id, rep.leftActive.value)
+    }
+
+    // «Split and Move» последней вкладки слева: вкладка не теряется, хотя половины объединяются
+    @Test
+    fun splitAndMoveLastLeftTabKeepsTab() {
+        val a = openFile("a.asm")
+        val b = openFile("b.asm", Panels.RIGHT)
+
+        onUi {
+            val left = controller.leftTabs
+            val right = controller.rightTabs
+            left.closeTab(a) //как в EditorTabContextMenu: ссылки на половины взяты до операции
+            right.activateTab(a)
+        }
+
+        waitUntil { controller.rightTabs.listTabs.isEmpty() }
+        assertEquals(listOf(b, a), controller.leftTabs.listTabs.toList())
+        runBlocking { controller.removeClosedTabs().join() }
+        assertNotNull(controller.getTab(a))
     }
 
     // derivedStateOf над левой половиной видит половину, перенесённую справа
     @Test
     fun derivedStateSeesRightToLeftHalf() {
         val id = openFile("a.asm")
-        onUi {
-            controller.leftTabs.closeTab(id)
-            controller.rightTabs.activateTab(id)
-        }
-        val leftList = derivedStateOf { controller.leftTabs.listTabs.toList() }
-        assertEquals(emptyList(), leftList.value)
+        onUi { controller.rightTabs.activateTab(id) }
+        val leftList = derivedStateOf { controller.leftTabs }
+        val before = leftList.value
 
-        onUi { controller.rightToLeftHalf() }
+        onUi { controller.leftTabs.closeTab(id) }
 
-        assertEquals(listOf(id), leftList.value)
+        waitUntil { leftList.value !== before }
+        assertEquals(listOf(id), leftList.value.listTabs.toList())
     }
 
     // derivedStateOf над getTab видит вкладку, добавленную в кэш позже

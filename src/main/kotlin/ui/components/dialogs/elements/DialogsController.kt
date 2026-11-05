@@ -9,14 +9,15 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.components.dialogs.TypeNew
+import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import java.io.File
 
-sealed interface UiDialog {
-    object ShowDeleteDialog : UiDialog
-    object ShowRenameDialog : UiDialog
+sealed interface UiDialog { //узлы берутся при запросе: диалог работает с тем, что было выделено
+    data class ShowDeleteDialog(val nodes: List<ProjectNode>) : UiDialog
+    data class ShowRenameDialog(val node: ProjectNode) : UiDialog
     data class ShowCreateObjDialog(val typeNew: TypeNew) : UiDialog
-    object ShowPasteDialog : UiDialog
+    data class ShowPasteDialog(val target: DirNode) : UiDialog
     data class ShowMoveDialog(val src: List<ProjectNode>, val target: File) : UiDialog
 }
 
@@ -34,7 +35,9 @@ data class TolltipState (
     var position: Offset = Offset.Zero
 )
 
-class DialogsController : UiController() {
+class DialogsController(
+    private val selectedNodes: () -> List<ProjectNode>,
+) : UiController() {
     private val _effects = Channel<UiDialog>()
     val effects = _effects.receiveAsFlow()
 
@@ -54,7 +57,38 @@ class DialogsController : UiController() {
             _effects.send(dialog)
         }
     }
-    
+
+    fun requestDeleteDialog() {
+        val nodes = selectedNodes()
+        if(nodes.isNotEmpty()) requestDialog(UiDialog.ShowDeleteDialog(nodes)) //без выделения — молча
+    }
+
+    fun requestRenameDialog() {
+        val node = selectedNodes().singleOrNull() ?: return error("Multi rename")
+        requestDialog(UiDialog.ShowRenameDialog(node))
+    }
+
+    fun requestPasteDialog() {
+        val selected = selectedNodes()
+        val target = selected.singleOrNull() as? DirNode ?: return error(
+            when {
+                selected.isEmpty() -> "Directory for paste is not selected"
+                selected.size != 1 -> "Pasting is only available in one directory."
+                else -> "Pasting is only available in directory."
+            }
+        )
+        requestDialog(UiDialog.ShowPasteDialog(target))
+    }
+
+    fun requestMoveDialog(src: List<ProjectNode>, target: File) {
+        if(src.isEmpty()) return error("Selected file to move does not exist.")
+        requestDialog(UiDialog.ShowMoveDialog(src, target))
+    }
+
+    private fun error(text: String) {
+        scope.launch { newGlobalError(text) }
+    }
+
     fun requestGlobalMessage(mess: GlobalMessageReq) {
         scope.launch {
             when (mess) {

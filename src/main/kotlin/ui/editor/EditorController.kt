@@ -39,9 +39,9 @@ class EditorController(
     private val updateLeftActive: (Int?) -> Unit = { rep.updateLeftActiveTabs(it) }
     private val updateRightActive: (Int?) -> Unit = { rep.updateRightActiveTabs(it) }
 
-    var leftTabs by mutableStateOf(HalfEditorTabs(updateLeftTabs, updateLeftActive))
+    var leftTabs by mutableStateOf(HalfEditorTabs(updateLeftTabs, updateLeftActive, ::mergeHalvesLater))
         private set //state: заменяется в rightToLeftHalf
-    var rightTabs by mutableStateOf(HalfEditorTabs(updateRightTabs, updateRightActive))
+    var rightTabs by mutableStateOf(HalfEditorTabs(updateRightTabs, updateRightActive, ::mergeHalvesLater))
         private set
 
     init {
@@ -124,6 +124,7 @@ class EditorController(
             }
             updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
             updateHalf(rightTabs, snap.rightTabs.toMutableList(), snap.rightTabsSelect)
+            mergeHalves()
             scope.launch { saveToConfig() } //без закрытых вкладок
         }
     }
@@ -180,9 +181,19 @@ class EditorController(
         rightTabs.closeTab(tab.id)
     }
 
-    fun rightToLeftHalf() {
+    private fun rightToLeftHalf() {
+        leftTabs.detach()
         leftTabs = rightTabs.copy(updateLeftTabs, updateLeftActive)
-        rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
+        rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive, ::mergeHalvesLater)
+    }
+
+    private fun mergeHalves() { //левая пустая, а в правой есть вкладки: правая становится левой
+        if(leftTabs.listTabs.isEmpty() && rightTabs.listTabs.isNotEmpty()) rightToLeftHalf()
+    }
+
+    //после операции целиком: «Split and Move» и closeTabs меняют обе половины по очереди и держат ссылки на них
+    private fun mergeHalvesLater() {
+        scope.launch(Dispatchers.Swing) { mergeHalves() }
     }
 
     override fun disposeBefore() {

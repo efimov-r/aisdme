@@ -51,7 +51,7 @@ fun buildAppController(globalConf: AppConfig) : AppController {
     }
 
     val dialogController = remember {
-        DialogsController()
+        DialogsController { projectController.treeState.getSelectedNodes() }
     }
 
     return remember {

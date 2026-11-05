@@ -75,8 +75,8 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
         if (menuState.isVisible) {
             TreeContextMenu(
                 state = menuState,
-                showDelDialog = { app.dialogController.requestDialog(UiDialog.ShowDeleteDialog) },
-                showRenameDialog = { app.dialogController.requestDialog(UiDialog.ShowRenameDialog) },
+                showDelDialog = { app.dialogController.requestDeleteDialog() },
+                showRenameDialog = { app.dialogController.requestRenameDialog() },
                 showNewFileDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.FILE)) },
                 showNewDirectoryDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY)) },
                 onDismiss = { menuState.hide() }
@@ -157,7 +157,7 @@ private fun pasteItem(app: AppController) = MenuEntry.Item(
     title = "Paste",
     icon = "paste",
     shortcut = Hotkeys.PASTE
-) { app.dialogController.requestDialog(UiDialog.ShowPasteDialog) }
+) { app.dialogController.requestPasteDialog() }
 
 private fun copyItem(app: AppController) = MenuEntry.Item(
     title = "Copy",

@@ -10,7 +10,8 @@ import androidx.compose.ui.geometry.Rect
 
 class HalfEditorTabs(
     private var updateTabs: (tabs: List<Int>) -> Unit,
-    private var updateActive: (activ: Int?) -> Unit
+    private var updateActive: (activ: Int?) -> Unit,
+    private var onChanged: () -> Unit = {}, //после операции: список и активная вкладка уже обновлены
 ) {
     var dragDest by mutableStateOf(false)
     var inFocus by mutableStateOf(false)
@@ -18,16 +19,21 @@ class HalfEditorTabs(
 
     fun copy(updateTabs: (tabs: List<Int>) -> Unit,
              updateActive: (activ: Int?) -> Unit): HalfEditorTabs {
-        val res = HalfEditorTabs(updateTabs, updateActive)
+        val res = HalfEditorTabs(updateTabs, updateActive, onChanged)
         this.updateTabs(listOf())
-        this.updateTabs = {}
         this.updateActive(null)
-        this.updateActive = {}
+        detach()
         res._listTabs = _listTabs.toList().toMutableStateList()
         res.updateTabs(res._listTabs)
         res._activeTabId = _activeTabId
         res.updateActive(res._activeTabId)
         return res
+    }
+
+    fun detach() { //половину заменили: больше не пишет в репозиторий
+        updateTabs = {}
+        updateActive = {}
+        onChanged = {}
     }
 
     private var _listTabs = mutableStateListOf<Int>()
@@ -52,6 +58,7 @@ class HalfEditorTabs(
         _activeTabId = tabId
         updateActive(_activeTabId)
         inFocus = true
+        onChanged()
     }
 
     fun closeTab(id: Int) {
@@ -61,6 +68,7 @@ class HalfEditorTabs(
             _activeTabId = _listTabs.lastOrNull()
             updateActive(_activeTabId)
         }
+        onChanged()
     }
 
     fun closeOtherTabs(id: Int) {
@@ -70,6 +78,7 @@ class HalfEditorTabs(
             _activeTabId = id
             updateActive(_activeTabId)
         }
+        onChanged()
     }
 
     fun closeLeftTabs(id: Int) {
@@ -82,6 +91,7 @@ class HalfEditorTabs(
             _activeTabId = id
             updateActive(_activeTabId)
         }
+        onChanged()
     }
 
     fun closeRightTabs(id: Int) {
@@ -94,6 +104,7 @@ class HalfEditorTabs(
             _activeTabId = id
             updateActive(_activeTabId)
         }
+        onChanged()
     }
 
     fun closeAllTabs() {
@@ -101,5 +112,6 @@ class HalfEditorTabs(
         updateActive(_activeTabId)
         _listTabs.removeAll{ true }
         updateTabs(_listTabs)
+        onChanged()
     }
 }
