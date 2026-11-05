@@ -212,5 +212,4 @@ private fun divider() = MenuEntry.Divider
 
 private fun isSingle(selected: List<ProjectNode>) = selected.size == 1
 private fun isSingleDirectory(selected: List<ProjectNode>) = selected.size == 1 && selected[0] is DirNode
-private fun isSingleFile(selected: List<ProjectNode>) = selected.size == 1 && selected[0] is FileNode
 private fun isOnlyFile(selected: List<ProjectNode>) = selected.filterNot { it is FileNode }.isEmpty()

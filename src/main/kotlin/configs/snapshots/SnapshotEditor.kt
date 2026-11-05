@@ -11,8 +11,7 @@ import non.era.aisdme.utils.Log
 data class SnapshotTabCash(
     val pathStr: String? = null,
     val type: TypeFile? = null,
-) {
-}
+)
 
 @Serializable
 data class SnapshotEditor(

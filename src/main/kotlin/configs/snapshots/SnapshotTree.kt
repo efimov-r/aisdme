@@ -21,5 +21,4 @@ data class SnapshotTree(
 data class TreeStateElement(
     val isDeer: Boolean = false,
     val expanded: Boolean = false,
-) {
-}
+)
