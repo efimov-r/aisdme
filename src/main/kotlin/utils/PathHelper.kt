@@ -4,10 +4,10 @@ import java.nio.file.Path
 
 object PathHelper {
     fun pathToStrFormat(path: Path) : String {
-        val susHome = System.getProperty("user.home")
+        val home = Path.of(System.getProperty("user.home"))
         val rootProj = path.toString()
-        return if (rootProj.startsWith(susHome)) {
-            "~" + rootProj.removePrefix(susHome)
+        return if (path.startsWith(home)) { //по частям пути: /home/user2 не внутри /home/user
+            "~" + rootProj.substring(home.toString().length)
         } else {
             rootProj
         }

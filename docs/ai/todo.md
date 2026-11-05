@@ -4,7 +4,7 @@
 
 ## В работе
 
-- [ ] Потеря данных из [#26](https://github.com/efimov-r/aisdme/issues/26) и тесты `FilesExecutor` [#16](https://github.com/efimov-r/aisdme/issues/16) — ветка `issue-26-data-loss`, один PR
+- [ ] Баги из разбора кода — [#26](https://github.com/efimov-r/aisdme/issues/26). Потеря данных исправлена в PR [#32](https://github.com/efimov-r/aisdme/pull/32). Сейчас — «Конфиги и состояние редактора» и тесты конфигов [#15](https://github.com/efimov-r/aisdme/issues/15), ветка `issue-26-configs`, один PR
 
 ## Проверить на Linux
 
@@ -28,7 +28,6 @@
 Баги:
 
 - [ ] Автоскролл при перетаскивании не останавливается в конце прокрутки — [#3](https://github.com/efimov-r/aisdme/issues/3)
-- [ ] Баги из разбора кода: потеря данных, конфиги, потоки, watcher — [#26](https://github.com/efimov-r/aisdme/issues/26). Сначала — потеря данных
 
 Разбор кода, 2026-11-05:
 
@@ -45,6 +44,4 @@
 
 Тесты и качество (тесты подключены в #14, запуск — `gradlew test`). После новых тестов в #15–17 — поднять порог покрытия Kover (#19), порог только растёт:
 
-- [ ] Тесты конфигов — [#15](https://github.com/efimov-r/aisdme/issues/15)
-- [ ] Тесты файловых операций — [#16](https://github.com/efimov-r/aisdme/issues/16)
 - [ ] Тесты логики дерева проекта — [#17](https://github.com/efimov-r/aisdme/issues/17)

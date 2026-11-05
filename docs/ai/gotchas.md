@@ -2,6 +2,16 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## Тест класса, у которого пакет не совпадает с папкой
+- **Что случилось:** `SnapshotEditorTest` в `src/test/kotlin/configs/snapshots/` (как `SnapshotEditor`) уронил detekt: `InvalidPackageDeclaration`
+- **Причина:** у `SnapshotEditor` пакет `configs.dataclass.snapshots`; нарушение в `src/main` — в baseline, новые файлы detekt проверяет
+- **Как правильно:** тест такого класса класть в папку по пакету (`src/test/kotlin/configs/dataclass/snapshots/`), пакет — как у класса
+
+## Push отклонён: `fatal error in commit_refs_rules`
+- **Что случилось:** push новой ветки отклонялся (2026-11-05), хотя ruleset `master` действует только на основную ветку. Выключить ruleset в настройках не получалось: после Save он снова был Active
+- **Причина:** сбой ruleset на стороне GitHub; точная причина неизвестна. GitHub в это время работал без инцидентов
+- **Как правильно:** удалить ruleset, сделать push, создать ruleset заново с теми же правилами (список — в `AGENTS.md`, «CI»); сверить: `gh api repos/efimov-r/aisdme/rulesets/<id>`
+
 ## Windows: переименование только регистром
 - **Что случилось:** `a.asm` → `A.asm` молча не переименовывался — и с `REPLACE_EXISTING`, и без
 - **Причина:** на Windows `Files.move` для того же файла ничего не делает, а `Path.equals` не различает регистр: `src != target` — `false`

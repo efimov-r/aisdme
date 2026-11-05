@@ -37,10 +37,8 @@ data class SnapshotEditor(
             rightActive: Int?,
             projectStore: ConfigStore<ProjectConfig>?,
         ): SnapshotEditor? {
-            val trueFiles = files?.mapNotNull { file ->
-                file.value.toSnapshot()?.let { snap->
-                    file.key to snap
-                } ?: return null
+            val trueFiles = files?.mapNotNull { (id, tab) ->
+                tab.toSnapshot()?.let { snap -> id to snap } //вкладка с ошибкой пропускается, остальные сохраняются
             }?.toMap()
             val snapFromCash = projectStore?.getFromCashe()?.snapshotEditor
             if(snapFromCash == null) { //старой версии нет
