@@ -2,6 +2,16 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## «Composable function call without Compose plugin» на `remember` и других `@Composable`
+- **Что случилось:** IDEA 2026.2 подсвечивает вызовы `@Composable`, хотя Gradle собирает проект
+- **Причина:** инспекция `ComposableCallWithoutComposePlugin` ищет плагин `org.jetbrains.kotlin.plugin.compose`, а он есть только с Kotlin 2.0. На Kotlin 1.9 компилятор Compose подключает плагин `org.jetbrains.compose`, его инспекция не видит
+- **Как правильно:** отключить инспекцию (Alt+Enter → стрелка у пункта → Disable inspection). Quick-fix «добавить плагин» не применять: он добавит плагин Kotlin 2.x в проект на 1.9 и сломает сборку. Окончательно уйдёт при переходе на Kotlin 2.x
+
+## Классы JDK (`File`, `System`) красные в IDEA
+- **Что случилось:** IDE не находит классы JDK, хотя Gradle собирает проект
+- **Причина:** у SDK проекта (`17`) в настройках IDEA пустой classPath: нет корней `jrt://`. SDK был зарегистрирован из JDK, который скачал Gradle toolchain (`~/.gradle/jdks/`). Нормальный Project SDK (например, `ms-17`) не спасает: из-за `jvmToolchain(17)` IDEA при синхронизации с Gradle назначает модулю SDK toolchain, а Gradle JVM в `.idea/gradle.xml` тоже ссылается на `17`
+- **Как правильно:** Project Structure → SDKs: удалить SDK и добавить заново с той же папки или выбрать другой JDK 17; затем Reload Gradle. Проверка: в `jdk.table.xml` настроек IDEA у SDK есть строки `jrt://`
+
 ## Пакет не совпадает с папкой
 - **Что случилось:** файлы из `configs/configs/` объявлены в пакете `non.era.aisdme.configs.dataclass`, `configs/snapshots/SnapshotTree.kt` — в `configs.dataclass.child`, `SnapshotEditor.kt` — в `configs.dataclass.snapshots`
 - **Причина:** папки переименовывали, а пакеты — нет

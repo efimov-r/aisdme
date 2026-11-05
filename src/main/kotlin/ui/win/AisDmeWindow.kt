@@ -27,7 +27,6 @@ import kotlinx.coroutines.delay
 import non.era.aisdme.BuildConfig
 import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.AppConfig
-import non.era.aisdme.utils.Log
 import java.io.File
 
 sealed interface AppStartState {
