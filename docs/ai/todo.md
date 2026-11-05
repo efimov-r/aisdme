@@ -4,7 +4,7 @@
 
 ## В работе
 
-- [ ] CI на GitHub Actions — [#18](https://github.com/efimov-r/aisdme/issues/18), ветка `issue-18-ci`: проверить первый прогон в PR
+- [ ] Quality gates — [#19](https://github.com/efimov-r/aisdme/issues/19), ветка `issue-19-quality-gates`: detekt, Kover и CI готовы, ждёт push и PR; пользователю — включить защиту `master` (required status checks)
 
 ## Проверить на Linux
 
@@ -43,9 +43,8 @@
 - [ ] Убрать все `copy(alpha = …)` у цветов — [#11](https://github.com/efimov-r/aisdme/issues/11)
 - [ ] Подсветка синтаксиса — [#13](https://github.com/efimov-r/aisdme/issues/13)
 
-Тесты и качество (тесты подключены в #14, запуск — `gradlew test`):
+Тесты и качество (тесты подключены в #14, запуск — `gradlew test`). После новых тестов в #15–17 — поднять порог покрытия Kover (#19), порог только растёт:
 
 - [ ] Тесты конфигов — [#15](https://github.com/efimov-r/aisdme/issues/15)
 - [ ] Тесты файловых операций — [#16](https://github.com/efimov-r/aisdme/issues/16)
 - [ ] Тесты логики дерева проекта — [#17](https://github.com/efimov-r/aisdme/issues/17)
-- [ ] Quality gates — [#19](https://github.com/efimov-r/aisdme/issues/19)

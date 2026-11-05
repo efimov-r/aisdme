@@ -13,6 +13,13 @@
 
 ---
 
+## 2026-11-05 — Quality gates: detekt + Kover в `check`
+- **Статус:** принято, [#19](https://github.com/efimov-r/aisdme/issues/19)
+- **Контекст:** нужны линтер, статический анализ и порог покрытия в CI. Опора — список [dev-quality-gates](https://github.com/mokevnin/dev-quality-gates) (CC0): для Kotlin в нём рекомендован только detekt, ktlint — «Under review»
+- **Решение:** detekt 1.23.8 (задача `detekt`, без type resolution) и Kover 0.9.11 входят в `check`, CI запускает `gradlew build`. `detekt.yml` поправлен только там, где стандарт противоречит `style.md`: имена `@Composable`, `rootPackage`, перевод строки в конце файла, ранние `return`, магические числа в `@Composable`, wildcard-импорты. Старый код: сначала прогон без baseline, исправлено очевидное (мёртвый код, пустые блоки), остальное (120) — в baseline; найденные баги — в #26. Порог покрытия — текущее значение (1%), поднимается с #15–17
+- **Почему:** гейт через Gradle — одна команда для разработчика, агента и CI, без отдельных инструментов
+- **Альтернативы:** форматтер (Spotless + ktlint) — переписал бы код под чужой стиль; mise + hk (хуки) — версии и так закреплены Gradle, гейт — CI; detekt 2.0 — alpha и нужен Gradle 8.14.3+; общие проверки (Betterleaks, jactionlint, Dependabot, diff-cover, typos) — решили не добавлять
+
 ## 2026-11-05 — CI без `gradle/actions/setup-gradle`
 - **Статус:** принято, [#18](https://github.com/efimov-r/aisdme/issues/18)
 - **Контекст:** нужен CI на GitHub Actions с кэшем Gradle. В `gradle/actions` v6 кэширование вынесено в проприетарный компонент `gradle-actions-caching`: используя его, принимаешь отдельные Terms of Use Gradle

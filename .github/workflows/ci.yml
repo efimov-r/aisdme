@@ -24,21 +24,24 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: gradle/actions/wrapper-validation@v6 # проверка gradle-wrapper.jar, без кэша Gradle
+      - uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1, проверка gradle-wrapper.jar, без кэша Gradle
 
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           distribution: temurin
           java-version: 17
           cache: gradle
 
-      - run: ./gradlew build # build включает test
+      - run: ./gradlew build # build включает check: test, detekt, koverVerify
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
         with:
-          name: test-reports-${{ matrix.os }}
-          path: build/reports/tests/
+          name: reports-${{ matrix.os }}
+          path: |
+            build/reports/tests/
+            build/reports/detekt/
+            build/reports/kover/
           if-no-files-found: ignore
