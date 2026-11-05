@@ -47,7 +47,7 @@ fun DeleteSelectedNodeDialog(nodes: List<ProjectNode>, onDismiss: () -> Unit) { 
     DualButtonDialog(
         Modifier.focusRequester(focusRequester).focusable(),
         title,
-        { app.filesController.delete(nodes) },
+        { app.filesController.delete(nodes.map { it.getFilePath() }) },
         onDismiss,
         enterActive = { true }
     ) {

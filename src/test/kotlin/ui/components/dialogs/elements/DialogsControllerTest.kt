@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
+import non.era.aisdme.ui.components.dialogs.TypeNew
 import non.era.aisdme.ui.errors.GlobalMessage
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
@@ -66,6 +67,30 @@ class DialogsControllerTest {
         controller.requestPasteDialog()
 
         assertEquals(UiDialog.ShowPasteDialog(dir), nextDialog())
+    }
+
+    // New File в файл и в несколько узлов: ошибка, диалога нет
+    @Test
+    fun createWithoutSingleDirShowsError() {
+        listOf(listOf(file), listOf(dir, file)).forEach { nodes ->
+            errors.clear()
+            selected = nodes
+
+            controller.requestCreateDialog(TypeNew.FILE)
+
+            waitError()
+            assertNull(nextDialog())
+        }
+    }
+
+    // New Directory в одну папку: диалог с путём этой папки
+    @Test
+    fun createInSingleDirOpensDialog() {
+        selected = listOf(dir)
+
+        controller.requestCreateDialog(TypeNew.DIRECTORY)
+
+        assertEquals(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY, dir.getFilePath()), nextDialog())
     }
 
     // Rename нескольких узлов: ошибка, диалога нет

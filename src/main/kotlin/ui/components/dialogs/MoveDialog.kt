@@ -27,7 +27,7 @@ fun MoveDialog(src: List<ProjectNode>, target: File, onDismiss: () -> Unit) {
     DualButtonDialog(
         title = "Move",
         onConfirm = {
-            app.filesController.move(src, File(textState.text))
+            app.filesController.move(src.map { it.getFilePath() }, File(textState.text).toPath())
         },
         onDismiss = onDismiss,
         enterActive = { error == null }

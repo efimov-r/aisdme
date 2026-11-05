@@ -21,7 +21,6 @@ import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
 import non.era.aisdme.ui.components.dialogs.TypeNew
-import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
@@ -77,8 +76,8 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
                 state = menuState,
                 showDelDialog = { app.dialogController.requestDeleteDialog() },
                 showRenameDialog = { app.dialogController.requestRenameDialog() },
-                showNewFileDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.FILE)) },
-                showNewDirectoryDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY)) },
+                showNewFileDialog = { app.dialogController.requestCreateDialog(TypeNew.FILE) },
+                showNewDirectoryDialog = { app.dialogController.requestCreateDialog(TypeNew.DIRECTORY) },
                 onDismiss = { menuState.hide() }
             )
         }

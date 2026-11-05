@@ -12,11 +12,12 @@ import non.era.aisdme.ui.components.dialogs.TypeNew
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
 import java.io.File
+import java.nio.file.Path
 
 sealed interface UiDialog { //узлы берутся при запросе: диалог работает с тем, что было выделено
     data class ShowDeleteDialog(val nodes: List<ProjectNode>) : UiDialog
     data class ShowRenameDialog(val node: ProjectNode) : UiDialog
-    data class ShowCreateObjDialog(val typeNew: TypeNew) : UiDialog
+    data class ShowCreateObjDialog(val typeNew: TypeNew, val dir: Path) : UiDialog
     data class ShowPasteDialog(val target: DirNode) : UiDialog
     data class ShowMoveDialog(val src: List<ProjectNode>, val target: File) : UiDialog
 }
@@ -79,6 +80,18 @@ class DialogsController(
             }
         )
         requestDialog(UiDialog.ShowPasteDialog(target))
+    }
+
+    fun requestCreateDialog(typeNew: TypeNew) {
+        val selected = selectedNodes()
+        val dir = selected.singleOrNull() as? DirNode ?: return error(
+            when {
+                selected.isEmpty() -> "Directory for creation is not selected"
+                selected.size != 1 -> "Create only in one directory"
+                else -> "Create only in directory"
+            }
+        )
+        requestDialog(UiDialog.ShowCreateObjDialog(typeNew, dir.getFilePath()))
     }
 
     fun requestMoveDialog(src: List<ProjectNode>, target: File) {
