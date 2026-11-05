@@ -27,7 +27,6 @@
 - [ ] Убрать все `copy(alpha = …)` у цветов — [#11](https://github.com/efimov-r/aisdme/issues/11)
 - [ ] Проверить сборку и запуск на Windows — [#12](https://github.com/efimov-r/aisdme/issues/12)
 - [ ] Подсветка синтаксиса — [#13](https://github.com/efimov-r/aisdme/issues/13)
-- [ ] Оформить репозиторий и сделать публичным — [#20](https://github.com/efimov-r/aisdme/issues/20)
 
 Тесты и качество, после #12:
 
