@@ -34,4 +34,4 @@
 
 ## Различия Linux и Windows
 - **Что случилось:** буфер обмена, пути конфигов и открытие файла в файловом менеджере работают в ОС по-разному
-- **Как правильно:** при правке `ConfigPaths`, `FileTransferable`, `ClipboardHelper`, `FileDolphinOpener` проверять обе ветки кода — для Linux и для Windows
+- **Как правильно:** всё, что зависит от ОС, — только в `platform/`, в обеих реализациях: `WindowsPlatform` и `LinuxPlatform`. Вне `platform/` `os.name` не читать
