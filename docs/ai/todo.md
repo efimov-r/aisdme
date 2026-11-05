@@ -17,7 +17,6 @@
 
 Баги:
 
-- [ ] Падение при первом запуске без последнего проекта — [#2](https://github.com/efimov-r/aisdme/issues/2)
 - [ ] Автоскролл при перетаскивании не останавливается в конце прокрутки — [#3](https://github.com/efimov-r/aisdme/issues/3)
 - [ ] Баги из разбора кода: потеря данных, конфиги, потоки, watcher — [#26](https://github.com/efimov-r/aisdme/issues/26). Сначала — потеря данных
 
@@ -30,10 +29,10 @@
 
 - [ ] Реакция на удаление и изменение извне файла, открытого в редакторе — [#9](https://github.com/efimov-r/aisdme/issues/9)
 - [ ] Своя панель заголовка окна (custom title bar) — [#10](https://github.com/efimov-r/aisdme/issues/10)
+- [ ] Оформление окна выбора проекта — [#21](https://github.com/efimov-r/aisdme/issues/21)
 - [ ] Убрать все `copy(alpha = …)` у цветов — [#11](https://github.com/efimov-r/aisdme/issues/11)
 - [ ] Проверить сборку и запуск на Windows — [#12](https://github.com/efimov-r/aisdme/issues/12)
 - [ ] Подсветка синтаксиса — [#13](https://github.com/efimov-r/aisdme/issues/13)
-- [ ] Оформить репозиторий и сделать публичным — [#20](https://github.com/efimov-r/aisdme/issues/20)
 
 Тесты и качество, после #12:
 
