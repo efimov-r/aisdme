@@ -3,6 +3,8 @@ package non.era.aisdme.ui.editor
 import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.bus.*
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
 import non.era.aisdme.configs.repositories.EditorStateRepository
@@ -27,6 +29,7 @@ class EditorController(
     private val winState: WindowState,
 ) : UiController() {
     private var _tabsCash: MutableMap<Int, TabCash> = mutableMapOf()
+    private val removeMutex = Mutex()
 
     private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) }; removeClosedTabs() }
     private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) }; removeClosedTabs() }
@@ -200,18 +203,20 @@ class EditorController(
     }
 
     internal fun removeClosedTabs() = scope.launch { //вкладки, которых нет ни в одной половине
-        val closed = withContext(Dispatchers.Swing) {
-            _tabsCash.values.filter { !isTabOpen(it.id) }
-        }
-        if(closed.isEmpty()) return@launch
-
-        closed.forEach { tab ->
-            tab.beforeRemove() //сохранить текст, удалить .clip
-            withContext(Dispatchers.Swing) {
-                if(!isTabOpen(tab.id)) _tabsCash.remove(tab.id) //вкладку могли открыть снова
+        removeMutex.withLock { //по очереди: иначе вкладка обрабатывается дважды
+            val closed = withContext(Dispatchers.Swing) {
+                _tabsCash.values.filter { !isTabOpen(it.id) }
             }
+            if(closed.isEmpty()) return@launch
+
+            closed.forEach { tab ->
+                tab.beforeRemove() //сохранить текст, удалить .clip
+                withContext(Dispatchers.Swing) {
+                    if(!isTabOpen(tab.id)) _tabsCash.remove(tab.id) //вкладку могли открыть снова
+                }
+            }
+            saveToConfig()
         }
-        saveToConfig()
     }
 
     private fun isTabOpen(id: Int) = leftTabs.listTabs.contains(id) || rightTabs.listTabs.contains(id)
