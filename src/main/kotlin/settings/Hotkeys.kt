@@ -14,7 +14,7 @@ enum class Hotkeys (
     COPY("Ctrl + c", {it.isCtrlPressed && it.key == Key.Companion.C}),
     PASTE("Ctrl + v", {it.isCtrlPressed && it.key == Key.Companion.V}),
     CUT("Ctrl + x", {it.isCtrlPressed && it.key == Key.Companion.X}),
-    OPEN_DOLPHIN("Alt + e", {it.isAltPressed && it.key == Key.Companion.E}),
+    SHOW_IN_FILE_MANAGER("Alt + e", {it.isAltPressed && it.key == Key.Companion.E}),
     DELETE("Del", {it.key == Key.Companion.Delete}),
     RENAME("Shift + F6", {it.isShiftPressed && it.key == Key.Companion.F6}),
     ENTER("Enter", {it.key == Key.Companion.Enter || it.key == Key.Companion.NumPadEnter}),

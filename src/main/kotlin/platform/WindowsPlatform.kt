@@ -1,6 +1,7 @@
 package non.era.aisdme.platform
 
 import com.sun.nio.file.ExtendedWatchEventModifier
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.WatchEvent
@@ -15,4 +16,10 @@ object WindowsPlatform : IPlatform {
 
     override fun registerWatch(dir: Path, service: WatchService, kinds: Array<WatchEvent.Kind<*>>): WatchKey =
         dir.register(service, kinds, ExtendedWatchEventModifier.FILE_TREE)
+
+    override val fileManagerName = "Explorer"
+
+    override fun showInFileManager(file: File) {
+        ProcessBuilder("explorer", "/select,", file.absolutePath).start()
+    }
 }

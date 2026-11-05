@@ -15,7 +15,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.di.AppController
 import non.era.aisdme.di.LocalAppController
-import non.era.aisdme.files.work.FileDolphinOpener
+import non.era.aisdme.platform.Platform
 import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState
@@ -126,7 +126,7 @@ private fun TreeContextMenu(
             add(divider())
         }
 
-        add(openDolphinItem(app))
+        add(showInFileManagerItem(app))
 
         if(isSingleDirectory(selected)) {
             add(divider())
@@ -197,11 +197,11 @@ private fun openInRightItem(app: AppController) = MenuEntry.Item(
     shortcut = Hotkeys.RIGHT
 ) { app.openSelectedNodesInEditor(Panels.RIGHT) }
 
-private fun openDolphinItem(app: AppController) = MenuEntry.Item(
-    title = "Open in Dolphin",
+private fun showInFileManagerItem(app: AppController) = MenuEntry.Item(
+    title = "Show in ${Platform.current.fileManagerName}",
     icon = "npm",
-    shortcut = Hotkeys.OPEN_DOLPHIN
-) { FileDolphinOpener.openNodesInFileManager(app.projectController.treeState.getSelectedNodes()) }
+    shortcut = Hotkeys.SHOW_IN_FILE_MANAGER
+) { app.showSelectedInFileManager() }
 
 private fun reloadDiskItem(app: AppController) = MenuEntry.Item(
     title = "Reload from disk",

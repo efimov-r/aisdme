@@ -30,8 +30,8 @@ gradlew build             # сборка
 - `di/` — `AppController` (фасад над всеми контроллерами, доступен через `LocalAppController`) и `AppControllerBuilder`, где контроллеры собираются вручную
 - `bus/` — `AppEventBus` на `MutableSharedFlow`: события между контроллерами
 - `configs/` — `ConfigController`, `GlobalConfig`, `store/` (`ConfigStore`, `ConfigPaths`), `configs/` (`AppConfig`, `ProjectConfig`), `snapshots/` (сохранённое состояние редактора и дерева), `repositories/`
-- `files/` — `TypeFile`, `work/`: `FilesController`, `FilesExecutor`, `FileTransferable` (буфер обмена), `FileDolphinOpener` (показать в файловом менеджере)
-- `platform/` — всё, что зависит от ОС: `IPlatform`, `WindowsPlatform`, `LinuxPlatform`, выбор — `Platform.current`
+- `files/` — `TypeFile`, `work/`: `FilesController`, `FilesExecutor`, `FileTransferable` (буфер обмена)
+- `platform/` — всё, что зависит от ОС: папка конфигов, отслеживание диска, показ в файловом менеджере. `IPlatform`, `WindowsPlatform`, `LinuxPlatform`, выбор — `Platform.current`
 - `settings/` — `Hotkeys`
 - `theme/` — `AisDmeTheme`, `AisDmeColors`, `AisDmeShapes`, `AisDmeSpacing`
 - `ui/editor/` — `EditorController`, `HalfEditorTabs`, `TabsBar`, `EditField`; `halfview/` — содержимое вкладок; `halfviewmodel/` — состояние вкладок: `TabCash` → `TabCashFile` → `TabCashFileText`, `TabCashFileImg`, а также `TabCashPaste`

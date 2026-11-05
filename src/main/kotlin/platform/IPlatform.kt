@@ -1,5 +1,6 @@
 package non.era.aisdme.platform
 
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.WatchEvent
 import java.nio.file.WatchKey
@@ -10,4 +11,7 @@ interface IPlatform {
 
     val watchSubtree: Boolean //true — registerWatch на корне ловит события всего поддерева
     fun registerWatch(dir: Path, service: WatchService, kinds: Array<WatchEvent.Kind<*>>): WatchKey
+
+    val fileManagerName: String
+    fun showInFileManager(file: File)
 }
