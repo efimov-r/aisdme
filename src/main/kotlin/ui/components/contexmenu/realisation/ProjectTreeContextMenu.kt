@@ -38,8 +38,9 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
 
             when (it.key.keyCode) {
                 4294967821L -> {
-                    app.projectController.treeState.getSelectedNodes().lastOrNull()?.let { node ->
-                        node.globPos?.let{ menuState.show(it) }
+                    val treeState = app.projectController.treeState
+                    treeState.getSelectedNodes().lastOrNull()?.let { node ->
+                        treeState.menuAnchor(node)?.let{ menuState.show(it) }
                     }
                     true
                 }

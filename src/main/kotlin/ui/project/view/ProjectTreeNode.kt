@@ -36,7 +36,9 @@ fun ProjectTreeNode(
     node: ProjectNode
 ) {
     val app = LocalAppController.current
-    val isSelected = node.isSelected()
+    val treeState = app.projectController.treeState
+    val isSelected by remember(node) { derivedStateOf { treeState.selection.isSelected(node) } } //только свой узел
+    val isCut by remember(node) { derivedStateOf { treeState.isCut(node) } }
 
     val isDropTarget by remember(node) { derivedStateOf { app.moveController.isDropTarget(node) } } //только свой узел
 
@@ -83,15 +85,12 @@ fun ProjectTreeNode(
                     .width(1.dp).height(1.dp)
                     .onGloballyPositioned { coords ->
                         val position = coords.boundsInWindow()
-                        node.globPos = Offset(
-                            position.left,
-                            position.bottom
-                        )
+                        treeState.setMenuAnchor(node, Offset(position.left, position.bottom))
                     })
                 NodeIcon(Modifier.padding(top = 2.dp, end = 4.dp), node)
 
                 Text(
-                    color = if(node.isCutted) LocalAisDmeColors.current.cutted else LocalAisDmeColors.current.onSurface,
+                    color = if(isCut) LocalAisDmeColors.current.cutted else LocalAisDmeColors.current.onSurface,
                     text = "${node.getFileName()}",
                     style = LocalTextStyle.current.copy(fontSize = 15.sp, lineHeight = 26.sp),
                     maxLines = 1,

@@ -67,7 +67,7 @@ class AppController(
         }
     fun copySelectedToClipboard(cut: Boolean) {
         val selected = projectController.treeState.getSelectedNodes()
-        if(cut) selected.forEach { projectController.treeState.cutNoteMarkRecursive(it) }
+        if(cut) projectController.treeState.markCut(selected)
         filesController.copyToClipboard(selected.map { it.getFilePath() }, cut)
     }
 

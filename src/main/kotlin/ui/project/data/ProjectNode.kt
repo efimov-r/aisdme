@@ -5,20 +5,12 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.geometry.Offset
 import java.io.File
 
 abstract class ProjectNode(
     protected val _file: File,
     val depth: Int
-) {
-    var globPos: Offset? = null //для контекстного меню по кнопке
-    var isCutted by mutableStateOf(false)
-    private var _isSelected by mutableStateOf(false)
-
-    fun isSelected() = _isSelected
-    fun setSelected(isSelected: Boolean) {_isSelected = isSelected}
-
+) { //выделение, «вырезано» и позиция на экране — в ProjectTreeState
     fun equalsOf(other: ProjectNode): Boolean {
         return this._file == other._file
     }
