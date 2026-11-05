@@ -49,7 +49,7 @@
 - Функции-выражения: `fun deleteSelected() = filesController.delete(...)`.
 - Ошибки: `runCatching { }` или `try { } catch (e: Exception) { Log.e(...) }`.
 - Логирование — свой `utils/Log`: `Log.d(...)`, `Log.e(...)`; сообщения короткие, на русском или английском.
-- Compose: состояние — `mutableStateOf` / `mutableStateListOf` в контроллерах, доступ — через `LocalAppController.current`, `val x by remember { mutableStateOf(...) }`, цвета — только через `LocalAisDmeColors.current`, отступы — `AisDmeSpacing`, формы — `AisDmeShapes`.
+- Compose: состояние — `mutableStateOf` / `mutableStateListOf` в контроллерах, доступ — через `LocalAppController.current`, `val x by remember { mutableStateOf(...) }`, цвета — только через `LocalAisDmeColors.current`; прозрачность — не `copy(alpha = …)`, а свой цвет в `AisDmeColors` в обеих темах: непрозрачный, смешанный с фоном, а если фон разный — с альфой в hex (`hoverButton`); отступы — `AisDmeSpacing`, формы — `AisDmeShapes`.
 - Глобальное состояние — `object` (`GlobalConfig`), без DI-фреймворка.
 
 ### Тесты

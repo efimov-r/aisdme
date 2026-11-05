@@ -78,7 +78,7 @@ fun SvgButton(
                 .fillMaxSize()
                 .focusProperties { canFocus = false }
                 .background(
-                    color = if (isHovered) LocalAisDmeColors.current.primary.copy(alpha = 0.1f)
+                    color = if (isHovered) LocalAisDmeColors.current.hoverButton
                     else Color.Transparent,
                     shape = AisDmeShapes.small
                 )

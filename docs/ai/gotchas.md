@@ -2,6 +2,11 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## detekt: свой `excludes` затирает стандартный
+- **Что случилось:** после `excludes: ['**/theme/**']` у `MagicNumber` detekt упал на 41 числе в тестах ([#11](https://github.com/efimov-r/aisdme/issues/11))
+- **Причина:** `excludes` в `detekt.yml` не дополняет, а заменяет стандартный список правила; у `MagicNumber` в нём тестовые папки и `*.kts`
+- **Как правильно:** скопировать стандартный список правила из `default-detekt-config.yml` своей версии detekt и дописать своё, как у `MagicNumber` в `detekt.yml`
+
 ## Тест читает половину редактора до отложенного объединения
 - **Что случилось:** `TreeActionsTest.openSelectedInRightHalf` прошёл на Windows и упал в CI на Linux: `NullPointerException` на `rightTabs.activeTabId!!` (PR [#37](https://github.com/efimov-r/aisdme/pull/37))
 - **Причина:** левая половина была пустой, файл открывался справа; `mergeHalvesLater` ставит перенос правой в левую в очередь ui-потока. На Linux очередь успевала отработать до чтения, на Windows — нет

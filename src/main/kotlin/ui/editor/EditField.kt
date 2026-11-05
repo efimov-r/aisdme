@@ -115,7 +115,7 @@ fun EditorHalf(
             contentAlignment = Alignment.Center) {
             Text(
                 text = "Drop files here to open them",
-                color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
+                color = LocalAisDmeColors.current.textSecondary,
             )
         }
     }
