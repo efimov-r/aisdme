@@ -13,6 +13,13 @@
 
 ---
 
+## 2026-11-06 — Прозрачность — цветами темы, `MagicNumber` не проверяет `theme/`
+- **Статус:** принято, [#11](https://github.com/efimov-r/aisdme/issues/11)
+- **Контекст:** в UI было 6 вызовов `copy(alpha = …)` у цветов темы; вид зависел от фона под элементом, а цвета не все лежали в теме. Новые hex-цвета в `AisDmeColors` роняли detekt (`MagicNumber`), старые были в baseline
+- **Решение:** у каждой прозрачной версии — свой цвет в `AisDmeColors` в обеих темах: `menuSelected`, `textSecondary`, `menuDivider` — непрозрачные, смешаны с `surface`; `hoverButton` — с альфой в hex, кнопки стоят на разном фоне; цель drag & drop в дереве — общий `dropTargetElement`. В `detekt.yml` `MagicNumber` исключает `**/theme/**` (решение пользователя)
+- **Почему:** все цвета — в одном месте, по имени; по образцу `selectAndFocus` и `dropTargetElement`. Hex-литерал в теме и есть смысловая константа — имя поля, а Kover `theme/` уже не считает
+- **Альтернативы:** `const val` на каждый цвет — по два имени на цвет; дописать ID в baseline руками — то же пересоздание baseline
+
 ## 2026-11-06 — Шина событий: без replay и без потерь
 - **Статус:** принято, [#27](https://github.com/efimov-r/aisdme/issues/27)
 - **Контекст:** `replay = 1` отдавал позднему подписчику старое событие; `extraBufferCapacity = 64` + `DROP_OLDEST` + `tryEmit` молча теряли события при переполнении

@@ -47,7 +47,7 @@ fun MenuItem(
                 item.onClick()
             }
             .background(
-                color = if(selected) LocalAisDmeColors.current.primary.copy(alpha = 0.5f) else Color.Transparent
+                color = if(selected) LocalAisDmeColors.current.menuSelected else Color.Transparent
             )
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -72,7 +72,7 @@ fun MenuItem(
             Text(
                 modifier = Modifier.padding(bottom = 4.dp),
                 text = it.vis,
-                color = LocalAisDmeColors.current.onSurface.copy(alpha = 0.5f),
+                color = LocalAisDmeColors.current.textSecondary,
                 fontSize = 12.sp
             )
         }
@@ -84,6 +84,6 @@ fun MenuDivider() {
     Divider(
         modifier = Modifier.padding(vertical = 6.dp),
         thickness = 1.dp,
-        color = LocalAisDmeColors.current.surfaceBorder.copy(alpha = 0.4f)
+        color = LocalAisDmeColors.current.menuDivider
     )
 }

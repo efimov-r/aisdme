@@ -56,7 +56,7 @@ fun ProjectTreeNode(
                                 LocalAisDmeColors.current.selectAndNotFocus
 
                             isDropTarget ->
-                                LocalAisDmeColors.current.primary.copy(alpha = 0.2f)
+                                LocalAisDmeColors.current.dropTargetElement
 
                             else -> Color.Transparent
                         }

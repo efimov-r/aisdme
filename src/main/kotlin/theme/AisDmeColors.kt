@@ -22,6 +22,10 @@ data class AisDmeColors(
     val selectAndFocus: Color,
     val selectAndNotFocus: Color,
     val dropTargetElement: Color,
+    val menuSelected: Color,
+    val textSecondary: Color,
+    val menuDivider: Color,
+    val hoverButton: Color, //полупрозрачный: кнопки на разном фоне
 )
 
 val LightAisDmeColors = AisDmeColors(
@@ -42,6 +46,10 @@ val LightAisDmeColors = AisDmeColors(
     selectAndFocus = Color(0xFF9AF8BA),
     selectAndNotFocus = Color(0xFFEAEAEA),
     dropTargetElement = Color(0xFFD2F3DD),
+    menuSelected = Color(0xFF9AF8BA),
+    textSecondary = Color(0xFF808080),
+    menuDivider = Color(0xFFDFDFDF),
+    hoverButton = Color(0x1A35F074),
 )
 
 val DarkAisDmeColors = AisDmeColors(
@@ -62,6 +70,10 @@ val DarkAisDmeColors = AisDmeColors(
     selectAndFocus = Color(0xFF1B783A),
     selectAndNotFocus = Color(0xFF6A6A6A),
     dropTargetElement = Color(0xFF0A3017),
+    menuSelected = Color(0xFF0D6528),
+    textSecondary = Color(0xFF8C8C8D),
+    menuDivider = Color(0xFF6F7071),
+    hoverButton = Color(0x1A00B034),
     )
 
 //!!!! Пример

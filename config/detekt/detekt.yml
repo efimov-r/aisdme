@@ -9,6 +9,17 @@ naming:
 style:
   MagicNumber:
     ignoreAnnotated: ['Composable'] # размеры и отступы в UI
+    excludes: # стандартный список + theme: цвета темы — hex-литералы, смысл в имени поля (решение пользователя, #11)
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+      - '**/*.kts'
+      - '**/theme/**'
   WildcardImport:
     active: false # IDEA сама сворачивает импорты в *
   NewLineAtEndOfFile:
