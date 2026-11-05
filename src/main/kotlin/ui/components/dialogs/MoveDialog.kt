@@ -7,6 +7,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.files.work.FilesExecutor
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
 import non.era.aisdme.ui.components.over.ErrorableTextField
@@ -57,6 +58,9 @@ private fun dialogTargetDirValidate(src: List<ProjectNode>, text: String): Strin
             if (srcFile.isDirectory && f.toPath().startsWith(srcFile.toPath())) {
                 return "Cannot move directory into itself"
             }
+        }
+        FilesExecutor.findTakenTarget(src.map { it.getFilePath() }, f.toPath())?.let {
+            return "Already exists: ${it.fileName}"
         }
         return null
     } catch (_: Throwable) {

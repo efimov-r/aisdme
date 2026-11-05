@@ -7,10 +7,12 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.files.work.FilesExecutor
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.dialogs.elements.FileNameValidator.validateFileName
 import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
 import non.era.aisdme.ui.components.over.ErrorableTextField
+import java.nio.file.Path
 
 @Composable
 fun RenameNodeDialog(onDismiss: () -> Unit) {
@@ -36,7 +38,9 @@ fun RenameNodeDialog(onDismiss: () -> Unit) {
         )
     }
 
-    val error = remember(key1 = textState) { validateFileName(textState.text) }
+    val error = remember(key1 = textState) {
+        validateFileName(textState.text) ?: renameTargetValidate(src.toPath(), textState.text)
+    }
 
     DualButtonDialog(
         title = "Rename",
@@ -56,3 +60,8 @@ fun RenameNodeDialog(onDismiss: () -> Unit) {
         )
     }
 }
+
+private fun renameTargetValidate(src: Path, name: String): String? =
+    runCatching {
+        if (FilesExecutor.isTargetTaken(src, src.resolveSibling(name))) "Already exists" else null
+    }.getOrElse { "Invalid name" }

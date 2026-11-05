@@ -68,6 +68,7 @@ private fun pasteDialogTargetDirValidate(text: String): String? {
         if(!f.exists()) return "not found"
         if(!f.isDirectory) return "its not directory"
         if(FilesExecutor.findPasteIntoItself(f.toPath()) != null) return "Cannot paste directory into itself"
+        FilesExecutor.findTakenTarget(f.toPath())?.let { return "Already exists: ${it.fileName}" }
         return null
     } catch (_: Throwable) {
         return "not found"

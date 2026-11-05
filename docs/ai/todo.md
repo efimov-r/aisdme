@@ -4,7 +4,7 @@
 
 ## В работе
 
-- [ ] Quality gates — [#19](https://github.com/efimov-r/aisdme/issues/19), ветка `issue-19-quality-gates`: detekt, Kover и CI готовы, ждёт push и PR; пользователю — включить защиту `master` (required status checks)
+- [ ] Потеря данных из [#26](https://github.com/efimov-r/aisdme/issues/26) и тесты `FilesExecutor` [#16](https://github.com/efimov-r/aisdme/issues/16) — ветка `issue-26-data-loss`, один PR
 
 ## Проверить на Linux
 

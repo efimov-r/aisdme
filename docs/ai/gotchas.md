@@ -2,6 +2,16 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## Windows: переименование только регистром
+- **Что случилось:** `a.asm` → `A.asm` молча не переименовывался — и с `REPLACE_EXISTING`, и без
+- **Причина:** на Windows `Files.move` для того же файла ничего не делает, а `Path.equals` не различает регистр: `src != target` — `false`
+- **Как правильно:** сравнивать `toString()`, тот же файл — `Files.isSameFile`, переименовывать через `File.renameTo` (`FilesExecutor.move`). Тест — `FilesExecutorTest.moveCaseOnlyRenameKeepsFile`
+
+## `dispose` идёт на EDT через `runBlocking`
+- **Что случилось:** риск зависания при выходе
+- **Причина:** `EditorController.disposeBefore` вызывается из `onDispose` на EDT и ждёт `runBlocking`; `withContext(Dispatchers.Swing)` внутри не выполнится никогда
+- **Как правильно:** в `disposeBeforeBlocked` не вызывать `writeStatus` и ничего, что переключается на `Swing`
+
 ## Kover: пакет `ui` нельзя исключать из покрытия целиком
 - **Что случилось:** план был — не считать покрытие в `ui/`, как UI-код
 - **Причина:** в `ui/` лежит логика: контроллеры, `ProjectTreeState`, `TabCash*`, `FileNameValidator` (единственный класс с тестом на 2026-11-05)
