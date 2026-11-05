@@ -4,7 +4,9 @@
 
 ## В работе
 
-- [ ] Баги из разбора кода — [#26](https://github.com/efimov-r/aisdme/issues/26). Потеря данных исправлена в PR [#32](https://github.com/efimov-r/aisdme/pull/32). Сейчас — «Конфиги и состояние редактора» и тесты конфигов [#15](https://github.com/efimov-r/aisdme/issues/15), ветка `issue-26-configs`, один PR
+- [ ] Баги из разбора кода — [#26](https://github.com/efimov-r/aisdme/issues/26). Исправлены потеря данных (PR [#32](https://github.com/efimov-r/aisdme/pull/32)) и конфиги (PR [#33](https://github.com/efimov-r/aisdme/pull/33)). Остались потоки, watcher и мелочи — делаются в ветке `issue-26-threads-watcher-perf` одним PR вместе с #3 и #28
+- [ ] Автоскролл при перетаскивании не останавливается в конце прокрутки — [#3](https://github.com/efimov-r/aisdme/issues/3)
+- [ ] Производительность: дерево проекта, отслеживание диска, рекомпозиция — [#28](https://github.com/efimov-r/aisdme/issues/28)
 
 ## Проверить на Linux
 
@@ -25,14 +27,9 @@
 - [ ] Undo / Redo поверх Piece Table — [#7](https://github.com/efimov-r/aisdme/issues/7)
 - [ ] Отрисовка только видимых строк (viewport rendering) — [#8](https://github.com/efimov-r/aisdme/issues/8)
 
-Баги:
-
-- [ ] Автоскролл при перетаскивании не останавливается в конце прокрутки — [#3](https://github.com/efimov-r/aisdme/issues/3)
-
 Разбор кода, 2026-11-05:
 
 - [ ] Архитектура: состояние в Compose, слои, ответственность контроллеров — [#27](https://github.com/efimov-r/aisdme/issues/27)
-- [ ] Производительность: дерево проекта, отслеживание диска, рекомпозиция — [#28](https://github.com/efimov-r/aisdme/issues/28)
 
 Остальное:
 

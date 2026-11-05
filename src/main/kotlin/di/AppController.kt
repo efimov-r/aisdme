@@ -49,12 +49,12 @@ class AppController(
         dialogController.subscriptionError { _globalMess += it }
     }
 
-    fun reselectProject(root: File): ProjectConfig? { //открыть новый проект
+    suspend fun reselectProject(root: File): ProjectConfig { //открыть новый проект; вызывать с ui-потока
         winState.openProject(root.toPath())
         val res = configController.reselectProject(root) //первый всегда!
         reloadWatcher.switchProject(root.toPath())
-        projectController.reselectRootProject(res?.treeState, root)
-        editorController.reselectProject(res?.snapshotEditor)
+        projectController.reselectRootProject(res.treeState, root)
+        editorController.reselectProject(res.snapshotEditor)
         return res
     }
     fun openSelectedNodesInEditor(panel: Panels) = editorController.openNodes(projectController.treeState.getSelectedNodes(), panel)

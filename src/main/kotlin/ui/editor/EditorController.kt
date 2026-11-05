@@ -31,23 +31,19 @@ class EditorController(
     private var _tabsCash: MutableMap<Int, TabCash> = mutableMapOf()
     private val removeMutex = Mutex()
 
-    private val updateLeftTabs: (List<Int>) -> Unit = { scope.launch { rep.updateLeftTabs(it) }; removeClosedTabs() }
-    private val updateRightTabs: (List<Int>) -> Unit = { scope.launch { rep.updateRightTabs(it) }; removeClosedTabs() }
-    private val updateLeftActive: (Int?) -> Unit = { scope.launch { rep.updateLeftActiveTabs(it) } }
-    private val updateRightActive: (Int?) -> Unit = { scope.launch { rep.updateRightActiveTabs(it) } }
+    private val updateLeftTabs: (List<Int>) -> Unit = { rep.updateLeftTabs(it); removeClosedTabs() }
+    private val updateRightTabs: (List<Int>) -> Unit = { rep.updateRightTabs(it); removeClosedTabs() }
+    private val updateLeftActive: (Int?) -> Unit = { rep.updateLeftActiveTabs(it) }
+    private val updateRightActive: (Int?) -> Unit = { rep.updateRightActiveTabs(it) }
 
     var leftTabs = HalfEditorTabs( updateLeftTabs, updateLeftActive)
     var rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
 
     init {
-        scope.launch {
+        scope.launch(Dispatchers.Swing) { //вкладки и _tabsCash меняются только на ui-потоке
             bus.events.collect { event ->
                 when (event) {
-                    is FileOpened -> {
-                        withContext(Dispatchers.Swing) {
-                            openNodes(listOf(event.node))
-                        }
-                    }
+                    is FileOpened -> openNodes(listOf(event.node))
                     is MoveFile -> {
                         getTabsFileFilter(event.oldFile).forEach { (_, file) ->
                             file.refile(File(event.newFile.toString()))

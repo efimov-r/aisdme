@@ -52,7 +52,7 @@ class ProjectController(
                         }
                     }
                     is ShowFileInTree -> {
-                        scope.launch {
+                        scope.launch(Dispatchers.Swing) {
                             treeState.showNode(event.file)
                         }
                     }

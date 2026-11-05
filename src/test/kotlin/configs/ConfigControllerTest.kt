@@ -51,9 +51,9 @@ class ConfigControllerTest {
         val tree = SnapshotTree(mapOf("src" to TreeStateElement(isDeer = true, expanded = true)))
         val controller = controller()
 
-        controller.reselectProject(a)
-        runBlocking { treeRep.updateTree(tree) }
-        controller.reselectProject(b)
+        runBlocking { controller.reselectProject(a) }
+        treeRep.updateTree(tree)
+        runBlocking { controller.reselectProject(b) }
         controller.dispose()
 
         assertEquals(tree, configOf(a).treeState)
@@ -68,12 +68,10 @@ class ConfigControllerTest {
         val tab = TabCashFileText(0, File(a, "main.asm"), scope)
         val controller = controller()
 
-        controller.reselectProject(a)
-        runBlocking {
-            editorRep.updateFiles(mapOf(0 to tab))
-            editorRep.updateLeftTabs(listOf(0))
-        }
-        controller.reselectProject(b)
+        runBlocking { controller.reselectProject(a) }
+        editorRep.updateFiles(mapOf(0 to tab))
+        editorRep.updateLeftTabs(listOf(0))
+        runBlocking { controller.reselectProject(b) }
         controller.dispose()
 
         assertEquals(listOf(0), configOf(a).snapshotEditor?.leftTabs)

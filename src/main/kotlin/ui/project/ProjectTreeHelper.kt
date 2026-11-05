@@ -95,9 +95,10 @@ object ProjectTreeHelper {
         return result
     }
 
-    fun rebuildDirDiff(node: DirNode) {
+    fun readChildren(node: DirNode) = buildChildren(null, node.getFile(), node.depth + 1) //диск, не на ui-потоке
+
+    fun applyDirDiff(node: DirNode, fresh: List<ProjectNode>) { //без диска, на ui-потоке
         val old = node.children.associateBy { it.getFilePath() }
-        val fresh = buildChildren(null, node.getFile(), node.depth + 1)
 
         val result = mutableListOf<ProjectNode>()
 
@@ -109,7 +110,7 @@ object ProjectTreeHelper {
                 oldNode::class != newNode::class ->  result += newNode
 
                 oldNode is DirNode && newNode is DirNode -> {// сохраняем объект директории
-                    rebuildDirDiff(oldNode)
+                    applyDirDiff(oldNode, newNode.children)
                     result += oldNode
                 }
 

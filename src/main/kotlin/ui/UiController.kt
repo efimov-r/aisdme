@@ -27,6 +27,7 @@ abstract class UiController {
             runCatching {
                 operation()
             }.onFailure { e ->
+                if (e is CancellationException) throw e //отмена — не ошибка
                 withContext(Dispatchers.Swing) {
                     newGlobalError(e)
                 }

@@ -105,33 +105,38 @@ class ProjectTreeState {
 
     //из контекстного меню обновление
     suspend fun reloadSelectedDirFromDisk() {
-        getSelectedNodes().forEach { dirNode ->
-            rebuildDirDiff(dirNode.getFile(), {})
+        val dirs = withContext(Dispatchers.Swing) {
+            getSelectedNodes().filterIsInstance<DirNode>().map { it.getFile() }
+        }
+        dirs.forEach { dir ->
+            rebuildDirDiff(dir, {})
         }
     }
 
     fun findNodes(file: File) = ProjectTreeHelper.findNode(_nodes, file)
 
-    suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit) =
-        withContext(Dispatchers.Swing) {
-            Log.d("rebuildDirDiff: ${deer.path}")
-           ProjectTreeHelper.findDirNode(_nodes, deer)?.let {
-               ProjectTreeHelper.rebuildDirDiff(it)
-           } ?: run {
-               notFoundErr()
-               Log.e("findDirNode is null, reload all")
-               val newTree = withContext(Dispatchers.IO) {
-                   rootProject?.let {
-                       ProjectTreeHelper.buildProjectTree(null, it)
-                   } ?: run {
-                       Log.e("rootProject in project tree is null")
-                       null
-                   }
-               }
-               withContext(Dispatchers.Swing) {
-                   _nodes.clear()
-                   newTree?.let { _nodes.add(it) }
-               }
-           }
+    suspend fun rebuildDirDiff(deer: File, notFoundErr: () -> Unit) {
+        Log.d("rebuildDirDiff: ${deer.path}")
+        val node = withContext(Dispatchers.Swing) { ProjectTreeHelper.findDirNode(_nodes, deer) }
+        if (node != null) {
+            val fresh = withContext(Dispatchers.IO) { ProjectTreeHelper.readChildren(node) }
+            withContext(Dispatchers.Swing) { ProjectTreeHelper.applyDirDiff(node, fresh) }
+            return
         }
+
+        notFoundErr()
+        Log.e("findDirNode is null, reload all")
+        val newTree = withContext(Dispatchers.IO) {
+            rootProject?.let {
+                ProjectTreeHelper.buildProjectTree(null, it)
+            } ?: run {
+                Log.e("rootProject in project tree is null")
+                null
+            }
+        }
+        withContext(Dispatchers.Swing) {
+            _nodes.clear()
+            newTree?.let { _nodes.add(it) }
+        }
+    }
 }

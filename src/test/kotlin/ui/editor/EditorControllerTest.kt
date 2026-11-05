@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -70,6 +71,22 @@ class EditorControllerTest {
         runBlocking { controller.removeClosedTabs().join() }
 
         assertNotNull(controller.getTab(id))
+    }
+
+    // перенос вкладок из правой половины в левую сохраняет их в репозитории
+    @Test
+    fun rightToLeftHalfKeepsTabsInRepository() {
+        val id = openFile("a.asm")
+        onUi {
+            controller.leftTabs.closeTab(id)
+            controller.rightTabs.activateTab(id)
+        }
+
+        onUi { controller.rightToLeftHalf() }
+
+        assertEquals(listOf(id), rep.leftTabs.value)
+        assertEquals(emptyList(), rep.rightTabs.value)
+        assertEquals(id, rep.leftActive.value)
     }
 
     // при открытии проекта закрытые вкладки из конфига не загружаются и уходят из конфига
