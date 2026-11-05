@@ -1,10 +1,12 @@
 package non.era.aisdme.di
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.staticCompositionLocalOf
 import non.era.aisdme.configs.ConfigController
+import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.files.work.FilesController
+import non.era.aisdme.settings.ThemeController
 import non.era.aisdme.ui.components.dialogs.elements.DialogsController
 import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.errors.GlobalMessages
@@ -30,10 +32,9 @@ class AppController(
     startGlobalConfig: AppConfig?,
     val winState: WindowState
 )  { //корень композиции: контроллеры, их связи, открытие проекта и dispose
+    val themeController = ThemeController(startGlobalConfig?.isDarkTheme ?: false, GlobalConfig.store)
     val messages = GlobalMessages()
     val treeActions = TreeActions(projectController.treeState, editorController, filesController)
-
-    var isDarkTheme by mutableStateOf(startGlobalConfig?.isDarkTheme ?: false)
 
     init {
         messages.collectFrom(
@@ -44,6 +45,7 @@ class AppController(
             reloadWatcher,
             configController,
             dialogController,
+            themeController,
         )
         projectController.treeState.onDirsLoaded = reloadWatcher::dirsLoaded //напрямую: шина может потерять событие
     }
@@ -65,5 +67,6 @@ class AppController(
         reloadWatcher.dispose()
         configController.dispose()
         dialogController.dispose()
+        themeController.dispose()
     }
 }

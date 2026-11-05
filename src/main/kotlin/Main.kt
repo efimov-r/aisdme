@@ -12,8 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.launch
-import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.di.buildAppController
@@ -57,7 +55,7 @@ fun main() = application {
         CompositionLocalProvider(
             LocalAppController provides appController
         ) {
-            AisDmeTheme(appController.isDarkTheme) {
+            AisDmeTheme(appController.themeController.isDarkTheme) {
                 configProjectStart?.let { AisDmeContent(it) } //до загрузки конфига — пустое окно
                 DialogsStarter(activeDialog) { activeDialog = null }
                 TooltipStarter(appController.dialogController.tolltipState)
@@ -92,16 +90,9 @@ fun AisDmeContent(configProjectStart: ProjectConfig?) {
                 Box(Modifier.fillMaxSize().panel())
             })
         Box(Modifier.fillMaxHeight().width(60.dp).padding(start = 6.dp).panel().padding(AisDmeSpacing.s)) {
-            val scope = rememberCoroutineScope()
-            IconButton(onClick = {
-                val new = !app.isDarkTheme
-                app.isDarkTheme = new
-                scope.launch {
-                    GlobalConfig.store.update { it.copy(isDarkTheme = new) }
-                }
-            }) {
+            IconButton(onClick = { app.themeController.toggle() }) {
                 Icon(
-                    imageVector = if (app.isDarkTheme)
+                    imageVector = if (app.themeController.isDarkTheme)
                         Icons.Default.Email
                     else
                         Icons.Default.DateRange,
