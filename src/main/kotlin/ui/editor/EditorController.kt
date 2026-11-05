@@ -19,7 +19,7 @@ import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
-import non.era.aisdme.ui.win.WindowState
+import non.era.aisdme.ui.project.CurrentProject
 import java.nio.file.Path
 
 enum class Panels{
@@ -29,7 +29,7 @@ enum class Panels{
 class EditorController(
     private val bus: AppEventBus,
     private val rep: EditorStateRepository,
-    private val winState: WindowState,
+    private val currentProject: CurrentProject,
 ) : UiController() {
     private val _tabsCash = mutableStateMapOf<Int, TabCash>() //state: getTab читается в derivedStateOf
     private val removeMutex = Mutex()
@@ -111,7 +111,7 @@ class EditorController(
         snapshot?.let { snap ->
             val open = snap.leftTabs + snap.rightTabs
             snap.files.forEach { id, snapshotTab ->
-                val tabState = tabFactory.createTabFromSnapshot(id, snapshotTab, scope, winState)
+                val tabState = tabFactory.createTabFromSnapshot(id, snapshotTab, scope, currentProject)
                     ?: return@forEach
                 if(id in open) {
                     _tabsCash[id] = tabState
@@ -150,7 +150,7 @@ class EditorController(
     }
 
     fun addFromCpipboardTab() : Int { //создание таба из ui
-        val tab = tabFactory.createPasteTab(scope, winState)
+        val tab = tabFactory.createPasteTab(scope, currentProject)
         tabToCash(tab)
         return tab.id
     }

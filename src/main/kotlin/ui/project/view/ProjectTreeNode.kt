@@ -97,7 +97,7 @@ fun ProjectTreeNode(
                     softWrap = false,
                 )
 
-                val rootProj = app.winState.projectRoot
+                val rootProj = app.currentProject.root
                 if(node.depth == 0 && rootProj != null) {
                     Spacer(Modifier.width(6.dp))
                     Text(

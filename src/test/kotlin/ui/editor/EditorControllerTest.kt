@@ -16,7 +16,7 @@ import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 import non.era.aisdme.ui.editor.halfviewmodel.WriteStatus
 import non.era.aisdme.ui.project.data.FileNode
-import non.era.aisdme.ui.win.WindowState
+import non.era.aisdme.ui.project.CurrentProject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -33,7 +33,7 @@ class EditorControllerTest {
 
     private val rep = EditorStateRepository()
     private val bus = AppEventBus()
-    private val controller = EditorController(bus, rep, WindowState())
+    private val controller = EditorController(bus, rep, CurrentProject())
 
     @AfterEach
     fun dispose() = controller.dispose()
@@ -161,7 +161,7 @@ class EditorControllerTest {
     // нумерация вкладок у каждого контроллера своя: первая вкладка второго — тоже 0
     @Test
     fun tabIdsIndependentPerController() {
-        val other = EditorController(AppEventBus(), EditorStateRepository(), WindowState())
+        val other = EditorController(AppEventBus(), EditorStateRepository(), CurrentProject())
         try {
             val file = File(dir, "b.asm").apply { writeText("b") }
             onUi {

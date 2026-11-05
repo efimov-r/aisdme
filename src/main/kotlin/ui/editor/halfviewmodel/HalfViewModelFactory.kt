@@ -6,7 +6,7 @@ import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileImg
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
-import non.era.aisdme.ui.win.WindowState
+import non.era.aisdme.ui.project.CurrentProject
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -17,8 +17,8 @@ class HalfViewModelFactory { //своя у каждого EditorController: ну
         nextTabId.set(0)
     }
 
-    fun createPasteTab(extScope: CoroutineScope, winState: WindowState) =
-        TabCashPaste(nextTabId.getAndIncrement(), extScope, winState)
+    fun createPasteTab(extScope: CoroutineScope, currentProject: CurrentProject) =
+        TabCashPaste(nextTabId.getAndIncrement(), extScope, currentProject)
 
 
     fun createFileTab(file: File, extScope: CoroutineScope): TabCash {
@@ -40,38 +40,33 @@ class HalfViewModelFactory { //своя у каждого EditorController: ну
         id: Int,
         snap: SnapshotTabCash,
         extScope: CoroutineScope,
-        winState: WindowState
+        currentProject: CurrentProject,
     ): TabCash? {
         if(id >= nextTabId.get()){
             nextTabId.set(id+1)
         }
-        when(snap.type) {
-            TypeFile.PASTE_TAB -> {
-                return TabCashPaste(
+        val file = snap.pathStr?.let { File(it) }
+        return when(snap.type) {
+            TypeFile.PASTE_TAB -> TabCashPaste(
+                id = id,
+                extScope = extScope,
+                currentProject = currentProject,
+            )
+            TypeFile.TEXT_FILE -> file?.let {
+                TabCashFileText(
                     id = id,
+                    file = it,
                     extScope = extScope,
-                    winState = winState
                 )
             }
-            TypeFile.TEXT_FILE -> {
-                return snap.pathStr?.let { pathStr ->
-                    TabCashFileText(
-                        id = id,
-                        file = File(pathStr),
-                        extScope = extScope
-                    )
-                }
+            TypeFile.IMG_FILE -> file?.let {
+                TabCashFileImg(
+                    id = id,
+                    file = it,
+                    extScope = extScope,
+                )
             }
-            TypeFile.IMG_FILE -> {
-                return snap.pathStr?.let { pathStr ->
-                    TabCashFileImg(
-                        id = id,
-                        file = File(pathStr),
-                        extScope = extScope
-                    )
-                }
-            }
-            null -> return null
+            null -> null
         }
     }
 }

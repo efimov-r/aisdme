@@ -10,7 +10,6 @@ import non.era.aisdme.ui.editor.EditorController
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 import non.era.aisdme.ui.project.data.DirNode
-import non.era.aisdme.ui.win.WindowState
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -36,7 +35,7 @@ class TreeActionsTest {
     }
 
     private val treeState = ProjectTreeState()
-    private val editor = EditorController(AppEventBus(), EditorStateRepository(), WindowState())
+    private val editor = EditorController(AppEventBus(), EditorStateRepository(), CurrentProject())
     private val files = FakeFiles()
     private val actions = TreeActions(treeState, editor, files)
 
