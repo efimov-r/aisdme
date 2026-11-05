@@ -10,6 +10,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.RebuilDirRiff
+import non.era.aisdme.platform.Platform
 import non.era.aisdme.ui.UiController
 import java.io.File
 import java.nio.file.*
@@ -19,6 +20,11 @@ class TreeReloadWatcher(
 ) : UiController() {
 
     private val watchService = FileSystems.getDefault().newWatchService()
+    private val watchKinds = arrayOf<WatchEvent.Kind<*>>(
+        StandardWatchEventKinds.ENTRY_CREATE,
+        StandardWatchEventKinds.ENTRY_DELETE,
+        StandardWatchEventKinds.ENTRY_MODIFY,
+    )
     private val keysMutex = Mutex()
     private val keys = mutableSetOf<WatchKey>()
 
@@ -37,17 +43,19 @@ class TreeReloadWatcher(
 
             for (event in key.pollEvents()) {
                 val dir = key.watchable() as Path
-                val fullPath = dir.resolve(event.context() as Path)
+                val fullPath = (event.context() as? Path)?.let { dir.resolve(it) }
 
-                val parentDir = fullPath.parent?.toFile() ?: continue
+                val changedDir = fullPath?.parent?.toFile() ?: dir.toFile() //OVERFLOW без пути — перечитать всю папку ключа
 
                 pendingMutex.withLock {
-                    pendingDirs += parentDir
+                    pendingDirs += changedDir
                 }
 
                 launch { applyBatch() }
 
                 if (
+                    fullPath != null &&
+                    !Platform.current.watchSubtree &&
                     event.kind() == StandardWatchEventKinds.ENTRY_CREATE &&
                     Files.isDirectory(fullPath)
                 ) {
@@ -73,7 +81,14 @@ class TreeReloadWatcher(
 
             pendingMutex.withLock { pendingDirs.clear() }
 
-            registerRecursively(root)
+            if (Platform.current.watchSubtree) register(root) else registerRecursively(root)
+        }
+    }
+
+    private suspend fun register(dir: Path) {
+        runCatching {
+            val key = Platform.current.registerWatch(dir, watchService, watchKinds)
+            keysMutex.withLock { keys += key }
         }
     }
 
@@ -82,17 +97,7 @@ class TreeReloadWatcher(
             val dirs = stream.filter { Files.isDirectory(it) && !Files.isSymbolicLink(it) }
                 .toList() // materialize list
             dirs.map { dir ->
-                launch {
-                    runCatching {
-                        val key = dir.register(
-                            watchService,
-                            StandardWatchEventKinds.ENTRY_CREATE,
-                            StandardWatchEventKinds.ENTRY_DELETE,
-                            StandardWatchEventKinds.ENTRY_MODIFY
-                        )
-                        keysMutex.withLock { keys += key }
-                    }
-                }
+                launch { register(dir) }
             }.joinAll()
         }
     }
