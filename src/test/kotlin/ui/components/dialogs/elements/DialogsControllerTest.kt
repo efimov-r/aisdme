@@ -1,11 +1,9 @@
 package non.era.aisdme.ui.components.dialogs.elements
 
 import androidx.compose.ui.geometry.Offset
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import non.era.aisdme.ui.components.dialogs.TypeNew
@@ -27,8 +25,7 @@ class DialogsControllerTest {
     private val errors = CopyOnWriteArrayList<GlobalMessage>() //пишется на ui-потоке
 
     init {
-        controller.subscriptionError { errors += it }
-        runBlocking(Dispatchers.Swing) {} //подписка запускается на ui-потоке: дождаться её
+        controller.subscribeMessages { errors += it }
     }
 
     @AfterEach

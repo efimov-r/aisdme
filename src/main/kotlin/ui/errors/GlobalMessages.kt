@@ -8,7 +8,7 @@ class GlobalMessages { //сообщения всех контроллеров д
     val list: List<GlobalMessage> get() = _list
 
     fun collectFrom(vararg controllers: UiController) = controllers.forEach { c ->
-        c.subscriptionError { add(it) }
+        c.subscribeMessages { add(it) }
     }
 
     fun add(mess: GlobalMessage) { _list += mess }

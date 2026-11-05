@@ -1,9 +1,7 @@
 package non.era.aisdme.files.work
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withTimeout
 import non.era.aisdme.bus.AppEvent
 import non.era.aisdme.bus.AppEventBus
@@ -28,8 +26,7 @@ class FilesControllerTest {
     private val errors = CopyOnWriteArrayList<GlobalMessage>() //пишется на ui-потоке
 
     init {
-        controller.subscriptionError { errors += it }
-        runBlocking(Dispatchers.Swing) {} //подписка запускается на ui-потоке: дождаться её
+        controller.subscribeMessages { errors += it }
     }
 
     @AfterEach

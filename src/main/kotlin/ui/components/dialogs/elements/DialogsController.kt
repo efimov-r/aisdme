@@ -22,14 +22,6 @@ sealed interface UiDialog { //узлы берутся при запросе: д�
     data class ShowMoveDialog(val src: List<ProjectNode>, val target: File) : UiDialog
 }
 
-sealed interface GlobalMessageReq {
-    data class ShowGlobalInfo(val title: String, val text: String): GlobalMessageReq
-    data class ShowGlobalQuestion(val title: String, val text: String): GlobalMessageReq
-    data class ShowGlobalSuccess(val title: String, val text: String): GlobalMessageReq
-    data class ShowGlobalWarning(val title: String, val text: String): GlobalMessageReq
-    data class ShowGlobalError(val text: String): GlobalMessageReq
-}
-
 data class TolltipState ( //неизменяемый: меняется только заменой целиком, иначе Compose не увидит
     val show: Boolean = false,
     val text: String = "",
@@ -101,17 +93,5 @@ class DialogsController(
 
     private fun error(text: String) {
         scope.launch { newGlobalError(text) }
-    }
-
-    fun requestGlobalMessage(mess: GlobalMessageReq) {
-        scope.launch {
-            when (mess) {
-                is GlobalMessageReq.ShowGlobalInfo -> newGlobalInfo(mess.title, mess.text)
-                is GlobalMessageReq.ShowGlobalQuestion -> newGlobalQuestion(mess.title, mess.text)
-                is GlobalMessageReq.ShowGlobalSuccess -> newGlobalSuccess(mess.title, mess.text)
-                is GlobalMessageReq.ShowGlobalWarning -> newGlobalWarning(mess.title, mess.text)
-                is GlobalMessageReq.ShowGlobalError -> newGlobalError(mess.text)
-            }
-        }
     }
 }

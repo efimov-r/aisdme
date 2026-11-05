@@ -24,13 +24,13 @@ class GlobalMessagesTest {
 
     private fun onUi(block: () -> Unit) = runBlocking(Dispatchers.Swing) { block() }
 
-    // ошибка из контроллера попадает в список
+    // ошибка, отправленная сразу после подписки, без ожидания ui-потока, попадает в список
     @Test
-    fun errorFromControllerAdded() {
-        messages.collectFrom(source)
-        onUi {} //подписка запускается на ui-потоке: дождаться её
-
-        source.fail("boom")
+    fun errorRightAfterSubscribeAdded() {
+        onUi { //ui-поток занят, пока сообщение уходит: подписка не должна его ждать
+            messages.collectFrom(source)
+            runBlocking { source.fail("boom").join() }
+        }
 
         runBlocking { withTimeout(5000) { while (messages.list.isEmpty()) delay(10) } }
         assertEquals("boom", messages.list.single().text)
