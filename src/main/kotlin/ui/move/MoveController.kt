@@ -10,8 +10,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable.isActive
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
@@ -133,13 +134,18 @@ class MoveController : UiController() {
         }
     }
 
+    internal fun isAutoScrolling() = _autoScrollJob?.isActive == true
+
     private suspend fun autoScrollLoop(dir: Int) {
         val state = _scrollState ?: return
 
-        while (isActive) {
-            withContext(Dispatchers.Swing) {
-                state.scrollBy(dir * 5f) // скорость
+        while (currentCoroutineContext().isActive) {
+            val scrolled = withContext(Dispatchers.Swing) {
+                val canScroll = if (dir > 0) state.canScrollForward else state.canScrollBackward
+                if (canScroll) state.scrollBy(dir * 5f) // скорость
+                canScroll
             }
+            if (!scrolled) break //дошли до конца списка
             delay(16) // ~60 FPS
         }
     }

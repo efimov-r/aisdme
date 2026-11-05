@@ -60,7 +60,6 @@ class AppController(
     fun openSelectedNodesInEditor(panel: Panels) = editorController.openNodes(projectController.treeState.getSelectedNodes(), panel)
     fun createFileInSelected(name: String) = filesController.createFile(projectController.treeState.getSelectedNodes(), name)
     fun createDirectoryInSelected(name: String) = filesController.createDirectory(projectController.treeState.getSelectedNodes(), name)
-    fun deleteSelected() = filesController.delete(projectController.treeState.getSelectedNodes())
     fun showSelectedInFileManager() = projectController.treeState.getSelectedNodes()
         .map { it.getFile() }
         .filter { it.exists() }

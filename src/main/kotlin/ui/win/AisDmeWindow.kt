@@ -71,7 +71,7 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
             state.lastProject,
             content)
     } else {
-        SplashWindow {
+        SplashWindow(onCloseRequest) {
             if (state is AppStartState.ChooseProject) {
                 LaunchedEffect(state) {
                     val dir = ProjectChooserHelper.chooseProjectDir(window)
@@ -102,47 +102,44 @@ fun MainWindow(globalConf: AppConfig,
 }
 
 @Composable
-fun SplashWindow(content: @Composable FrameWindowScope.() -> Unit = {}) {
-    var isOpen by remember { mutableStateOf(true) }
-
-    if(isOpen) {
-        Window(
-            onCloseRequest = { isOpen = false },
-            title = "Loading",
-            undecorated = true,          // убираем рамку ОС
-            transparent = false,         // true только если нужна альфа
-            resizable = false,
-            state = rememberWindowState(
-                size = DpSize(500.dp, 500.dp),
-                position = WindowPosition(Alignment.Center)
+fun SplashWindow(onCloseRequest: () -> Unit, //закрыть заставку — выйти, иначе загрузка откроет главное окно
+                 content: @Composable FrameWindowScope.() -> Unit = {}) {
+    Window(
+        onCloseRequest = onCloseRequest,
+        title = "Loading",
+        undecorated = true,          // убираем рамку ОС
+        transparent = false,         // true только если нужна альфа
+        resizable = false,
+        state = rememberWindowState(
+            size = DpSize(500.dp, 500.dp),
+            position = WindowPosition(Alignment.Center)
+        )
+    ) {
+        Box {
+            Image(
+                painter = painterResource("logos/AisDme_big.png"),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
-        ) {
-            Box {
-                Image(
-                    painter = painterResource("logos/AisDme_big.png"),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(all = 8.dp)
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xAA000000))
-                        .clickable { isOpen = false },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        "✕",
-                        color = Color.White,
-                        fontSize = 16.sp
-                    )
-                }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(all = 8.dp)
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xAA000000))
+                    .clickable { onCloseRequest() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "✕",
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
             }
-            content()
         }
+        content()
     }
 }

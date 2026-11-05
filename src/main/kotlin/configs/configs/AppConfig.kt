@@ -14,7 +14,4 @@ data class AppConfig(
     val isDarkTheme: Boolean = false,
 
     val lastOpenProject: String? = null,
-
-    val recentProjects: List<String> = emptyList(),
-    val theme: String = "dark"
 )
