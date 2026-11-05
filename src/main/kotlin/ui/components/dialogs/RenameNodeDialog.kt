@@ -10,18 +10,13 @@ import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.files.work.FilesExecutor
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.dialogs.elements.FileNameValidator.validateFileName
-import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
 import non.era.aisdme.ui.components.over.ErrorableTextField
+import non.era.aisdme.ui.project.data.ProjectNode
 import java.nio.file.Path
 
 @Composable
-fun RenameNodeDialog(onDismiss: () -> Unit) {
+fun RenameNodeDialog(node: ProjectNode, onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val node = app.projectController.treeState.getSelectedNodes().singleOrNull() ?: run {
-        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Multi rename"))
-        onDismiss()
-        return
-    }
     val src = node.getFile()
     val startFileName = src.toPath().fileName.toString()
 

@@ -91,11 +91,12 @@ object ProjectTreeHelper {
         return null
     }
 
-    fun findSelectedNodes(nodes: List<ProjectNode>): List<ProjectNode> {
+    fun findSelectedNodes(nodes: List<ProjectNode>, selection: TreeSelection): List<ProjectNode> {
+        if(selection.isEmpty()) return emptyList()
         val result: MutableList<ProjectNode> = mutableListOf()
         for (node in nodes) {
-            if(node.isSelected()) result.add(node)
-            if (node is DirNode) result.addAll(findSelectedNodes(node.children))
+            if(selection.isSelected(node)) result.add(node)
+            if (node is DirNode) result.addAll(findSelectedNodes(node.children, selection))
         }
         return result
     }
@@ -113,7 +114,7 @@ object ProjectTreeHelper {
         for (newNode in fresh) {
             val oldNode = old[newNode.getFilePath()]
             when {
-                oldNode == null -> result += newNode.also { it.isCutted = node.isCutted }
+                oldNode == null -> result += newNode
 
                 oldNode::class != newNode::class ->  result += newNode
 
@@ -141,15 +142,16 @@ object ProjectTreeHelper {
 
     fun selectFileInTree(
         nodes: List<ProjectNode>,
-        target: File
+        target: File,
+        selection: TreeSelection,
     ): Boolean {
         val path = mutableListOf<ProjectNode>()
 
         if ( !nodes.any { findPath(it, target.toPath(), path) } ) return false
 
         path.forEach { if (it is DirNode) it.expanded = true }
-        ProjectTreeHelper.findSelectedNodes(nodes).forEach { it.setSelected(false) }
-        path.last().setSelected(true)
+        selection.clear()
+        selection.set(path.last(), true)
         return true
     }
 

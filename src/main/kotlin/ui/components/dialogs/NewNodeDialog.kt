@@ -9,6 +9,7 @@ import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.dialogs.elements.FileNameValidator.validateFileName
 import non.era.aisdme.ui.components.over.ErrorableTextField
+import java.nio.file.Path
 
 enum class TypeNew {
     FILE, DIRECTORY
@@ -17,6 +18,7 @@ enum class TypeNew {
 @Composable
 fun NewNodeDialog(
     typeNew: TypeNew,
+    dir: Path,
     onDismiss: () -> Unit
 ) {
     val app = LocalAppController.current
@@ -25,7 +27,7 @@ fun NewNodeDialog(
             FileNodeDialog(
                 title = "Create new File",
                 placeholder = "filename",
-                onConfirm = { app.createFileInSelected(it) },
+                onConfirm = { app.filesController.createFile(dir, it) },
                 onDismiss = onDismiss
             )
         }
@@ -34,7 +36,7 @@ fun NewNodeDialog(
             FileNodeDialog(
                 title = "Create new Directory",
                 placeholder = "name directory",
-                onConfirm = { app.createDirectoryInSelected(it) },
+                onConfirm = { app.filesController.createDirectory(dir, it) },
                 onDismiss = onDismiss
             )
         }

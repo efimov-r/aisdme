@@ -7,7 +7,8 @@
 ## Решённые
 
 <!-- - YYYY-MM-DD — что было — как решили -->
-- 2026-11-05 — остаток разбора кода [#26](https://github.com/efimov-r/aisdme/issues/26): потоки, watcher, мелочи, автоскролл [#3](https://github.com/efimov-r/aisdme/issues/3) — ветка `issue-26-threads-watcher-perf`; по пунктам — в коммитах ветки и в issue
+- 2026-11-06 — при вырезании нескольких узлов серым помечался только последний: `cutNoteMarkRecursive` на каждый узел снимал все прошлые пометки ([#27](https://github.com/efimov-r/aisdme/issues/27)). Вырезанные — список файлов в `ProjectTreeState` (`markCut`, `isCut`)
+- 2026-11-05 — остаток разбора кода [#26](https://github.com/efimov-r/aisdme/issues/26): потоки, watcher, мелочи, автоскролл [#3](https://github.com/efimov-r/aisdme/issues/3) — PR [#34](https://github.com/efimov-r/aisdme/pull/34); по пунктам — в issue
 - 2026-11-05 — конфиги и состояние редактора (#26): снимки уходили в конфиг другого проекта, вкладка с ошибкой отменяла сохранение, закрытые вкладки оставались в кэше — PR #33
 - 2026-11-05 — при выходе текст вкладки писался в файл без проверки: незагруженный файл затирался пустой строкой, бинарный портился (#26). `TabCashFileText.disposeBeforeBlocked` пишет только при `WRITABLE` / `NOT_SAVE` и изменённом тексте; в `saveNow` текст берётся один раз
 - 2026-11-05 — rename / move / paste молча заменяли существующие файлы (#26). Без `REPLACE_EXISTING`; `paste` проверяет конфликты до начала; диалоги показывают «Already exists» (`FilesExecutor.isTargetTaken`, `findTakenTarget`)

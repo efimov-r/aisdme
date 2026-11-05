@@ -83,7 +83,55 @@ class ProjectTreeStateTest {
 
         val inner = child(child(root(), "src") as DirNode, "inner") as DirNode
         assertTrue(inner.expanded)
-        assertTrue(child(inner, "main.asm").isSelected())
+        assertTrue(state.selection.isSelected(child(inner, "main.asm")))
+    }
+
+    // выделение — по файлу: переживает перестройку дерева с новыми узлами
+    @Test
+    fun selectionSurvivesTreeRebuild() {
+        File(dir, "src").mkdir()
+        open()
+        val oldRoot = root()
+        state.reselectNode(child(oldRoot, "src"))
+
+        runBlocking { state.rebuildDirDiff(dir.parentFile) {} } //папки нет в дереве: дерево строится заново
+
+        assertTrue(oldRoot !== root())
+        assertEquals(listOf(File(dir, "src")), state.getSelectedNodes().map { it.getFile() })
+    }
+
+    // удалённый файл уходит из выделения: созданный заново с тем же именем не выделен
+    @Test
+    fun deletedFileLeavesSelection() {
+        val file = File(dir, "a.asm").apply { writeText("") }
+        open()
+        state.reselectNode(child(root(), "a.asm"))
+
+        file.delete()
+        runBlocking { state.rebuildDirDiff(dir) {} }
+        file.writeText("")
+        runBlocking { state.rebuildDirDiff(dir) {} }
+
+        assertEquals(emptyList(), state.getSelectedNodes())
+    }
+
+    // вырезание нескольких узлов помечает все и их содержимое, в том числе прочитанное позже
+    @Test
+    fun cutMarksAllNodesAndLaterLoadedChildren() {
+        File(dir, "src").mkdir()
+        File(dir, "src/main.asm").writeText("")
+        File(dir, "b.asm").writeText("")
+        File(dir, "c.asm").writeText("")
+        open()
+        val src = child(root(), "src") as DirNode
+
+        state.markCut(listOf(src, child(root(), "b.asm")))
+        runBlocking { state.loadChildren(src) }
+
+        assertTrue(state.isCut(src))
+        assertTrue(state.isCut(child(src, "main.asm")))
+        assertTrue(state.isCut(child(root(), "b.asm")))
+        assertFalse(state.isCut(child(root(), "c.asm")))
     }
 
     // о прочитанных папках узнаёт watcher: при открытии — корень, при чтении — сама папка

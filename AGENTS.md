@@ -39,7 +39,7 @@ gradlew koverLog          # текущее покрытие; koverHtmlReport —
 Один Gradle-модуль, пакет `non.era.aisdme`, код в `src/main/kotlin/`. Пакет не везде совпадает с папкой: [docs/ai/gotchas.md](docs/ai/gotchas.md).
 
 - `Main.kt` — `main()`, корневой Compose-экран `AisDmeContent`
-- `di/` — `AppController` (фасад над всеми контроллерами, доступен через `LocalAppController`) и `AppControllerBuilder`, где контроллеры собираются вручную
+- `di/` — `AppController`: корень композиции, сам создаёт и связывает контроллеры, доступен через `LocalAppController`; `buildAppController` — `remember` над ним
 - `bus/` — `AppEventBus` на `MutableSharedFlow`: события между контроллерами
 - `configs/` — `ConfigController`, `GlobalConfig`, `store/` (`ConfigStore`, `ConfigPaths`), `configs/` (`AppConfig`, `ProjectConfig`), `snapshots/` (сохранённое состояние редактора и дерева), `repositories/`
 - `files/` — `TypeFile`, `work/`: `FilesController`, `FilesExecutor`, `FileTransferable` (буфер обмена)

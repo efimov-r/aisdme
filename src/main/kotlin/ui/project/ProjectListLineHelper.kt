@@ -2,8 +2,6 @@ package non.era.aisdme.ui.project
 
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.ProjectNode
-import kotlin.math.max
-import kotlin.math.min
 
 object ProjectListLineHelper {
 
@@ -36,10 +34,10 @@ object ProjectListLineHelper {
         return linear.getOrNull(i + 1) ?: node
     }
 
-    fun next(nodes: List<ProjectNode>, selected: List<ProjectNode>) {
+    fun next(nodes: List<ProjectNode>, selected: List<ProjectNode>, selection: TreeSelection) {
         val r = getNextNodeOf(buildLinearExpandedNodes(nodes), selected.last())
-        selected.forEach { it.setSelected(false) }
-        r.setSelected(true)
+        selection.clear()
+        selection.set(r, true)
     }
 
     private fun getLastNodeOf(linear: List<ProjectNode>, node: ProjectNode) : ProjectNode {
@@ -47,10 +45,10 @@ object ProjectListLineHelper {
         return linear.getOrNull(i - 1) ?: node
     }
 
-    fun last(nodes: List<ProjectNode>, selected: List<ProjectNode>) {
+    fun last(nodes: List<ProjectNode>, selected: List<ProjectNode>, selection: TreeSelection) {
         val r = getLastNodeOf(buildLinearExpandedNodes(nodes), selected.first())
-        selected.forEach { it.setSelected(false) }
-        r.setSelected(true)
+        selection.clear()
+        selection.set(r, true)
     }
 
     private fun listPositionSelectedNodes(linear: List<ProjectNode>, selected: List<ProjectNode>): List<Int> =
@@ -63,70 +61,52 @@ object ProjectListLineHelper {
             return@mapNotNull null
         }
 
-    fun fromAndTo(nodes: List<ProjectNode>, selected: List<ProjectNode>, to: ProjectNode) {
+    fun fromAndTo(nodes: List<ProjectNode>, selected: List<ProjectNode>, to: ProjectNode, selection: TreeSelection) {
         val linear = buildLinearExpandedNodes(nodes)
-        val indexToObj = linear.withIndex().firstOrNull { it.value.equalsOf(to) }?.index ?: return
+        val indexToObj = linear.indexOfFirst { it.equalsOf(to) }
+        if(indexToObj == -1) return
 
-        val l = listPositionSelectedNodes(linear, selected)
-
-        val maxSelected = l.maxOrNull() ?: run{
-            to.setSelected(true)
-            return
-        }
-        val minSelected = l.minOrNull() ?: run{
-            to.setSelected(true)
-            return
-        }
-
-        val max = max(maxSelected, indexToObj)
-        val min = min(minSelected, indexToObj)
-
-        linear.slice(min..max).forEach {
-            it.setSelected(true)
+        val l = listPositionSelectedNodes(linear, selected) + indexToObj //ничего не выделено — только to
+        linear.slice(l.min()..l.max()).forEach {
+            selection.set(it, true)
         }
     }
 
-    fun shiftTop(nodes: List<ProjectNode>, selected: List<ProjectNode>, firstMovement: Movement?) {
+    fun shiftTop(
+        nodes: List<ProjectNode>,
+        selected: List<ProjectNode>,
+        firstMovement: Movement?,
+        selection: TreeSelection,
+    ) {
         if(selected.isEmpty()) return
 
         val linear = buildLinearExpandedNodes(nodes)
-        if(selected.size == 1) {
-            getLastNodeOf(linear, selected[0]).setSelected(true)
-        } else {
-            if(firstMovement == null) return
-
-            when(firstMovement){
-                Movement.TOP -> {
-                    val minSelected = listPositionSelectedNodes(linear, selected).minOrNull() ?: return
-                    getLastNodeOf(linear, linear[minSelected]).setSelected(true)
-                }
-                Movement.BOTTOM -> {
-                    val maxSelected = listPositionSelectedNodes(linear, selected).maxOrNull() ?: return
-                    linear[maxSelected].setSelected(false)
-                }
-            }
+        val positions = listPositionSelectedNodes(linear, selected)
+        when {
+            selected.size == 1 -> selection.set(getLastNodeOf(linear, selected[0]), true)
+            firstMovement == Movement.TOP ->
+                positions.minOrNull()?.let { selection.set(getLastNodeOf(linear, linear[it]), true) }
+            firstMovement == Movement.BOTTOM ->
+                positions.maxOrNull()?.let { selection.set(linear[it], false) }
         }
     }
 
-    fun shiftBottom(nodes: List<ProjectNode>, selected: List<ProjectNode>, firstMovement: Movement?) {
+    fun shiftBottom(
+        nodes: List<ProjectNode>,
+        selected: List<ProjectNode>,
+        firstMovement: Movement?,
+        selection: TreeSelection,
+    ) {
         if(selected.isEmpty()) return
 
         val linear = buildLinearExpandedNodes(nodes)
-        if(selected.size == 1) {
-            getNextNodeOf(linear, selected[0]).setSelected(true)
-        } else {
-            if(firstMovement == null) return
-
-            when(firstMovement){
-                Movement.TOP -> {
-                    val minSelected = listPositionSelectedNodes(linear, selected).minOrNull() ?: return
-                    linear[minSelected].setSelected(false)
-                }
-                Movement.BOTTOM -> {
-                    val maxSelected = listPositionSelectedNodes(linear, selected).maxOrNull() ?: return
-                    getNextNodeOf(linear, linear[maxSelected]).setSelected(true)
-                }
-            }
+        val positions = listPositionSelectedNodes(linear, selected)
+        when {
+            selected.size == 1 -> selection.set(getNextNodeOf(linear, selected[0]), true)
+            firstMovement == Movement.TOP ->
+                positions.minOrNull()?.let { selection.set(linear[it], false) }
+            firstMovement == Movement.BOTTOM ->
+                positions.maxOrNull()?.let { selection.set(getNextNodeOf(linear, linear[it]), true) }
         }
     }
 }

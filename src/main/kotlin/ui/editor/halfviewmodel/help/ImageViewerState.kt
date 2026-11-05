@@ -20,9 +20,6 @@ class ImageViewerState(
     var offsetY by mutableStateOf(offsetYInit)
     var viewportSize by mutableStateOf(viewportSizeInit)
 
-    fun copy() =
-        ImageViewerState( scale, offsetX, offsetY, viewportSize)
-
     fun handleZoom(change: PointerInputChange, scroll: Offset) {
         val zoomFactor = if (scroll.y < 0) 1.1f else 0.9f
         val mouse = change.position

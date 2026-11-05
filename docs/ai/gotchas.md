@@ -2,6 +2,16 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## Тест читает половину редактора до отложенного объединения
+- **Что случилось:** `TreeActionsTest.openSelectedInRightHalf` прошёл на Windows и упал в CI на Linux: `NullPointerException` на `rightTabs.activeTabId!!` (PR [#37](https://github.com/efimov-r/aisdme/pull/37))
+- **Причина:** левая половина была пустой, файл открывался справа; `mergeHalvesLater` ставит перенос правой в левую в очередь ui-потока. На Linux очередь успевала отработать до чтения, на Windows — нет
+- **Как правильно:** после операции с половинами, перед чтением `leftTabs` / `rightTabs`, дождаться очереди: `runBlocking(Dispatchers.Swing) {}`. Правая половина остаётся правой, только если левая не пустая
+
+## Половины редактора нельзя объединять посреди операции
+- **Что случилось:** при переносе `rightToLeftHalf` из composition в контроллер объединение сначала делалось сразу, в `onChanged` закрытия вкладки. «Split and Move Other Half» терял вкладку
+- **Причина:** UI держит ссылки на половины и меняет их по очереди (`half.closeTab`, затем `oppositeHalf.activateTab`). После мгновенного объединения `oppositeHalf` — уже отвязанный объект; так же `closeTabs` не закрыл бы вкладку, открытую в обеих половинах
+- **Как правильно:** объединять после операции целиком — `mergeHalvesLater` через `Dispatchers.Swing`. Тест — `EditorControllerTest.splitAndMoveLastLeftTabKeepsTab`
+
 ## Тест класса, у которого пакет не совпадает с папкой
 - **Что случилось:** `SnapshotEditorTest` в `src/test/kotlin/configs/snapshots/` (как `SnapshotEditor`) уронил detekt: `InvalidPackageDeclaration`
 - **Причина:** у `SnapshotEditor` пакет `configs.dataclass.snapshots`; нарушение в `src/main` — в baseline, новые файлы detekt проверяет
@@ -69,8 +79,8 @@
 
 ## `derivedStateOf` не обновляется
 - **Что случилось:** при рекомпозиции состояние в `derivedStateOf` иногда не пересчитывалось
-- **Причина:** TODO: точная причина не записана. Частая причина в Compose — внутри `derivedStateOf` читается обычное поле, а не `State`: тогда пересчёта не будет
-- **Как правильно:** всё, от чего зависит `derivedStateOf`, держать в `mutableStateOf` или `mutableStateListOf`. Используется в `TabsBar.kt` и `ProjectTreeView.kt`
+- **Причина:** в `TabsBar` `derivedStateOf` читал обычные поля: `EditorController.leftTabs` / `rightTabs` (обычные `var`, `rightToLeftHalf` заменяет объекты) и кэш вкладок в `MutableMap` (`getTab`). Плюс `remember` без ключа `half` — после замены половины вычисление смотрело в список старой ([#27](https://github.com/efimov-r/aisdme/issues/27))
+- **Как правильно:** всё, от чего зависит `derivedStateOf`, держать в `mutableStateOf`, `mutableStateListOf`, `mutableStateMapOf`; параметры composable, которые читаются внутри, — ключи `remember(x)`. Тесты — `EditorControllerTest.derivedStateSees*`
 
 ## Различия Linux и Windows
 - **Что случилось:** буфер обмена, пути конфигов и открытие файла в файловом менеджере работают в ОС по-разному

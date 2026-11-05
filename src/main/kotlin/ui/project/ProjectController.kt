@@ -38,25 +38,23 @@ class ProjectController(
     val treeState = ProjectTreeState()
 
     init {
-        scope.launch {
-            bus.events.collect { event ->
-                when (event) {
-                    is RebuilDirRiff -> {
-                        scope.launch {
-                            treeState.rebuildDirDiff(event.dir) {
-                                scope.launch {
-                                    newGlobalError("The directory ${event.dir} was not found during the update.")
-                                }
+        bus.subscribe(scope) { event ->
+            when (event) {
+                is RebuilDirRiff -> {
+                    scope.launch {
+                        treeState.rebuildDirDiff(event.dir) {
+                            scope.launch {
+                                newGlobalError("The directory ${event.dir} was not found during the update.")
                             }
                         }
                     }
-                    is ShowFileInTree -> {
-                        scope.launch(Dispatchers.Swing) {
-                            treeState.showNode(event.file)
-                        }
-                    }
-                    else ->{}
                 }
+                is ShowFileInTree -> {
+                    scope.launch(Dispatchers.Swing) {
+                        treeState.showNode(event.file)
+                    }
+                }
+                else ->{}
             }
         }
         scope.launch(Dispatchers.Swing) {
@@ -94,19 +92,19 @@ class ProjectController(
         val selected = treeState.getSelectedNodes()
         when(typeMovement) {
             TypeMovementOnTree.TOP -> {
-                ProjectListLineHelper.last(treeState.getNodes(), selected)
+                ProjectListLineHelper.last(treeState.getNodes(), selected, treeState.selection)
             }
             TypeMovementOnTree.SHIFT_TOP -> {
                 if(firstMovement == null) firstMovement = Movement.TOP
-                ProjectListLineHelper.shiftTop(treeState.getNodes(), selected, firstMovement)
+                ProjectListLineHelper.shiftTop(treeState.getNodes(), selected, firstMovement, treeState.selection)
                 if(treeState.getSelectedNodes().size <= 1) firstMovement = null
             }
             TypeMovementOnTree.BOTTOM -> {
-                ProjectListLineHelper.next(treeState.getNodes(), selected)
+                ProjectListLineHelper.next(treeState.getNodes(), selected, treeState.selection)
             }
             TypeMovementOnTree.SHIFT_BOTTOM -> {
                 if(firstMovement == null) firstMovement = Movement.BOTTOM
-                ProjectListLineHelper.shiftBottom(treeState.getNodes(), selected, firstMovement)
+                ProjectListLineHelper.shiftBottom(treeState.getNodes(), selected, firstMovement, treeState.selection)
                 if(treeState.getSelectedNodes().size <= 1) firstMovement = null
             }
         }
@@ -149,11 +147,11 @@ class ProjectController(
             }
             TypeClickNode.CTRL_LMB -> {
                 nodeClicked = node
-                node.setSelected(!node.isSelected())
+                treeState.selection.set(node, !treeState.selection.isSelected(node))
             }
             TypeClickNode.SHIFT_LMB -> {
                 nodeClicked = node
-                ProjectListLineHelper.fromAndTo(treeState.getNodes(), selected, node)
+                ProjectListLineHelper.fromAndTo(treeState.getNodes(), selected, node, treeState.selection)
             }
             TypeClickNode.CHEVRON -> {
                 nodeClicked = node

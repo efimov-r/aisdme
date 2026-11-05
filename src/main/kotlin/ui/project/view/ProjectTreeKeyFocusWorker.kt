@@ -7,7 +7,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import non.era.aisdme.di.AppController
 import non.era.aisdme.settings.Hotkeys
-import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.TypeMovementOnTree
 import non.era.aisdme.ui.project.data.DirNode
@@ -27,17 +26,17 @@ private fun treeKeyFocusWork(
 ): Boolean {
     when {
         Hotkeys.COPY.ifDu(event) -> {
-            app.copySelectedToClipboard(false)
+            app.treeActions.copySelectedToClipboard(false)
             return true
         }
 
         Hotkeys.CUT.ifDu(event) -> {
-            app.copySelectedToClipboard(true)
+            app.treeActions.copySelectedToClipboard(true)
             return true
         }
 
         Hotkeys.PASTE.ifDu(event) -> {
-            app.dialogController.requestDialog(UiDialog.ShowPasteDialog)
+            app.dialogController.requestPasteDialog()
             return true
         }
 
@@ -52,7 +51,7 @@ private fun treeKeyFocusWork(
         }
 
         Hotkeys.SHOW_IN_FILE_MANAGER.ifDu(event) -> {
-            app.showSelectedInFileManager()
+            app.treeActions.showSelectedInFileManager()
             return true
         }
 
@@ -63,18 +62,18 @@ private fun treeKeyFocusWork(
                 return true
             }
             if(selected.size == 1 && selected[0] is FileNode) {
-                app.openSelectedNodesInEditor(Panels.LEFT)
+                app.treeActions.openSelectedInEditor(Panels.LEFT)
             }
             return true
         }
 
         Hotkeys.LEFT.ifDu(event) -> {
-            app.openSelectedNodesInEditor(Panels.LEFT)
+            app.treeActions.openSelectedInEditor(Panels.LEFT)
             return true
         }
 
         Hotkeys.RIGHT.ifDu(event) -> {
-            app.openSelectedNodesInEditor(Panels.RIGHT)
+            app.treeActions.openSelectedInEditor(Panels.RIGHT)
             return true
         }
 

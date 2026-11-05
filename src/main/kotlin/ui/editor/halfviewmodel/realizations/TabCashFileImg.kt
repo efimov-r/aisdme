@@ -31,8 +31,7 @@ class TabCashFileImg(
     private var _imgBitmap by mutableStateOf<ImageBitmap?>(null)
     val imgBitmap get() = _imgBitmap
 
-    var _imageViewerState: ImageViewerState = ImageViewerState()
-    val imageViewerState get() = _imageViewerState
+    val imageViewerState = ImageViewerState() //масштаб и сдвиг своей вкладки: сохраняются при переключении вкладок
 
     override suspend fun beforeRemove() {
     }

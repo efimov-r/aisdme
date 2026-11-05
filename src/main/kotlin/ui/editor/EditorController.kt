@@ -1,5 +1,9 @@
 package non.era.aisdme.ui.editor
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -15,7 +19,7 @@ import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.ProjectNode
-import non.era.aisdme.ui.win.WindowState
+import non.era.aisdme.ui.project.CurrentProject
 import java.nio.file.Path
 
 enum class Panels{
@@ -25,35 +29,36 @@ enum class Panels{
 class EditorController(
     private val bus: AppEventBus,
     private val rep: EditorStateRepository,
-    private val winState: WindowState,
+    private val currentProject: CurrentProject,
 ) : UiController() {
-    private var _tabsCash: MutableMap<Int, TabCash> = mutableMapOf()
+    private val _tabsCash = mutableStateMapOf<Int, TabCash>() //state: getTab читается в derivedStateOf
     private val removeMutex = Mutex()
+    private val tabFactory = HalfViewModelFactory()
 
     private val updateLeftTabs: (List<Int>) -> Unit = { rep.updateLeftTabs(it); removeClosedTabs() }
     private val updateRightTabs: (List<Int>) -> Unit = { rep.updateRightTabs(it); removeClosedTabs() }
     private val updateLeftActive: (Int?) -> Unit = { rep.updateLeftActiveTabs(it) }
     private val updateRightActive: (Int?) -> Unit = { rep.updateRightActiveTabs(it) }
 
-    var leftTabs = HalfEditorTabs( updateLeftTabs, updateLeftActive)
-    var rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
+    var leftTabs by mutableStateOf(HalfEditorTabs(updateLeftTabs, updateLeftActive, ::mergeHalvesLater))
+        private set //state: заменяется в rightToLeftHalf
+    var rightTabs by mutableStateOf(HalfEditorTabs(updateRightTabs, updateRightActive, ::mergeHalvesLater))
+        private set
 
     init {
-        scope.launch(Dispatchers.Swing) { //вкладки и _tabsCash меняются только на ui-потоке
-            bus.events.collect { event ->
-                when (event) {
-                    is FileOpened -> openNodes(listOf(event.node))
-                    is MoveFile -> {
-                        tabsInside(event.oldFile).forEach { tab -> //файл или папка с открытыми файлами внутри
-                            val path = tab.getFile().toPath()
-                            tab.refile(event.newFile.resolve(event.oldFile.relativize(path)).toFile())
-                        }
-                        saveToConfig()
+        bus.subscribe(scope, Dispatchers.Swing) { event -> //вкладки и _tabsCash меняются только на ui-потоке
+            when (event) {
+                is FileOpened -> openNodes(listOf(event.node))
+                is MoveFile -> {
+                    tabsInside(event.oldFile).forEach { tab -> //файл или папка с открытыми файлами внутри
+                        val path = tab.getFile().toPath()
+                        tab.refile(event.newFile.resolve(event.oldFile.relativize(path)).toFile())
                     }
-                    is DeleteFile -> closeTabs(tabsInside(event.file))
-                    is DeleteDir -> closeTabs(tabsInside(event.dir))
-                    else -> {}
+                    saveToConfig()
                 }
+                is DeleteFile -> closeTabs(tabsInside(event.file))
+                is DeleteDir -> closeTabs(tabsInside(event.dir))
+                else -> {}
             }
         }
     }
@@ -100,11 +105,11 @@ class EditorController(
         }
 
         _tabsCash.clear()
-        HalfViewModelFactory.clearNexTabId()
+        tabFactory.clearNexTabId()
         snapshot?.let { snap ->
             val open = snap.leftTabs + snap.rightTabs
             snap.files.forEach { id, snapshotTab ->
-                val tabState = HalfViewModelFactory.createTabFromSnapshot(id, snapshotTab, scope, winState)
+                val tabState = tabFactory.createTabFromSnapshot(id, snapshotTab, scope, currentProject)
                     ?: return@forEach
                 if(id in open) {
                     _tabsCash[id] = tabState
@@ -118,6 +123,7 @@ class EditorController(
             }
             updateHalf(leftTabs, snap.leftTabs.toMutableList(), snap.leftTabsSelect)
             updateHalf(rightTabs, snap.rightTabs.toMutableList(), snap.rightTabsSelect)
+            mergeHalves()
             scope.launch { saveToConfig() } //без закрытых вкладок
         }
     }
@@ -133,7 +139,7 @@ class EditorController(
                 _tabsCash.values.find { it is TabCashFile && it.compareFile(node.getFile()) }?.id?.let { tabMapId ->
                     activateTab(tabMapId)
                 } ?: run {
-                    val tab = HalfViewModelFactory.createFileTab(node.getFile(), scope)
+                    val tab = tabFactory.createFileTab(node.getFile(), scope)
                     tabToCash(tab)
                     activateTab(tab.id)
                 }
@@ -142,7 +148,7 @@ class EditorController(
     }
 
     fun addFromCpipboardTab() : Int { //создание таба из ui
-        val tab = HalfViewModelFactory.createPasteTab(scope, winState)
+        val tab = tabFactory.createPasteTab(scope, currentProject)
         tabToCash(tab)
         return tab.id
     }
@@ -174,9 +180,19 @@ class EditorController(
         rightTabs.closeTab(tab.id)
     }
 
-    fun rightToLeftHalf() {
+    private fun rightToLeftHalf() {
+        leftTabs.detach()
         leftTabs = rightTabs.copy(updateLeftTabs, updateLeftActive)
-        rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive)
+        rightTabs = HalfEditorTabs(updateRightTabs, updateRightActive, ::mergeHalvesLater)
+    }
+
+    private fun mergeHalves() { //левая пустая, а в правой есть вкладки: правая становится левой
+        if(leftTabs.listTabs.isEmpty() && rightTabs.listTabs.isNotEmpty()) rightToLeftHalf()
+    }
+
+    //после операции целиком: «Split and Move» и closeTabs меняют обе половины по очереди и держат ссылки на них
+    private fun mergeHalvesLater() {
+        scope.launch(Dispatchers.Swing) { mergeHalves() }
     }
 
     override fun disposeBefore() {

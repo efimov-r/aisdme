@@ -9,7 +9,6 @@ import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.files.work.FilesExecutor
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
-import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
 import non.era.aisdme.ui.components.over.ErrorableTextField
 import non.era.aisdme.ui.project.data.ProjectNode
 import java.io.File
@@ -17,11 +16,6 @@ import java.io.File
 @Composable
 fun MoveDialog(src: List<ProjectNode>, target: File, onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    if(src.isEmpty()) {
-        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Selected file to move does not exist."))
-        onDismiss()
-        return
-    }
 
     var textState by remember { mutableStateOf(
         TextFieldValue(text = target.path, selection = TextRange(target.path.length))
@@ -33,7 +27,7 @@ fun MoveDialog(src: List<ProjectNode>, target: File, onDismiss: () -> Unit) {
     DualButtonDialog(
         title = "Move",
         onConfirm = {
-            app.filesController.move(src, File(textState.text))
+            app.filesController.move(src.map { it.getFilePath() }, File(textState.text).toPath())
         },
         onDismiss = onDismiss,
         enterActive = { error == null }

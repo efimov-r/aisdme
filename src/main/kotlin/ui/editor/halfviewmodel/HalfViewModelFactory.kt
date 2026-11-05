@@ -6,21 +6,19 @@ import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileImg
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashFileText
-import non.era.aisdme.ui.win.WindowState
+import non.era.aisdme.ui.project.CurrentProject
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 
-object HalfViewModelFactory {
-    private var nextTabId = AtomicInteger(0)
+class HalfViewModelFactory { //своя у каждого EditorController: нумерация вкладок не общая
+    private val nextTabId = AtomicInteger(0)
 
     fun clearNexTabId() {
         nextTabId.set(0)
     }
 
-    fun createPasteTab(extScope: CoroutineScope, winState: WindowState) =
-        TabCashPaste(nextTabId.getAndIncrement(), extScope, winState)
+    fun createPasteTab(extScope: CoroutineScope, currentProject: CurrentProject) =
+        TabCashPaste(nextTabId.getAndIncrement(), extScope, currentProject)
 
 
     fun createFileTab(file: File, extScope: CoroutineScope): TabCash {
@@ -42,55 +40,33 @@ object HalfViewModelFactory {
         id: Int,
         snap: SnapshotTabCash,
         extScope: CoroutineScope,
-        winState: WindowState
+        currentProject: CurrentProject,
     ): TabCash? {
         if(id >= nextTabId.get()){
             nextTabId.set(id+1)
         }
-        when(snap.type) {
-            TypeFile.PASTE_TAB -> {
-                return TabCashPaste(
+        val file = snap.pathStr?.let { File(it) }
+        return when(snap.type) {
+            TypeFile.PASTE_TAB -> TabCashPaste(
+                id = id,
+                extScope = extScope,
+                currentProject = currentProject,
+            )
+            TypeFile.TEXT_FILE -> file?.let {
+                TabCashFileText(
                     id = id,
+                    file = it,
                     extScope = extScope,
-                    winState = winState
                 )
             }
-            TypeFile.TEXT_FILE -> {
-                return snap.pathStr?.let { pathStr ->
-                    TabCashFileText(
-                        id = id,
-                        file = File(pathStr),
-                        extScope = extScope
-                    )
-                }
+            TypeFile.IMG_FILE -> file?.let {
+                TabCashFileImg(
+                    id = id,
+                    file = it,
+                    extScope = extScope,
+                )
             }
-            TypeFile.IMG_FILE -> {
-                return snap.pathStr?.let { pathStr ->
-                    TabCashFileImg(
-                        id = id,
-                        file = File(pathStr),
-                        extScope = extScope
-                    )
-                }
-            }
-            null -> return null
+            null -> null
         }
     }
-
-//    private fun isImageFile(path: Path): Boolean {
-//
-//        val ext = path.fileName.toString()
-//            .substringAfterLast('.', "")
-//            .lowercase()
-//
-//        val imageExt = setOf(
-//            "png","jpg","jpeg","gif","bmp","webp","tif","tiff"
-//        )
-//
-//        if (ext in imageExt) return true
-//
-//        val mime = Files.probeContentType(path)
-//
-//        return mime?.startsWith("image/") == true
-//    }
 }

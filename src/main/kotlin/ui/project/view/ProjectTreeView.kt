@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -20,7 +21,6 @@ import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.realisation.ProjectTreeContextMenu
 import non.era.aisdme.ui.components.custom.BoxFocusedTree
 import non.era.aisdme.ui.components.custom.ScrollableLazyContent
-import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.components.over.SvgButton
 import non.era.aisdme.ui.project.ProjectListLineHelper
 
@@ -52,8 +52,8 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
             ProjectTreeContextMenu {
                 Box(modifier = Modifier
                     .treeKeyEvent(app,
-                        { app.dialogController.requestDialog(UiDialog.ShowDeleteDialog) },
-                        { app.dialogController.requestDialog(UiDialog.ShowRenameDialog) })
+                        { app.dialogController.requestDeleteDialog() },
+                        { app.dialogController.requestRenameDialog() })
                 ) {
                     BoxFocusedTree{ hasFocus->
                         ListProjectNodes(scrollState, hasFocus)
@@ -68,7 +68,7 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
 fun ListProjectNodes(scrollState: LazyListState, hasFocus: Boolean) {
     val app = LocalAppController.current
     val moveController = app.moveController
-    moveController.setScrollState(scrollState)
+    LaunchedEffect(scrollState) { moveController.setScrollState(scrollState) }
 
     val visibleNodes by remember {
         derivedStateOf {

@@ -9,33 +9,13 @@ import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.files.work.FilesExecutor
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
-import non.era.aisdme.ui.components.dialogs.elements.GlobalMessageReq
 import non.era.aisdme.ui.components.over.ErrorableTextField
 import non.era.aisdme.ui.project.data.DirNode
 import java.io.File
 
 @Composable
-fun PasteDialog(onDismiss: () -> Unit) {
+fun PasteDialog(node: DirNode, onDismiss: () -> Unit) {
     val app = LocalAppController.current
-    val selected = remember { app.projectController.treeState.getSelectedNodes() }
-
-
-    if(selected.isEmpty()) {
-        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Directory for paste is not selected"))
-        onDismiss()
-        return
-    }
-    if(selected.size != 1) {
-        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Pasting is only available in one directory."))
-        onDismiss()
-        return
-    }
-    val node = selected[0]
-    if(node !is DirNode) {
-        app.dialogController.requestGlobalMessage(GlobalMessageReq.ShowGlobalError("Pasting is only available in directory."))
-        onDismiss()
-        return
-    }
 
     var textState by remember { mutableStateOf(
         TextFieldValue(text = node.getFile().path, selection = TextRange(node.getFile().path.length))

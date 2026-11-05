@@ -4,9 +4,7 @@
 
 ## В работе
 
-- [ ] Баги из разбора кода — [#26](https://github.com/efimov-r/aisdme/issues/26). Исправлены потеря данных (PR [#32](https://github.com/efimov-r/aisdme/pull/32)) и конфиги (PR [#33](https://github.com/efimov-r/aisdme/pull/33)). Остались потоки, watcher и мелочи — делаются в ветке `issue-26-threads-watcher-perf` одним PR вместе с #3 и #28
-- [ ] Автоскролл при перетаскивании не останавливается в конце прокрутки — [#3](https://github.com/efimov-r/aisdme/issues/3)
-- [ ] Производительность: дерево проекта, отслеживание диска, рекомпозиция — [#28](https://github.com/efimov-r/aisdme/issues/28)
+- [ ] Архитектура: состояние в Compose, слои, ответственность контроллеров — [#27](https://github.com/efimov-r/aisdme/issues/27), ветка `issue-27-architecture`: все пункты сделаны, ждёт push и PR. Проверить руками в приложении: перенос вкладок «Split and Move», закрытие последней вкладки слева, диалоги New / Paste / Rename / Delete, вырезание нескольких узлов, переключение темы
 
 ## Проверить на Linux
 
@@ -18,7 +16,7 @@
 - [ ] Вырезать в Dolphin → вставить в дереве: оригинал исчезает. Вырезать в дереве → вставить в Dolphin: файл исчезает из проекта. Копирование в обе стороны по-прежнему копирует
 - [ ] Вставка папки в её подпапку: ошибка в диалоге Paste, кнопка OK неактивна
 
-Ленивая загрузка дерева и watcher ([#28](https://github.com/efimov-r/aisdme/issues/28), ветка `issue-26-threads-watcher-perf`): на Linux следим только за прочитанными папками, проверено только тестами:
+Ленивая загрузка дерева и watcher ([#28](https://github.com/efimov-r/aisdme/issues/28), PR [#34](https://github.com/efimov-r/aisdme/pull/34)): на Linux следим только за прочитанными папками, проверено только тестами:
 
 - [ ] Раскрыть свёрнутую папку, затем в Dolphin создать в ней файл — появляется в дереве
 - [ ] В Dolphin создать файл в папке, которую ещё ни разу не раскрывали, потом раскрыть её — файл виден
@@ -35,10 +33,6 @@
 - [ ] LineIndex — [#6](https://github.com/efimov-r/aisdme/issues/6)
 - [ ] Undo / Redo поверх Piece Table — [#7](https://github.com/efimov-r/aisdme/issues/7)
 - [ ] Отрисовка только видимых строк (viewport rendering) — [#8](https://github.com/efimov-r/aisdme/issues/8)
-
-Разбор кода, 2026-11-05:
-
-- [ ] Архитектура: состояние в Compose, слои, ответственность контроллеров — [#27](https://github.com/efimov-r/aisdme/issues/27)
 
 Остальное:
 

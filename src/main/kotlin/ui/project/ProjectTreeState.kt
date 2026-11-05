@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.sync.Mutex
@@ -22,6 +23,10 @@ class ProjectTreeState {
 
     var inFocus by mutableStateOf(false)
 
+    val selection = TreeSelection()
+    private var _cutFiles by mutableStateOf<List<File>>(listOf()) //вырезанные: узел помечен, если внутри одного из них
+    private val _menuAnchors = mutableMapOf<File, Offset>() //не state: пишется на каждом layout
+
     var onDirsLoaded: (List<File>) -> Unit = {} //прочитанные с диска папки: watcher на Linux следит только за ними
 
     private val rootMutex = Mutex()
@@ -29,7 +34,21 @@ class ProjectTreeState {
     @Volatile private var rootProject: File? = null
 
     fun getSelectedNodes(): List<ProjectNode> {
-        return ProjectTreeHelper.findSelectedNodes(_nodes) //обход только прочитанных папок
+        return ProjectTreeHelper.findSelectedNodes(_nodes, selection) //обход только прочитанных папок
+    }
+
+    fun isCut(node: ProjectNode) = _cutFiles.any { node.getFilePath().startsWith(it.toPath()) }
+
+    fun markCut(nodes: List<ProjectNode>) { _cutFiles = nodes.map { it.getFile() } }
+
+    fun setMenuAnchor(node: ProjectNode, pos: Offset) { _menuAnchors[node.getFile()] = pos }
+
+    fun menuAnchor(node: ProjectNode) = _menuAnchors[node.getFile()] //для контекстного меню по кнопке
+
+    private fun forgetMissingFiles() { //выделение и позиции файлов, которых больше нет в дереве
+        val files = ProjectListLineHelper.buildLinearNodes(_nodes).mapTo(HashSet()) { it.getFile() }
+        selection.retain(files)
+        _menuAnchors.keys.retainAll(files)
     }
 
     suspend fun showNode(file: File) {
@@ -42,12 +61,15 @@ class ProjectTreeState {
             val node = withContext(Dispatchers.Swing) { ProjectTreeHelper.findDirNode(_nodes, dir) } ?: break
             if (!node.loaded) loadChildren(node)
         }
-        withContext(Dispatchers.Swing) { inFocus = ProjectTreeHelper.selectFileInTree(_nodes, file) }
+        withContext(Dispatchers.Swing) { inFocus = ProjectTreeHelper.selectFileInTree(_nodes, file, selection) }
     }
 
     suspend fun loadChildren(node: DirNode) = diskMutex.withLock {
         val fresh = withContext(Dispatchers.IO) { ProjectTreeHelper.readChildren(node) }
-        withContext(Dispatchers.Swing) { ProjectTreeHelper.applyDirDiff(node, fresh) }
+        withContext(Dispatchers.Swing) {
+            ProjectTreeHelper.applyDirDiff(node, fresh)
+            forgetMissingFiles()
+        }
         onDirsLoaded(listOf(node.getFile()))
     }
 
@@ -57,6 +79,7 @@ class ProjectTreeState {
             val fresh = withContext(Dispatchers.IO) { ProjectTreeHelper.readChildren(dir, expandAll = true) }
             val loaded = withContext(Dispatchers.Swing) {
                 ProjectTreeHelper.applyDirDiff(dir, fresh, deep = true)
+                forgetMissingFiles()
                 expandAll(dir)
                 ProjectTreeHelper.loadedDirs(dir).map { it.getFile() }
             }
@@ -72,12 +95,9 @@ class ProjectTreeState {
     fun collapseAll() {
         fun col(node: DirNode) {
             node.expanded = false
-            node.setSelected(false)
-            node.children.forEach {
-                it.setSelected(false)
-                if (it is DirNode) col(it)
-            }
+            node.children.forEach { if (it is DirNode) col(it) }
         }
+        selection.clear()
         _nodes.forEach { node->
             if(node is DirNode) col(node)
         }
@@ -92,27 +112,8 @@ class ProjectTreeState {
 
 
     fun reselectNode(node: ProjectNode) {
-        getSelectedNodes().forEach { node ->
-            if (node.isSelected()) node.setSelected(false)
-        }
-        node.setSelected(true)
-    }
-
-    //пометка что вырезано
-    fun cutNoteMarkRecursive(node: ProjectNode) {
-        fun cutNodesUnmark(nodes: List<ProjectNode>): Unit =
-            nodes.filterIsInstance<DirNode>().forEach { node ->
-                if (node.isCutted) node.isCutted = false
-                cutNodesUnmark(node.children)
-            }
-        fun cutNodeMark(node: ProjectNode) {
-            node.isCutted = true
-            if(node is DirNode)
-                node.children.forEach { cutNodeMark(it) }
-        }
-
-        cutNodesUnmark(_nodes)
-        cutNodeMark(node)
+        selection.clear()
+        selection.set(node, true)
     }
 
     suspend fun reselectRootProject(config: SnapshotTree?, root: File) =
@@ -126,6 +127,7 @@ class ProjectTreeState {
         withContext(Dispatchers.Swing) {
             _nodes.clear()
             tree?.let { _nodes.add(it) }
+            forgetMissingFiles()
         }
         tree?.let { onDirsLoaded(ProjectTreeHelper.loadedDirs(it).map { d -> d.getFile() }) }
     }
@@ -170,6 +172,7 @@ class ProjectTreeState {
         val fresh = withContext(Dispatchers.IO) { dirs.map { it to ProjectTreeHelper.readChildren(it) } }
         withContext(Dispatchers.Swing) {
             fresh.forEach { (dir, children) -> ProjectTreeHelper.applyDirDiff(dir, children) }
+            forgetMissingFiles()
         }
     }
 }

@@ -25,25 +25,22 @@ import non.era.aisdme.ui.editor.halfviewmodel.realizations.TabCashPaste
 fun Editor(conf: ProjectConfig?, modifier: Modifier = Modifier) {
     val app = LocalAppController.current
     val leftRightConfig = "ResizableProporcialRowEditorLeftAndRight"
+    val left = app.editorController.leftTabs
+    val right = app.editorController.rightTabs
 
-    if(app.editorController.leftTabs.listTabs.size == 0 && app.editorController.rightTabs.listTabs.size > 0){
-        app.editorController.rightToLeftHalf()
-    }
-
-    if(app.editorController.leftTabs.listTabs.size > 0 && app.editorController.rightTabs.listTabs.size > 0) {
+    if(left.listTabs.size > 0 && right.listTabs.size > 0) {
         ResizableProporcialRow(Modifier.fillMaxSize(),
             conf?.keyValue?.get(leftRightConfig)?.toFloat() ?: 0.5f,
             { app.configController.updateKeyValue(leftRightConfig, it.toString()) },
             {
-                EditorHalf(app.editorController.leftTabs, app.editorController.rightTabs,
-                    modifier.fillMaxSize())
+                EditorHalf(left, right, modifier.fillMaxSize())
             },
             {
-                EditorHalf(app.editorController.rightTabs, app.editorController.leftTabs,
-                    modifier.fillMaxSize())
+                EditorHalf(right, left, modifier.fillMaxSize())
             })
     } else {
-        EditorHalf(app.editorController.leftTabs, app.editorController.rightTabs, modifier.fillMaxSize())
+        val onlyRight = left.listTabs.isEmpty() && right.listTabs.isNotEmpty() //пока правая не перенесена в левую
+        EditorHalf(if(onlyRight) right else left, if(onlyRight) left else right, modifier.fillMaxSize())
     }
 }
 

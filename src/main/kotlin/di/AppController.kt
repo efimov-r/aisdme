@@ -1,76 +1,68 @@
 package non.era.aisdme.di
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.staticCompositionLocalOf
+import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.configs.ConfigController
+import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.AppConfig
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.configs.repositories.EditorStateRepository
+import non.era.aisdme.configs.repositories.TreeStateRepository
 import non.era.aisdme.files.work.FilesController
-import non.era.aisdme.platform.Platform
+import non.era.aisdme.settings.ThemeController
 import non.era.aisdme.ui.components.dialogs.elements.DialogsController
 import non.era.aisdme.ui.editor.EditorController
-import non.era.aisdme.ui.editor.Panels
-import non.era.aisdme.ui.errors.GlobalMessage
+import non.era.aisdme.ui.errors.GlobalMessages
 import non.era.aisdme.ui.move.MoveController
+import non.era.aisdme.ui.project.CurrentProject
 import non.era.aisdme.ui.project.ProjectController
+import non.era.aisdme.ui.project.TreeActions
 import non.era.aisdme.ui.reload.TreeReloadWatcher
-import non.era.aisdme.ui.win.WindowState
-import non.era.aisdme.utils.Log
 import java.io.File
 
 val LocalAppController = staticCompositionLocalOf<AppController> {
     error("AppController not provided")
 }
 
-class AppController(
-    val editorController: EditorController,
-    val projectController: ProjectController,
-    val filesController: FilesController,
-    val moveController: MoveController,
-    private val reloadWatcher: TreeReloadWatcher,
-    val configController: ConfigController,
-    val dialogController: DialogsController,
-    startGlobalConfig: AppConfig?,
-    val winState: WindowState
-)  {
-    private val _globalMess = mutableStateListOf<GlobalMessage>()
-    val globalMess: List<GlobalMessage> get() = _globalMess
-    fun clearGlobalMess() { _globalMess.clear() }
-    fun removeMess(id: Int) { _globalMess.removeIf { it.id == id } }
+class AppController(startGlobalConfig: AppConfig?) { //корень композиции: создаёт контроллеры и связывает их
+    private val bus = AppEventBus()
+    private val editorStateRepository = EditorStateRepository()
+    private val treeStateRepository = TreeStateRepository()
 
-    var isDarkTheme by mutableStateOf(startGlobalConfig?.isDarkTheme ?: false)
+    val currentProject = CurrentProject()
+    val editorController = EditorController(bus, editorStateRepository, currentProject)
+    val projectController = ProjectController(bus, treeStateRepository)
+    val filesController = FilesController(bus)
+    val moveController = MoveController()
+    private val reloadWatcher = TreeReloadWatcher(bus)
+    val configController = ConfigController(editorStateRepository, treeStateRepository)
+    val dialogController = DialogsController { projectController.treeState.getSelectedNodes() }
+    val themeController = ThemeController(startGlobalConfig?.isDarkTheme ?: false, GlobalConfig.store)
+
+    val messages = GlobalMessages()
+    val treeActions = TreeActions(projectController.treeState, editorController, filesController)
 
     init {
-        editorController.subscriptionError { _globalMess += it }
-        projectController.subscriptionError { _globalMess += it }
-        filesController.subscriptionError { _globalMess += it }
-        moveController.subscriptionError { _globalMess += it }
-        reloadWatcher.subscriptionError { _globalMess += it }
-        configController.subscriptionError { _globalMess += it }
-        dialogController.subscriptionError { _globalMess += it }
+        messages.collectFrom(
+            editorController,
+            projectController,
+            filesController,
+            moveController,
+            reloadWatcher,
+            configController,
+            dialogController,
+            themeController,
+        )
         projectController.treeState.onDirsLoaded = reloadWatcher::dirsLoaded //напрямую: шина может потерять событие
     }
 
     suspend fun reselectProject(root: File): ProjectConfig { //открыть новый проект; вызывать с ui-потока
-        winState.openProject(root.toPath())
+        currentProject.open(root.toPath())
         val res = configController.reselectProject(root) //первый всегда!
         reloadWatcher.switchProject(root.toPath())
         projectController.reselectRootProject(res.treeState, root)
         editorController.reselectProject(res.snapshotEditor)
         return res
-    }
-    fun openSelectedNodesInEditor(panel: Panels) = editorController.openNodes(projectController.treeState.getSelectedNodes(), panel)
-    fun createFileInSelected(name: String) = filesController.createFile(projectController.treeState.getSelectedNodes(), name)
-    fun createDirectoryInSelected(name: String) = filesController.createDirectory(projectController.treeState.getSelectedNodes(), name)
-    fun showSelectedInFileManager() = projectController.treeState.getSelectedNodes()
-        .map { it.getFile() }
-        .filter { it.exists() }
-        .forEach { f ->
-            runCatching { Platform.current.showInFileManager(f) }.onFailure { e -> Log.e(e) }
-        }
-    fun copySelectedToClipboard(cut: Boolean) {
-        val selected = projectController.treeState.getSelectedNodes()
-        if(cut) selected.forEach { projectController.treeState.cutNoteMarkRecursive(it) }
-        filesController.copyToClipboard(selected, cut)
     }
 
     fun dispose() {
@@ -81,5 +73,6 @@ class AppController(
         reloadWatcher.dispose()
         configController.dispose()
         dialogController.dispose()
+        themeController.dispose()
     }
 }

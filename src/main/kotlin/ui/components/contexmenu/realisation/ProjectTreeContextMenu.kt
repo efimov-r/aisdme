@@ -21,7 +21,6 @@ import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
 import non.era.aisdme.ui.components.dialogs.TypeNew
-import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.editor.Panels
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
@@ -39,8 +38,9 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
 
             when (it.key.keyCode) {
                 4294967821L -> {
-                    app.projectController.treeState.getSelectedNodes().lastOrNull()?.let { node ->
-                        node.globPos?.let{ menuState.show(it) }
+                    val treeState = app.projectController.treeState
+                    treeState.getSelectedNodes().lastOrNull()?.let { node ->
+                        treeState.menuAnchor(node)?.let{ menuState.show(it) }
                     }
                     true
                 }
@@ -75,10 +75,10 @@ fun ProjectTreeContextMenu(content: @Composable BoxScope.() -> Unit) {
         if (menuState.isVisible) {
             TreeContextMenu(
                 state = menuState,
-                showDelDialog = { app.dialogController.requestDialog(UiDialog.ShowDeleteDialog) },
-                showRenameDialog = { app.dialogController.requestDialog(UiDialog.ShowRenameDialog) },
-                showNewFileDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.FILE)) },
-                showNewDirectoryDialog = { app.dialogController.requestDialog(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY)) },
+                showDelDialog = { app.dialogController.requestDeleteDialog() },
+                showRenameDialog = { app.dialogController.requestRenameDialog() },
+                showNewFileDialog = { app.dialogController.requestCreateDialog(TypeNew.FILE) },
+                showNewDirectoryDialog = { app.dialogController.requestCreateDialog(TypeNew.DIRECTORY) },
                 onDismiss = { menuState.hide() }
             )
         }
@@ -157,19 +157,19 @@ private fun pasteItem(app: AppController) = MenuEntry.Item(
     title = "Paste",
     icon = "paste",
     shortcut = Hotkeys.PASTE
-) { app.dialogController.requestDialog(UiDialog.ShowPasteDialog) }
+) { app.dialogController.requestPasteDialog() }
 
 private fun copyItem(app: AppController) = MenuEntry.Item(
     title = "Copy",
     icon = "copy",
     shortcut = Hotkeys.COPY
-) { app.copySelectedToClipboard(false) }
+) { app.treeActions.copySelectedToClipboard(false) }
 
 private fun cutItem(app: AppController) = MenuEntry.Item(
     title = "Cut",
     icon = "cut",
     shortcut = Hotkeys.CUT
-) { app.copySelectedToClipboard(true) }
+) { app.treeActions.copySelectedToClipboard(true) }
 
 private fun deleteItem(onClick: () -> Unit) = MenuEntry.Item(
     title = "Delete",
@@ -189,19 +189,19 @@ private fun openInLeftItem(app: AppController) = MenuEntry.Item(
     title = "Open in Left",
     icon = "applyNotConflictsRight",
     shortcut = Hotkeys.LEFT
-) { app.openSelectedNodesInEditor(Panels.LEFT) }
+) { app.treeActions.openSelectedInEditor(Panels.LEFT) }
 
 private fun openInRightItem(app: AppController) = MenuEntry.Item(
     title = "Open in Right",
     icon = "applyNotConflictsLeft",
     shortcut = Hotkeys.RIGHT
-) { app.openSelectedNodesInEditor(Panels.RIGHT) }
+) { app.treeActions.openSelectedInEditor(Panels.RIGHT) }
 
 private fun showInFileManagerItem(app: AppController) = MenuEntry.Item(
     title = "Show in ${Platform.current.fileManagerName}",
     icon = "npm",
     shortcut = Hotkeys.SHOW_IN_FILE_MANAGER
-) { app.showSelectedInFileManager() }
+) { app.treeActions.showSelectedInFileManager() }
 
 private fun reloadDiskItem(app: AppController) = MenuEntry.Item(
     title = "Reload from disk",

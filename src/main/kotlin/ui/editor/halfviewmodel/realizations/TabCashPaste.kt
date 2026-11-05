@@ -12,7 +12,7 @@ import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.configs.store.ConfigPaths.PROJECT_CONFIG_DIR
 import non.era.aisdme.files.TypeFile
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
-import non.era.aisdme.ui.win.WindowState
+import non.era.aisdme.ui.project.CurrentProject
 import non.era.aisdme.utils.ClipboardHelper
 import non.era.aisdme.utils.Log
 import java.io.File
@@ -25,7 +25,7 @@ import kotlin.io.path.writeText
 class TabCashPaste(
     id: Int,
     extScope: CoroutineScope,
-    val winState: WindowState
+    private val currentProject: CurrentProject,
 ) : TabCash(id, extScope) {
 
     private var _textFieldValue by mutableStateOf(TextFieldValue(""))
@@ -91,7 +91,7 @@ class TabCashPaste(
     }
 
     private fun getPathClipFile(): Path? {
-        val rootProjPath = winState.getProjectRootSafe() ?: return null
+        val rootProjPath = currentProject.root ?: return null
         return rootProjPath
             .resolve(PROJECT_CONFIG_DIR)
             .resolve("pastedtab")

@@ -1,0 +1,133 @@
+package non.era.aisdme.ui.components.dialogs.elements
+
+import androidx.compose.ui.geometry.Offset
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
+import non.era.aisdme.ui.components.dialogs.TypeNew
+import non.era.aisdme.ui.errors.GlobalMessage
+import non.era.aisdme.ui.project.data.DirNode
+import non.era.aisdme.ui.project.data.FileNode
+import non.era.aisdme.ui.project.data.ProjectNode
+import org.junit.jupiter.api.AfterEach
+import java.io.File
+import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+
+class DialogsControllerTest {
+    private var selected: List<ProjectNode> = listOf()
+    private val controller = DialogsController { selected }
+    private val errors = CopyOnWriteArrayList<GlobalMessage>() //пишется на ui-потоке
+
+    init {
+        controller.subscribeMessages { errors += it }
+    }
+
+    @AfterEach
+    fun dispose() = controller.dispose()
+
+    private val dir = DirNode(File("dir"), 0, listOf())
+    private val file = FileNode(File("a.asm"), 0)
+
+    private fun nextDialog() = runBlocking { withTimeoutOrNull(300) { controller.effects.first() } }
+
+    private fun waitError() = runBlocking {
+        withTimeout(5000) {
+            while (errors.isEmpty()) delay(10)
+        }
+    }
+
+    // Paste без выделения, в несколько узлов и в файл: ошибка, диалога нет
+    @Test
+    fun pasteWithoutSingleDirShowsError() {
+        listOf(listOf(), listOf(dir, file), listOf(file)).forEach { nodes ->
+            errors.clear()
+            selected = nodes
+
+            controller.requestPasteDialog()
+
+            waitError()
+            assertNull(nextDialog())
+        }
+    }
+
+    // Paste в одну папку: диалог с этой папкой
+    @Test
+    fun pasteIntoSingleDirOpensDialog() {
+        selected = listOf(dir)
+
+        controller.requestPasteDialog()
+
+        assertEquals(UiDialog.ShowPasteDialog(dir), nextDialog())
+    }
+
+    // New File в файл и в несколько узлов: ошибка, диалога нет
+    @Test
+    fun createWithoutSingleDirShowsError() {
+        listOf(listOf(file), listOf(dir, file)).forEach { nodes ->
+            errors.clear()
+            selected = nodes
+
+            controller.requestCreateDialog(TypeNew.FILE)
+
+            waitError()
+            assertNull(nextDialog())
+        }
+    }
+
+    // New Directory в одну папку: диалог с путём этой папки
+    @Test
+    fun createInSingleDirOpensDialog() {
+        selected = listOf(dir)
+
+        controller.requestCreateDialog(TypeNew.DIRECTORY)
+
+        assertEquals(UiDialog.ShowCreateObjDialog(TypeNew.DIRECTORY, dir.getFilePath()), nextDialog())
+    }
+
+    // Rename нескольких узлов: ошибка, диалога нет
+    @Test
+    fun renameMultipleShowsError() {
+        selected = listOf(dir, file)
+
+        controller.requestRenameDialog()
+
+        waitError()
+        assertNull(nextDialog())
+    }
+
+    // Delete без выделения: диалога нет, ошибки тоже
+    @Test
+    fun deleteWithoutSelectionDoesNothing() {
+        controller.requestDeleteDialog()
+
+        assertNull(nextDialog())
+        assertEquals(emptyList(), errors)
+    }
+
+    // Delete: диалог с узлами, выделенными в момент запроса
+    @Test
+    fun deleteOpensDialogWithSelectedAtRequest() {
+        selected = listOf(file)
+
+        controller.requestDeleteDialog()
+        selected = listOf()
+
+        assertEquals(UiDialog.ShowDeleteDialog(listOf(file)), nextDialog())
+    }
+
+    // подсказка показывается с текстом и позицией и скрывается
+    @Test
+    fun tooltipShowAndClose() {
+        controller.tolltipShow("Expand", Offset(10f, 20f))
+        assertEquals(TolltipState(show = true, text = "Expand", position = Offset(10f, 20f)), controller.tolltipState)
+
+        controller.tolltipClose()
+        assertFalse(controller.tolltipState.show)
+    }
+}

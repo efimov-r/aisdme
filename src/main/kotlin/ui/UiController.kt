@@ -9,16 +9,16 @@ import non.era.aisdme.ui.errors.GlobalMessage
 abstract class UiController {
     protected val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val scopeFlow = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val _errors = MutableSharedFlow<GlobalMessage>(
+    private val _messages = MutableSharedFlow<GlobalMessage>( //ошибки, info, success — всё для ErrorOverlay
         replay = 0,
         extraBufferCapacity = 16
     )
 
-    //execute in init with oll internal Controllers
-    fun subscriptionError(back: suspend (error: GlobalMessage) -> Unit) =
-        scopeFlow.launch {
-            _errors.collect { back(it) }
-            }
+    //UNDISPATCHED: подписка — до возврата, иначе сообщения до первого прохода ui-потока теряются (replay = 0)
+    fun subscribeMessages(back: suspend (mess: GlobalMessage) -> Unit) =
+        scopeFlow.launch(start = CoroutineStart.UNDISPATCHED) {
+            _messages.collect { back(it) }
+        }
 
     protected fun <T> safeLaunch(
         operation: suspend () -> T
@@ -36,28 +36,28 @@ abstract class UiController {
     }
 
     protected suspend fun emitGlobalMessage(err: GlobalMessage) {
-        _errors.emit(err)
+        _messages.emit(err)
     }
 
     protected suspend fun newGlobalInfo(title: String, text: String) {
-        _errors.emit(GlobalMessage.createGlobalInfo(title, text))
+        _messages.emit(GlobalMessage.createGlobalInfo(title, text))
     }
 
     protected suspend fun newGlobalQuestion(title: String, text: String) {
-        _errors.emit(GlobalMessage.createGlobalQuestion(title, text))
+        _messages.emit(GlobalMessage.createGlobalQuestion(title, text))
     }
 
     protected suspend fun newGlobalSuccess(title: String, text: String) {
-        _errors.emit(GlobalMessage.createGlobalSuccess(title, text))
+        _messages.emit(GlobalMessage.createGlobalSuccess(title, text))
     }
 
     protected suspend fun newGlobalWarning(title: String, text: String) {
-        _errors.emit(GlobalMessage.createGlobalWarning(title, text))
+        _messages.emit(GlobalMessage.createGlobalWarning(title, text))
     }
 
     protected suspend fun newGlobalError(err: String) {
         Log.e("Error: $err")
-        _errors.emit(GlobalMessage.createGlobalError("Error", err))
+        _messages.emit(GlobalMessage.createGlobalError("Error", err))
     }
 
     protected suspend fun newGlobalError(e: Throwable) {
@@ -67,7 +67,7 @@ abstract class UiController {
         val message = e.message ?: "Unknown error"
         val stackTrace = e.stackTraceToString()
 
-        _errors.emit(GlobalMessage.createGlobalError(
+        _messages.emit(GlobalMessage.createGlobalError(
             title = title,
             err = "$message\n\n$stackTrace"
         ))

@@ -29,7 +29,7 @@ import non.era.aisdme.theme.aisDmeButtonBorder
 @Composable
 fun ErrorOverlay() {
     val app = LocalAppController.current
-    val mess = app.globalMess
+    val mess = app.messages.list
 
     if (mess.isEmpty()) return
 
@@ -78,14 +78,14 @@ fun ErrorOverlay() {
                         GlobalMessageItem(
                             modifier = Modifier.padding(bottom = AisDmeSpacing.s),
                             mess = messItem,
-                            onClose = { app.removeMess(messItem.id) }
+                            onClose = { app.messages.remove(messItem.id) }
                         )
                     }
                 }
             }
 
             Button(
-                onClick = app::clearGlobalMess,
+                onClick = app.messages::clear,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth(),
