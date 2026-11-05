@@ -15,8 +15,16 @@ class ProjectTreeStateTest {
     lateinit var dir: File
 
     private val state = ProjectTreeState()
+    private val loadedDirs = mutableListOf<File>()
+
+    private fun open() = runBlocking {
+        state.onDirsLoaded = { loadedDirs += it }
+        state.reselectRootProject(null, dir)
+    }
 
     private fun root() = state.getNodes()[0] as DirNode
+
+    private fun child(node: DirNode, name: String) = node.children.first { it.getFileName() == name }
 
     // в конфиг дерева попадают только корень и раскрытые папки, файлы — нет
     @Test
@@ -24,8 +32,8 @@ class ProjectTreeStateTest {
         File(dir, "src").mkdir()
         File(dir, "lib").mkdir()
         File(dir, "a.asm").writeText("")
-        runBlocking { state.reselectRootProject(null, dir) }
-        (root().children.first { it.getFileName() == "src" } as DirNode).expanded = true
+        open()
+        (child(root(), "src") as DirNode).expanded = true
 
         val paths = state.getCashForConfig().treeState.keys
 
@@ -36,7 +44,7 @@ class ProjectTreeStateTest {
     @Test
     fun unknownDirRebuildsNearestAncestor() {
         File(dir, "lib").mkdir()
-        runBlocking { state.reselectRootProject(null, dir) }
+        open()
         val root = root()
         val lib = root.children[0] as DirNode
         lib.expanded = true
@@ -49,5 +57,43 @@ class ProjectTreeStateTest {
         assertSame(root, root())
         assertEquals(listOf("lib", "src"), root.children.map { it.getFileName() })
         assertTrue(lib.expanded)
+    }
+
+    // событие в папке обновляет и прочитанные вложенные папки: после OVERFLOW изменения где угодно
+    @Test
+    fun rebuildRefreshesLoadedNestedDirs() {
+        File(dir, "src").mkdir()
+        open()
+        val src = root().children[0] as DirNode
+        runBlocking { state.loadChildren(src) }
+        File(dir, "src/main.asm").writeText("")
+
+        runBlocking { state.rebuildDirDiff(dir) {} }
+
+        assertEquals(listOf("main.asm"), src.children.map { it.getFileName() })
+    }
+
+    // «показать в дереве» читает свёрнутые папки на пути и выделяет файл
+    @Test
+    fun showNodeLoadsDirsOnPath() {
+        val file = File(dir, "src/inner/main.asm").apply { parentFile.mkdirs(); writeText("") }
+        open()
+
+        runBlocking { state.showNode(file) }
+
+        val inner = child(child(root(), "src") as DirNode, "inner") as DirNode
+        assertTrue(inner.expanded)
+        assertTrue(child(inner, "main.asm").isSelected())
+    }
+
+    // о прочитанных папках узнаёт watcher: при открытии — корень, при чтении — сама папка
+    @Test
+    fun loadedDirsReported() {
+        File(dir, "src").mkdir()
+        open()
+
+        runBlocking { state.loadChildren(root().children[0] as DirNode) }
+
+        assertEquals(listOf(dir, File(dir, "src")), loadedDirs)
     }
 }

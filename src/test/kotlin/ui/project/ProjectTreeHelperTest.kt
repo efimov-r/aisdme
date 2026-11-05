@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
@@ -51,16 +52,44 @@ class ProjectTreeHelperTest {
         assertTrue(src.expanded)
     }
 
-    // изменения во вложенной папке тоже применяются
+    // свёрнутая папка с диска не читается: её содержимое — при раскрытии
     @Test
-    fun diffUpdatesNestedDir() {
+    fun collapsedDirNotRead() {
         File(dir, "src").mkdir()
+        File(dir, "src/main.asm").writeText("")
+
+        val src = tree().children[0] as DirNode
+
+        assertFalse(src.loaded)
+        assertEquals(emptyList(), names(src))
+    }
+
+    // один уровень diff не трогает содержимое прочитанной вложенной папки
+    @Test
+    fun diffKeepsLoadedNestedChildren() {
+        File(dir, "src").mkdir()
+        File(dir, "src/main.asm").writeText("")
         val root = tree()
         val src = root.children[0] as DirNode
+        rebuild(src)
 
-        File(dir, "src/main.asm").writeText("")
         rebuild(root)
 
+        assertTrue(src.loaded)
         assertEquals(listOf("main.asm"), names(src))
+    }
+
+    // «раскрыть всё» читает всё поддерево
+    @Test
+    fun expandAllReadsWholeSubtree() {
+        File(dir, "src/inner").mkdirs()
+        File(dir, "src/inner/main.asm").writeText("")
+        val root = tree()
+
+        ProjectTreeHelper.applyDirDiff(root, ProjectTreeHelper.readChildren(root, expandAll = true), deep = true)
+
+        val inner = (root.children[0] as DirNode).children[0] as DirNode
+        assertTrue(inner.loaded)
+        assertEquals(listOf("main.asm"), names(inner))
     }
 }

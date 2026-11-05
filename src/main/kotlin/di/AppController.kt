@@ -47,6 +47,7 @@ class AppController(
         reloadWatcher.subscriptionError { _globalMess += it }
         configController.subscriptionError { _globalMess += it }
         dialogController.subscriptionError { _globalMess += it }
+        projectController.treeState.onDirsLoaded = reloadWatcher::dirsLoaded //напрямую: шина может потерять событие
     }
 
     suspend fun reselectProject(root: File): ProjectConfig { //открыть новый проект; вызывать с ui-потока

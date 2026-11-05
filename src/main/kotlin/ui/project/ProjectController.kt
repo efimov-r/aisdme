@@ -66,6 +66,19 @@ class ProjectController(
                     rep.updateTree(treeState.getCashForConfig()) //на ui-потоке: читает состояние дерева
                 }
         }
+        scope.launch(Dispatchers.Swing) { //раскрытая, но не прочитанная папка — читается с диска
+            snapshotFlow {
+                ProjectListLineHelper.buildLinearExpandedNodes(treeState.getNodes())
+                    .filterIsInstance<DirNode>()
+                    .filter { it.expanded && !it.loaded }
+            }.collect { dirs ->
+                dirs.forEach { if (!it.loaded) treeState.loadChildren(it) }
+            }
+        }
+    }
+
+    fun expandSelected() = scope.launch {
+        treeState.expandSelected()
     }
 
     fun reselectRootProject(treeStateConfig: SnapshotTree?, root: File) = scope.launch {

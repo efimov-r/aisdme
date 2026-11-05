@@ -40,7 +40,7 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
                 app.editorController.showSelectedInTree()
             }
             SvgButton("expandAll", "Expand selected", Modifier.padding(buttonPadding)) {
-                app.projectController.treeState.expandSelected()
+                app.projectController.expandSelected()
             }
             SvgButton("collapseAll", "Collapse all", Modifier.padding(buttonPadding)) {
                 app.projectController.treeState.collapseAll()
