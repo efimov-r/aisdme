@@ -14,5 +14,6 @@
 ## Решённые
 
 <!-- - YYYY-MM-DD — что было — как решили -->
+- 2026-11-05 — вставка папки в её же подпапку копировала бесконечно, после этого приложение не запускалось: `StackOverflowError` в `ProjectTreeHelper.buildChildren`. Вставка в саму себя запрещена (`FilesExecutor.pasteFromClipboard`), дерево строится не глубже `MAX_DEPTH` = 100, symlink проверяется раньше `isDirectory`
 - 2026-11-05 — Windows: папка с подпапками не переименовывалась, `AccessDeniedException` ([#12](https://github.com/efimov-r/aisdme/issues/12)). `WatchService` держит открытой каждую зарегистрированную папку, а Windows не даёт переименовать папку с открытой подпапкой — на Windows регистрируется только корень с `FILE_TREE` (`WindowsPlatform.registerWatch`)
 - 2026-11-05 — падение с `NullPointerException` при запуске без последнего проекта ([#2](https://github.com/efimov-r/aisdme/issues/2)) — выбор папки через `JFileChooser` поверх заставки (`AppStartState.ChooseProject`, `ProjectChooserHelper`); ловушка с закрытием приложения — [gotchas.md](gotchas.md)

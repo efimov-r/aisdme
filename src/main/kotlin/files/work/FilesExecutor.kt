@@ -74,6 +74,11 @@ object FilesExecutor {
     fun pasteFromClipboard(targetDir: Path) {
         val (paths, isCut) = getClipboardFiles()
 
+        val target = targetDir.toAbsolutePath().normalize()
+        paths.firstOrNull { Files.isDirectory(it) && target.startsWith(it.toAbsolutePath().normalize()) }?.let {
+            throw IOException("Cannot paste directory into itself: $it") //иначе Files.walk копирует уже скопированное, вложенность бесконечная
+        }
+
         for (src in paths) {
 
             val dst = targetDir.resolve(src.fileName)

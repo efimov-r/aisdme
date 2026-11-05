@@ -5,11 +5,14 @@ import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
 import non.era.aisdme.ui.project.data.LinkNode
 import non.era.aisdme.ui.project.data.ProjectNode
+import non.era.aisdme.utils.Log
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 
 object ProjectTreeHelper {
+
+    private const val MAX_DEPTH = 100 //глубже — без детей, иначе StackOverflowError и дерево не строится даже после перезапуска
 
     fun buildProjectTree(
         config: SnapshotTree?,
@@ -32,20 +35,24 @@ object ProjectTreeHelper {
         depth: Int
     ): List<ProjectNode> {
         if (!root.exists()) return mutableListOf()
+        if (depth > MAX_DEPTH) {
+            Log.e("Слишком глубокая вложенность, дальше не читаю: $root")
+            return mutableListOf()
+        }
 
         return root.listFiles()
             ?.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
             ?.map { f ->
                 when {
+                    Files.isSymbolicLink(f.toPath()) -> //раньше isDirectory: ссылка на родителя зацикливает обход
+                        LinkNode(f, depth)
+
                     f.isDirectory -> DirNode(
                         file = f,
                         depth = depth,
                         children = buildChildren(config, f, depth + 1),
                         expand = config?.treeState?.get(f.path)?.expanded ?: false
                     )
-
-                    Files.isSymbolicLink(f.toPath()) ->
-                        LinkNode(f, depth)
 
                     else ->
                         FileNode(f, depth)
