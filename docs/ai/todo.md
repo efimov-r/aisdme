@@ -4,11 +4,11 @@
 
 ## В работе
 
-- [ ] Сборка и запуск на Windows — [#12](https://github.com/efimov-r/aisdme/issues/12), ветка `issue-12-windows`. Платформенный код вынесен в `platform/`, на Windows всё проверено
+- ничего
 
 ## Проверить на Linux
 
-Код для Linux менялся в #12 и проверен только по коду. Проверить на Manjaro (KDE), когда будет возможность:
+Код для Linux менялся в [#12](https://github.com/efimov-r/aisdme/issues/12) (PR [#29](https://github.com/efimov-r/aisdme/pull/29)) и проверен только по коду. Проверить на Manjaro (KDE), когда будет возможность:
 
 - [ ] `gradlew run` запускается, подхватывается старый конфиг `~/.config/AisDme/config.json` (последний проект, тема, окно)
 - [ ] Дерево обновляется, если в Dolphin создать, переименовать и удалить файл и папку на 2–3 уровня вглубь, в том числе внутри только что созданной извне папки
@@ -43,7 +43,7 @@
 - [ ] Убрать все `copy(alpha = …)` у цветов — [#11](https://github.com/efimov-r/aisdme/issues/11)
 - [ ] Подсветка синтаксиса — [#13](https://github.com/efimov-r/aisdme/issues/13)
 
-Тесты и качество, после #12:
+Тесты и качество (#12 сделан, можно начинать):
 
 - [ ] Подключить модульные тесты — [#14](https://github.com/efimov-r/aisdme/issues/14)
 - [ ] Тесты конфигов — [#15](https://github.com/efimov-r/aisdme/issues/15)
