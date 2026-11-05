@@ -42,4 +42,10 @@ object LinuxPlatform : IPlatform {
         }
         ProcessBuilder(command).start()
     }
+
+    override val clipboardCutNative = "application/x-kde-cutselection" //KDE; GNOME помечает иначе, не поддерживается
+
+    override fun clipboardCutBytes() = "1".toByteArray()
+
+    override fun isClipboardCut(bytes: ByteArray) = bytes.decodeToString().trim() == "1"
 }

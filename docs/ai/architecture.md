@@ -26,7 +26,7 @@
 | `ProjectController`, `ProjectTreeState` | дерево файлов | узлы `ProjectNode` с глубиной, выделением и пометкой «вырезан»; `LazyColumn` из видимых узлов; при обновлении — дифф детей папки |
 | `TreeReloadWatcher` | изменения на диске | `WatchService`: на Linux регистрируется каждая папка, на Windows — только корень с `FILE_TREE` (`IPlatform.watchSubtree`); снятие старых `WatchKey`, отложенная перезагрузка изменённых папок |
 | `FilesController`, `FilesExecutor` | файловые операции | создать, удалить, переименовать, скопировать, переместить; проверка имени (`FileNameValidator`) |
-| Буфер обмена | копировать, вырезать, вставить | `FileTransferable`: список путей с префиксом `copy:` или `cut:`; работает в Linux и Windows |
+| Буфер обмена | копировать, вырезать, вставить | `FileTransferable`: файлы — `javaFileListFlavor` и `text/uri-list`; пометка «вырезано» — формат ОС из `IPlatform.clipboardCutNative` (Windows — `Preferred DropEffect`, KDE — `application/x-kde-cutselection`), связан с `cutFlavor` через `SystemFlavorMap`. Работает с Explorer в обе стороны |
 | `MoveController` | drag & drop | перетаскивание внутри дерева и из дерева в редактор с подсветкой цели; `DragPreviewLayer` — превью; автоскролл у края |
 | `ConfigStore<T>` | конфиги | kotlinx.serialization, атомарная запись, `Mutex`, сохранение не чаще раза в секунду |
 | `DialogsController` | диалоги и подсказки | новый файл, переименование, удаление, перемещение, вставка; `DialogsStarter`, `TooltipStarter` |

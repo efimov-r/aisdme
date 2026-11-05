@@ -22,4 +22,13 @@ object WindowsPlatform : IPlatform {
     override fun showInFileManager(file: File) {
         ProcessBuilder("explorer", "/select,", file.absolutePath).start()
     }
+
+    private const val DROPEFFECT_MOVE = 2
+
+    override val clipboardCutNative = "Preferred DropEffect"
+
+    override fun clipboardCutBytes() = byteArrayOf(DROPEFFECT_MOVE.toByte(), 0, 0, 0) //DWORD, little-endian
+
+    override fun isClipboardCut(bytes: ByteArray) =
+        bytes.isNotEmpty() && bytes[0].toInt() and DROPEFFECT_MOVE != 0 //при копировании Explorer пишет 5: COPY | LINK
 }

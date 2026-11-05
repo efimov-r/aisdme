@@ -14,4 +14,8 @@ interface IPlatform {
 
     val fileManagerName: String
     fun showInFileManager(file: File)
+
+    val clipboardCutNative: String //формат буфера, которым файловый менеджер ОС помечает «вырезано»
+    fun clipboardCutBytes(): ByteArray
+    fun isClipboardCut(bytes: ByteArray): Boolean
 }

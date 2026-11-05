@@ -1,9 +1,11 @@
 package non.era.aisdme.files.work
 
+import non.era.aisdme.platform.Platform
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.net.URI
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.FileVisitResult
@@ -74,8 +76,7 @@ object FilesExecutor {
     fun pasteFromClipboard(targetDir: Path) {
         val (paths, isCut) = getClipboardFiles()
 
-        val target = targetDir.toAbsolutePath().normalize()
-        paths.firstOrNull { Files.isDirectory(it) && target.startsWith(it.toAbsolutePath().normalize()) }?.let {
+        findPasteIntoItself(paths, targetDir)?.let {
             throw IOException("Cannot paste directory into itself: $it") //иначе Files.walk копирует уже скопированное, вложенность бесконечная
         }
 
@@ -120,37 +121,33 @@ object FilesExecutor {
         }
     }
 
+    fun findPasteIntoItself(targetDir: Path): Path? =
+        findPasteIntoItself(getClipboardFiles().first, targetDir)
+
+    private fun findPasteIntoItself(paths: List<Path>, targetDir: Path): Path? {
+        val target = targetDir.toAbsolutePath().normalize()
+        return paths.firstOrNull { Files.isDirectory(it) && target.startsWith(it.toAbsolutePath().normalize()) }
+    }
+
     private fun getClipboardFiles(): Pair<List<Path>, Boolean> {
-        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-        val contents = clipboard.getContents(null)
+        val cutFlavor = FileTransferable.cutFlavor //до getContents: связь с форматом ОС должна быть уже зарегистрирована
+        val contents = Toolkit.getDefaultToolkit().systemClipboard.getContents(null)
+            ?: return emptyList<Path>() to false
 
-        val files = mutableListOf<Path>()
-        var isCut = false
+        val files = when {
+            contents.isDataFlavorSupported(DataFlavor.javaFileListFlavor) ->
+                (contents.getTransferData(DataFlavor.javaFileListFlavor) as List<*>).map { (it as File).toPath() }
 
-        // Windows Explorer
-        if (contents.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-            val list = contents.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
-            files.addAll(list.map { it.toPath() })
+            contents.isDataFlavorSupported(FileTransferable.uriFlavor) ->
+                (contents.getTransferData(FileTransferable.uriFlavor) as String).lines()
+                    .filter { it.isNotBlank() && !it.startsWith("#") }
+                    .map { Paths.get(URI(it.trim())) }
+
+            else -> emptyList()
         }
 
-        // Linux / macOS (Dolphin, Nautilus)
-        val uriFlavor = DataFlavor("text/uri-list;class=java.lang.String")
-
-        if (contents.isDataFlavorSupported(uriFlavor)) {
-            val data = contents.getTransferData(uriFlavor) as String
-
-            data.lines()
-                .filter { it.isNotBlank() && !it.startsWith("#") }
-                .map { URI(it.trim()) }
-                .forEach { files.add(Paths.get(it)) }
-        }
-
-        // CUT flag
-        val cutFlavor = DataFlavor("application/x-kde-cutselection;class=java.lang.String")
-
-        if (contents.isDataFlavorSupported(cutFlavor)) {
-            isCut = true
-        }
+        val isCut = contents.isDataFlavorSupported(cutFlavor) &&
+            Platform.current.isClipboardCut((contents.getTransferData(cutFlavor) as InputStream).use { it.readBytes() })
 
         return files to isCut
     }
