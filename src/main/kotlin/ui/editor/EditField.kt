@@ -116,7 +116,8 @@ fun EditorHalf(
             .then(
                 if (half.dragDest) Modifier.background(LocalAisDmeColors.current.dropTargetElement)
                 else Modifier
-            ),
+            )
+            .onGloballyPositioned { half.rect = it.boundsInWindow() }, //цель для броска файла
             contentAlignment = Alignment.Center) {
             Text(
                 text = "Drop files here to open them",

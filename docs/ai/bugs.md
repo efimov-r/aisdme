@@ -4,11 +4,10 @@
 
 ## Открытые
 
-- 2026-11-08 — файл, брошенный из дерева на пустой редактор («Drop files here to open them»), не открывается, если в этой половине с момента запуска не было ни одной вкладки. Найдено пультом отладки. `EditorController.dropOutsideTree` ищет половину по `HalfEditorTabs.rect`, а он заполняется только в `EditorHalf` с активной вкладкой (`onGloballyPositioned`); у пустой половины `rect = null`. После закрытия вкладок работает: остаётся старый `rect`. Воспроизведение: `scripts/scenarios/known-bugs/dnd-empty-editor.txt`. Нужно задавать `rect` и в ветке пустой половины
-
 ## Решённые
 
 <!-- - YYYY-MM-DD — что было — как решили -->
+- 2026-11-08 — файл, брошенный из дерева на пустой редактор («Drop files here to open them»), не открывался, если в этой половине с момента запуска не было вкладок: `EditorController.dropOutsideTree` ищет половину по `HalfEditorTabs.rect`, а он заполнялся только у половины с активной вкладкой. Найдено пультом отладки. `rect` теперь задаётся и в ветке пустой половины (`EditorHalf`); сценарий `scripts/scenarios/dnd-empty-editor.txt`
 - 2026-11-06 — при вырезании нескольких узлов серым помечался только последний: `cutNoteMarkRecursive` на каждый узел снимал все прошлые пометки ([#27](https://github.com/efimov-r/aisdme/issues/27)). Вырезанные — список файлов в `ProjectTreeState` (`markCut`, `isCut`)
 - 2026-11-05 — остаток разбора кода [#26](https://github.com/efimov-r/aisdme/issues/26): потоки, watcher, мелочи, автоскролл [#3](https://github.com/efimov-r/aisdme/issues/3) — PR [#34](https://github.com/efimov-r/aisdme/pull/34); по пунктам — в issue
 - 2026-11-05 — конфиги и состояние редактора (#26): снимки уходили в конфиг другого проекта, вкладка с ошибкой отменяла сохранение, закрытые вкладки оставались в кэше — PR #33
