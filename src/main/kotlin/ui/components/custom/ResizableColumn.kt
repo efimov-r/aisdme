@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.debounce
+import non.era.aisdme.debug.debugTag
 import java.awt.Cursor
 
 @Composable
@@ -60,6 +61,7 @@ fun ResizableColumn(
         Box(modifier = Modifier
                 .fillMaxWidth()
                 .height(6.dp) // делаем шире для удобства
+                .debugTag("split:terminal")
                 .cursorForVerticalResize()
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->

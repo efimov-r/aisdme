@@ -1,0 +1,17 @@
+# Rename: диалог открывается из меню, Cancel и Esc закрывают его без переименования
+waitfor state 120000 proj/
+node right a.txt
+waitfor state 2000 menu:Rename
+tap menu:Rename
+waitfor state 2000 dialog:Rename
+expect state button:Ok
+tap button:Cancel
+waitfor not state 2000 dialog:Rename
+expect state a.txt
+node a.txt
+key shift+f6
+waitfor state 2000 dialog:Rename
+key esc
+waitfor not state 2000 dialog:Rename
+expect state a.txt
+expect not state messages: [

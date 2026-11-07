@@ -8,6 +8,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeButtonBorder
@@ -15,7 +16,7 @@ import non.era.aisdme.theme.aisDmeButtonBorder
 @Composable
 fun ButtonCancel(onClick: () -> Unit) =
     TextButton(
-        modifier = Modifier.width(90.dp),
+        modifier = Modifier.width(90.dp).debugTag("button:Cancel"),
         shape = AisDmeShapes.medium,
         onClick = onClick,
         border = aisDmeButtonBorder(),

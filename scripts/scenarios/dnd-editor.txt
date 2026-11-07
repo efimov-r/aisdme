@@ -1,0 +1,15 @@
+# Перетаскивание файла из дерева в половины редактора (у половины должна быть вкладка, см. known-bugs)
+waitfor state 120000 proj/
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+node a.txt
+drag node a.txt -> tap half:left
+waitfor state 3000 left: main.asm (writable), *a.txt
+node right pic.png
+tap menu:Open in Right
+waitfor state 3000 right: *pic.png
+node тест.txt
+drag node тест.txt -> tap half:right
+waitfor state 3000 *тест.txt (writable)
+expect state right: pic.png
+expect state left: main.asm (writable), *a.txt

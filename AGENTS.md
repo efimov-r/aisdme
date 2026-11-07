@@ -22,6 +22,7 @@ gradlew koverLog          # текущее покрытие; koverHtmlReport —
 
 На Windows `gradlew build` и `gradlew run` работают с JDK 17, если задан `JAVA_HOME` (проверено 2026-11-05).
 
+- **Запуск приложения агентом:** в PowerShell `.\gradlew.bat run -PdebugCtl` в фоне, затем команды пульту — `.\scripts\debug-ctl.ps1 "state" "shot a"`; готовые проверки — `.\scripts\debug-scenario.ps1`. Запуск идёт в песочнице (свежий тестовый проект и свой конфиг в `build/`), данные пользователя не трогаются. Без `-p`, абсолютных путей, `$env:` и `&`: составная команда требует ручного апрува. То же для `build`, `test`, `detekt`, `koverLog`: точные формы разрешены в `.claude/settings.json`, новый вариант флагов — новый апрув. Как работать с пультом — [docs/ai/debug-ctl.md](docs/ai/debug-ctl.md).
 - `BuildConfig` генерирует задача `generateBuildConfig` в `build/generated/buildconfig`, перед каждой компиляцией Kotlin. Руками его не создавать.
 - Главный класс — `non.era.aisdme.MainKt`.
 - CI — `.github/workflows/ci.yml`: `gradlew build` на Linux и Windows при push в `master` и в каждом PR. Actions закреплены по SHA, рядом — версия. Упавший прогон: `gh run view --log-failed`, отчёты — artifact `reports-<ОС>`.
@@ -42,6 +43,7 @@ gradlew koverLog          # текущее покрытие; koverHtmlReport —
 - `Main.kt` — `main()`, корневой Compose-экран `AisDmeContent`
 - `di/` — `AppController`: корень композиции, сам создаёт и связывает контроллеры, доступен через `LocalAppController`; `buildAppController` — `remember` над ним
 - `bus/` — `AppEventBus` на `MutableSharedFlow`: события между контроллерами
+- `debug/` — `DebugControl`: пульт для агента (скриншот окна, клики, ввод), только debug-сборка и `gradlew run -PdebugCtl`: [docs/ai/architecture.md](docs/ai/architecture.md), «Пульт отладки»
 - `configs/` — `ConfigController`, `GlobalConfig`, `store/` (`ConfigStore`, `ConfigPaths`), `configs/` (`AppConfig`, `ProjectConfig`), `snapshots/` (сохранённое состояние редактора и дерева), `repositories/`
 - `files/` — `TypeFile`, `work/`: `FilesController`, `FilesExecutor`, `FileTransferable` (буфер обмена)
 - `platform/` — всё, что зависит от ОС: папка конфигов, отслеживание диска, показ в файловом менеджере. `IPlatform`, `WindowsPlatform`, `LinuxPlatform`, выбор — `Platform.current`
@@ -79,6 +81,7 @@ gradlew koverLog          # текущее покрытие; koverHtmlReport —
 |---|---|---|
 | [docs/ai/todo.md](docs/ai/todo.md) | что в работе и что дальше | в начале сессии |
 | [docs/ai/architecture.md](docs/ai/architecture.md) | как устроено приложение | перед изменениями в незнакомой части кода |
+| [docs/ai/debug-ctl.md](docs/ai/debug-ctl.md) | как запускать приложение и нажимать кнопки через пульт | перед любой проверкой в живом приложении |
 | [docs/ai/bugs.md](docs/ai/bugs.md) | известные баги и их статус | при ошибке — до того, как чинить |
 | [docs/ai/gotchas.md](docs/ai/gotchas.md) | ловушки: на чём уже ошибались | перед правкой конфигов, зависимостей, сборки |
 | [docs/ai/decisions.md](docs/ai/decisions.md) | решения и почему | перед рефакторингом и «улучшениями» |

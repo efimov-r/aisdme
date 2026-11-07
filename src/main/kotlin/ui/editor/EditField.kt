@@ -10,6 +10,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
@@ -52,6 +53,7 @@ fun EditorHalf(
 ){
     val editor = LocalAppController.current.editorController
     val activeTab = half.activeTabId?.let { editor.getTab(it)}
+    val side = if (half === editor.leftTabs) "left" else "right"
 
     if(activeTab != null) {
         Column (
@@ -60,6 +62,7 @@ fun EditorHalf(
                     if (half.dragDest) Modifier.background(LocalAisDmeColors.current.dropTargetElement)
                     else Modifier
                 )
+                .debugTag("half:$side")
                 .onGloballyPositioned {
                     half.rect = it.boundsInWindow()
                 }
@@ -109,10 +112,12 @@ fun EditorHalf(
         }
     } else {
         Box(modifier = modifier
+            .debugTag("half-empty:$side")
             .then(
                 if (half.dragDest) Modifier.background(LocalAisDmeColors.current.dropTargetElement)
                 else Modifier
-            ),
+            )
+            .onGloballyPositioned { half.rect = it.boundsInWindow() }, //цель для броска файла
             contentAlignment = Alignment.Center) {
             Text(
                 text = "Drop files here to open them",

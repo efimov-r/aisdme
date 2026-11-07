@@ -1,0 +1,5 @@
+# Файл, брошенный из дерева на пустой редактор, открывается (у пустой половины есть rect, bugs.md)
+waitfor state 120000 proj/
+node notes.txt
+drag node notes.txt -> tap half-empty:left
+waitfor state 3000 *notes.txt (writable)

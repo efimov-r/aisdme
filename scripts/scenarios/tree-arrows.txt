@@ -1,0 +1,9 @@
+# Стрелки по дереву при пустом выделении (#39): после «свернуть всё» ↓ выделяет верхний узел
+waitfor state 120000 proj/
+node a.txt
+expect state a.txt *
+tap tree:collapseAll
+waitfor state 2000 proj/ [+]
+key down
+waitfor state 2000 proj/ [+] *
+expect not state messages: [

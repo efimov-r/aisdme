@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeButtonBorder
@@ -60,6 +61,7 @@ fun ExternalChangeBanner(
 @Composable
 private fun BannerButton(text: String, onClick: () -> Unit) {
     TextButton(
+        modifier = Modifier.debugTag("banner:$text"),
         shape = AisDmeShapes.medium,
         onClick = onClick,
         border = aisDmeButtonBorder(),

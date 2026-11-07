@@ -1,0 +1,15 @@
+# Вкладки: открыть два файла, переключиться, закрыть крестиком, открыть картинку
+waitfor state 120000 proj/
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+node double notes.txt
+waitfor state 3000 *notes.txt (writable)
+expect state main.asm (writable), *notes.txt (writable)
+tap tab:main.asm
+waitfor state 2000 *main.asm (writable)
+expect text mov eax, 1
+tap tab-close:notes.txt
+waitfor not state 2000 notes.txt (writable)
+expect state *main.asm (writable)
+node double pic.png
+waitfor state 3000 *pic.png

@@ -13,6 +13,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.debug.DebugControl
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.di.buildAppController
 import non.era.aisdme.theme.AisDmeShapes
@@ -35,6 +37,7 @@ import java.awt.event.WindowEvent
 
 fun main() = application {
     if(BuildConfig.DEBUG) {
+        DebugControl.attachLog()
         Log.d("Debug!!!!")
     }
 
@@ -55,6 +58,10 @@ fun main() = application {
             }
             window.addWindowFocusListener(listener)
             onDispose { window.removeWindowFocusListener(listener) }
+        }
+
+        if (BuildConfig.DEBUG && configProjectStart != null) { //пульт для отладки, включается gradlew run -PdebugCtl
+            LaunchedEffect(window) { DebugControl.run(window, appController) } //команды ждут, пока загрузится конфиг
         }
 
         DisposableEffect(Unit) {
@@ -102,7 +109,7 @@ fun AisDmeContent(configProjectStart: ProjectConfig?) {
                 Box(Modifier.fillMaxSize().panel())
             })
         Box(Modifier.fillMaxHeight().width(60.dp).padding(start = 6.dp).panel().padding(AisDmeSpacing.s)) {
-            IconButton(onClick = { app.themeController.toggle() }) {
+            IconButton(onClick = { app.themeController.toggle() }, modifier = Modifier.debugTag("theme-toggle")) {
                 Icon(
                     imageVector = if (app.themeController.isDarkTheme)
                         Icons.Default.Email

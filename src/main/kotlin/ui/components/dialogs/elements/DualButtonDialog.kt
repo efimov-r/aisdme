@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.ui.components.over.ButtonCancel
 import non.era.aisdme.ui.components.over.ButtonOk
@@ -24,6 +25,7 @@ fun DualButtonDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(modifier = modifier
+            .debugTag("dialog:$title")
             .onPreviewKeyEvent {
                 if (it.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
 
