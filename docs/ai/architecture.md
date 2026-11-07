@@ -1,6 +1,6 @@
 # Архитектура
 
-Как устроено приложение сейчас. Почему так — в [decisions.md](decisions.md). Карта пакетов — в [AGENTS.md](../../AGENTS.md), «Структура кода».
+Как устроено приложение сейчас. Почему так — в [decisions.md](decisions.md). Карта пакетов — в [AGENTS.md](../../AGENTS.md), «Структура кода». Диаграммы C4 — в [docs/architecture.md](../architecture.md).
 
 ## Обзор
 
