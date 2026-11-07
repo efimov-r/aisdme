@@ -47,7 +47,7 @@ class EditorControllerTest {
         (controller.getTab(id) as? TabCashFile)?.writeStatus != WriteStatus.LOAD
     }
 
-    private fun onUi(block: () -> Unit) = runBlocking(Dispatchers.Swing) { block() }
+    private fun <T> onUi(block: () -> T): T = runBlocking(Dispatchers.Swing) { block() }
 
     private fun waitUntil(check: () -> Boolean) = runBlocking {
         withTimeout(5000) {
@@ -152,18 +152,19 @@ class EditorControllerTest {
         assertNotNull(controller.getTab(a))
     }
 
-    // derivedStateOf над левой половиной видит половину, перенесённую справа
+    // derivedStateOf над левой половиной видит половину, перенесённую справа;
+    // читаем на ui-потоке, как composition: из потока теста пересчёт мог гоняться с записью
     @Test
     fun derivedStateSeesRightToLeftHalf() {
         val id = openFile("a.asm")
         onUi { controller.rightTabs.activateTab(id) }
         val leftList = derivedStateOf { controller.leftTabs }
-        val before = leftList.value
+        val before = onUi { leftList.value }
 
         onUi { controller.leftTabs.closeTab(id) }
 
-        waitUntil { leftList.value !== before }
-        assertEquals(listOf(id), leftList.value.listTabs.toList())
+        waitUntil { onUi { leftList.value } !== before }
+        assertEquals(listOf(id), onUi { leftList.value }.listTabs.toList())
     }
 
     // derivedStateOf над getTab видит вкладку, добавленную в кэш позже
