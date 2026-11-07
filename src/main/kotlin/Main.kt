@@ -58,8 +58,8 @@ fun main() = application {
             onDispose { window.removeWindowFocusListener(listener) }
         }
 
-        if (BuildConfig.DEBUG) { //пульт для отладки, включается gradlew run -PdebugCtl или переменной AISDME_DEBUG_DIR
-            LaunchedEffect(window) { DebugControl.run(window) }
+        if (BuildConfig.DEBUG && configProjectStart != null) { //пульт для отладки, включается gradlew run -PdebugCtl
+            LaunchedEffect(window) { DebugControl.run(window, appController) } //команды ждут, пока загрузится конфиг
         }
 
         DisposableEffect(Unit) {

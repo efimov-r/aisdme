@@ -18,8 +18,11 @@ private val KEY_ALIASES = mapOf(
     "del" to "DELETE",
     "ins" to "INSERT",
     "return" to "ENTER",
+    "backspace" to "BACK_SPACE",
     "pgup" to "PAGE_UP",
+    "pageup" to "PAGE_UP",
     "pgdn" to "PAGE_DOWN",
+    "pagedown" to "PAGE_DOWN",
 )
 
 /** Синтетические события AWT прямо в окно: настоящая мышь и клавиатура не задействуются, фокус не нужен. */
