@@ -4,8 +4,8 @@
 
 ## В работе
 
-- [ ] Тесты логики дерева проекта — [#17](https://github.com/efimov-r/aisdme/issues/17), ветка `issue-17-tree-tests`: сделано, ждёт push и PR
-- [ ] Убрать все `copy(alpha = …)` у цветов — [#11](https://github.com/efimov-r/aisdme/issues/11), в той же ветке и PR, что #17: сделано, ждёт push и PR
+- [ ] Тесты логики контроллеров: `ProjectController`, `FilesExecutor`, `TreeReloadWatcher`, `MoveController` — [#39](https://github.com/efimov-r/aisdme/issues/39), ветка `issue-39-controller-tests`
+- [ ] Документация архитектуры по C4 Model — [#35](https://github.com/efimov-r/aisdme/issues/35), в той же ветке и PR, что #39
 
 ## Проверить руками
 
@@ -17,7 +17,7 @@
 - [ ] Вырезать несколько узлов — серым помечены все, вместе с содержимым
 - [ ] Переключение темы сохраняется после перезапуска
 
-Цвета без `copy(alpha)` ([#11](https://github.com/efimov-r/aisdme/issues/11)) проверены только сборкой. Проверить в светлой и тёмной теме:
+Цвета без `copy(alpha)` ([#11](https://github.com/efimov-r/aisdme/issues/11), PR [#38](https://github.com/efimov-r/aisdme/pull/38)) проверены только сборкой. Проверить в светлой и тёмной теме:
 
 - [ ] Контекстное меню: выделенный пункт, серый хоткей, разделитель — как раньше
 - [ ] Наведение на кнопки над деревом и на крестик вкладки — лёгкая зелёная подсветка

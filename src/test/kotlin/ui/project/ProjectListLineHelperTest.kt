@@ -6,6 +6,7 @@ import non.era.aisdme.ui.project.data.ProjectNode
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ProjectListLineHelperTest {
     private val a = FileNode(File("root/a"), 1)
@@ -91,6 +92,26 @@ class ProjectListLineHelperTest {
         ProjectListLineHelper.last(nodes, selected(), selection)
 
         assertEquals(listOf(nodes[0]), selected())
+    }
+
+    // вниз при пустом выделении — верхний узел, вверх — нижний из видимых (содержимое свёрнутой папки не считается)
+    @Test
+    fun emptySelectionGoesToTopOrBottomNode() {
+        ProjectListLineHelper.next(nested, selected(nested), selection)
+        assertEquals(listOf(nested[0]), selected(nested))
+
+        selection.clear()
+        ProjectListLineHelper.last(nested, selected(nested), selection)
+        assertEquals(listOf(y), selected(nested))
+    }
+
+    // пустое дерево и пустое выделение: ничего не происходит
+    @Test
+    fun emptyTreeAndSelectionDoNothing() {
+        ProjectListLineHelper.next(emptyList(), emptyList(), selection)
+        ProjectListLineHelper.last(emptyList(), emptyList(), selection)
+
+        assertTrue(selection.isEmpty())
     }
 
     // Shift+клик выше выделенного выделяет диапазон вверх

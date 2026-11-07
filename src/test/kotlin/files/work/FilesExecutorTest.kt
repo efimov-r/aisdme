@@ -188,4 +188,93 @@ class FilesExecutorTest {
         val taken = file("to/a.asm")
         assertEquals(taken, FilesExecutor.findTakenTarget(listOf(a), target))
     }
+
+    // существующая папка не пересоздаётся
+    @Test
+    fun createDirectoryFailsIfExists() {
+        val path = dir.resolve("src").createDirectories()
+        assertFailsWith<FileAlreadyExistsException> { FilesExecutor.createDirectory(path) }
+    }
+
+    // одиночный файл удаляется и рекурсивным удалением
+    @Test
+    fun deleteRecursiveRemovesSingleFile() {
+        val path = file("a.asm")
+        FilesExecutor.deleteRecursive(path)
+        assertFalse(path.exists())
+    }
+
+    // папка переносится вместе с содержимым
+    @Test
+    fun moveMovesDirectoryWithContent() {
+        file("src/lib/a.asm", "a")
+        val target = dir.resolve("moved")
+
+        FilesExecutor.move(dir.resolve("src"), target)
+
+        assertFalse(dir.resolve("src").exists())
+        assertEquals("a", target.resolve("lib/a.asm").readText())
+    }
+
+    // вырезание папки с содержимым: все файлы на новом месте, пара «откуда — куда» вернулась
+    @Test
+    fun pasteCutMovesNonEmptyDirectory() {
+        file("from/src/a.asm", "a")
+        file("from/src/lib/b.asm", "b")
+        val src = dir.resolve("from/src")
+        val target = dir.resolve("to").createDirectories()
+
+        val moved = FilesExecutor.paste(listOf(src), true, target)
+
+        assertEquals("a", target.resolve("src/a.asm").readText())
+        assertEquals("b", target.resolve("src/lib/b.asm").readText())
+        assertFalse(src.exists())
+        assertEquals(listOf(src to target.resolve("src")), moved)
+    }
+
+    // при вырезании исчезнувший источник не попадает в результат
+    @Test
+    fun pasteCutSkipsMissingSourcesInResult() {
+        val a = file("from/a.asm")
+        val target = dir.resolve("to").createDirectories()
+
+        val moved = FilesExecutor.paste(listOf(dir.resolve("from/missing.asm"), a), true, target)
+
+        assertEquals(listOf(a to target.resolve("a.asm")), moved)
+    }
+
+    // копирование сохраняет пустые папки
+    @Test
+    fun pasteCopyKeepsEmptyDirectories() {
+        dir.resolve("from/src/empty").createDirectories()
+        val target = dir.resolve("to").createDirectories()
+
+        FilesExecutor.paste(listOf(dir.resolve("from/src")), false, target)
+
+        assertTrue(Files.isDirectory(target.resolve("src/empty")))
+    }
+
+    // пустой список ничего не вставляет
+    @Test
+    fun pasteEmptyListDoesNothing() {
+        val target = dir.resolve("to").createDirectories()
+
+        assertEquals(emptyList(), FilesExecutor.paste(emptyList(), true, target))
+        assertEquals(emptyList(), target.listDirectoryEntries())
+    }
+
+    // папка в себя и в свою подпапку — найдена; в соседнюю с похожим именем, файл и пустой список — нет
+    @Test
+    fun findPasteIntoItselfFindsOnlyOwnSubtree() {
+        file("src/lib/a.asm")
+        file("src2/b.asm")
+        val src = dir.resolve("src")
+
+        assertEquals(src, FilesExecutor.findPasteIntoItself(listOf(src), src))
+        assertEquals(src, FilesExecutor.findPasteIntoItself(listOf(src), src.resolve("lib")))
+        assertNull(FilesExecutor.findPasteIntoItself(listOf(src), dir.resolve("src2")))
+        assertNull(FilesExecutor.findPasteIntoItself(listOf(src), dir))
+        assertNull(FilesExecutor.findPasteIntoItself(listOf(src.resolve("lib/a.asm")), src.resolve("lib")))
+        assertNull(FilesExecutor.findPasteIntoItself(emptyList(), src))
+    }
 }
