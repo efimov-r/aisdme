@@ -2,6 +2,14 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## Сверка вкладки с диском держит `saveMutex` и ждёт ui-поток
+- **Что случилось:** риск зависания при выходе ([#9](https://github.com/efimov-r/aisdme/issues/9)): `syncWithDisk` под `saveMutex` переключается на `Dispatchers.Swing`, а `disposeBeforeBlocked` на EDT (через `runBlocking`) ждёт тот же `saveMutex`
+- **Как правильно:** в `disposeBeforeBlocked` ждать мьютекс с `withTimeoutOrNull`, не бесконечно. Новый код под `saveMutex` не должен ждать ui-поток дольше, чем нужно; в `disposeBeforeBlocked` по-прежнему не звать `writeStatus`
+
+## Detekt: `TooManyFunctions` в `TabCashFileText`
+- **Что случилось:** после сверки с диском в классе стало больше 10 функций, detekt упал ([#9](https://github.com/efimov-r/aisdme/issues/9))
+- **Как правильно:** порог срабатывает при 11 функциях (`>=`). Чистые помощники — приватные функции файла вне класса; три действия плашки — одна `resolve(ExternalChoice)`. Следующую функцию в этот класс не добавлять: выносить в отдельный класс
+
 ## Тест опрашивает `derivedStateOf` из потока теста
 - **Что случилось:** `EditorControllerTest.derivedStateSeesRightToLeftHalf` один раз упал в CI на Linux по `TimeoutCancellationException` (прогон на master после слияния PR [#38](https://github.com/efimov-r/aisdme/pull/38)); в PR-прогоне того же кода прошёл
 - **Причина (гипотеза, не воспроизведена):** `waitUntil` читал `derivedStateOf` из потока теста, а `leftTabs` меняется на ui-потоке. Пересчёт мог гоняться с записью и закэшировать старое значение навсегда

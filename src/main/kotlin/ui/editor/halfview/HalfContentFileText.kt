@@ -22,6 +22,7 @@ fun HalfContentFileText(
     file: TabCashFileText,
     inFocus: Boolean,
     onFocusChanged: (FocusState) -> Unit,
+    onCloseTab: () -> Unit,
 ) {
     if (file.writeStatus == WriteStatus.LOAD) {
         Text(
@@ -38,12 +39,17 @@ fun HalfContentFileText(
             }
         }
 
-        AisDmeTextField(
-            focusRequester = focusRequester,
-            onFocusChanged = onFocusChanged,
-            textFieldValue = file.textFieldValue,
-            readOnly = file.writeStatus.readOnly,
-            onValueChange = { file.updateTextFieldValue(it) }
-        )
+        Column(Modifier.fillMaxSize()) {
+            if (file.writeStatus.awaitsChoice) ExternalChangeBanner(file, onCloseTab)
+            Box(Modifier.weight(1f)) {
+                AisDmeTextField(
+                    focusRequester = focusRequester,
+                    onFocusChanged = onFocusChanged,
+                    textFieldValue = file.textFieldValue,
+                    readOnly = file.writeStatus.readOnly,
+                    onValueChange = { file.updateTextFieldValue(it) }
+                )
+            }
+        }
     }
 }

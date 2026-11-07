@@ -30,6 +30,8 @@ import non.era.aisdme.ui.move.DragPreviewLayer
 import non.era.aisdme.ui.project.view.ProjectTreeView
 import non.era.aisdme.ui.win.AisDmeWindow
 import non.era.aisdme.utils.Log
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 
 fun main() = application {
     if(BuildConfig.DEBUG) {
@@ -44,6 +46,16 @@ fun main() = application {
 
         var activeDialog by remember { mutableStateOf<UiDialog?>(null) }
         LaunchedEffect(Unit) { appController.dialogController.effects.collect { activeDialog = it } }
+
+        DisposableEffect(window) { //вернулись в окно — файлы могли изменить в другой программе
+            val listener = object : WindowAdapter() {
+                override fun windowGainedFocus(e: WindowEvent) {
+                    appController.editorController.checkOpenFiles()
+                }
+            }
+            window.addWindowFocusListener(listener)
+            onDispose { window.removeWindowFocusListener(listener) }
+        }
 
         DisposableEffect(Unit) {
             onDispose {
