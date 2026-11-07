@@ -1,174 +1,243 @@
 # Архитектура AisDme в диаграммах
 
-Описание архитектуры по [C4 Model](https://c4model.com/): от системы целиком до компонентов внутри приложения. Диаграммы нарисованы в Mermaid, GitHub показывает их прямо в тексте. Они описывают код на 2026-11-07, а не целевую архитектуру. Уровень 4 (Code) не рисуется: классы смотрятся в IDE.
+Описание архитектуры по [C4 Model](https://c4model.com/): от системы целиком до компонентов внутри приложения. Диаграммы нарисованы в Mermaid (`flowchart` и `sequenceDiagram`): GitHub показывает их прямо в тексте. Родной синтаксис C4 в Mermaid не раскладывает элементы сам и клал подписи связей друг на друга, поэтому уровни и типы элементов C4 сохранены, а рисуются они обычными диаграммами. Диаграммы описывают код на 2026-11-07, а не целевую архитектуру. Уровень 4 (Code) не рисуется: классы смотрятся в IDE.
 
 Текстовое описание компонентов — в [docs/ai/architecture.md](ai/architecture.md), причины решений — в [docs/ai/decisions.md](ai/decisions.md).
 
-Обозначения на всех диаграммах:
+Обозначения на схемах:
 
-| Элемент | Что это |
+| Вид | Что это |
 |---|---|
-| Person | человек, пользователь IDE |
-| System | AisDme целиком |
-| System_Ext | внешняя система, не часть приложения |
-| Container, ContainerDb | отдельно запускаемое приложение или хранилище данных |
-| Component | класс или группа классов внутри приложения |
-| Стрелка с подписью | кто кого вызывает или читает; под подписью — технология |
+| тёмно-синий овал | человек, пользователь IDE |
+| синий прямоугольник | система AisDme или её контейнер |
+| серый прямоугольник | внешняя система, не часть AisDme |
+| голубой прямоугольник | компонент внутри приложения |
+| зелёный цилиндр | хранилище данных на диске, часть AisDme |
+| оранжевый прямоугольник | шина событий `AppEventBus` |
+| сплошная стрелка | вызов, чтение, запись или событие через шину |
+| пунктирная стрелка | прямой вызов между компонентами, не через шину |
+| стрелка с двумя остриями | данные идут в обе стороны |
 
 ## 1. System Context
 
 Кто пользуется AisDme и с чем она связана вне себя.
 
 ```mermaid
-C4Context
-    title Системный контекст AisDme
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 45, "rankSpacing": 110}}}%%
+flowchart LR
+    classDef person fill:#08427b,stroke:#052e56,color:#fff
+    classDef system fill:#1168bd,stroke:#0b4884,color:#fff
+    classDef ext fill:#6b6b6b,stroke:#4a4a4a,color:#fff
 
-    Person(user, "Пользователь", "Открывает проект, правит файлы, смотрит изображения")
-    System(aisdme, "AisDme", "Учебная IDE на Kotlin и Compose for Desktop")
-    System_Ext(fs, "Файловая система", "Файлы проекта и конфиги IDE")
-    System_Ext(fm, "Файловый менеджер ОС", "Explorer, Dolphin, Nautilus, Thunar, PCManFM")
-    System_Ext(clipboard, "Буфер обмена ОС", "Файлы и текст; пометка «вырезано» в формате своей ОС")
+    user(["<b>Пользователь</b><br/>Person"]):::person
+    aisdme["<b>AisDme</b><br/>учебная IDE<br/>Kotlin, Compose for Desktop"]:::system
+    fs["<b>Файловая система</b><br/>файлы проекта и конфиги"]:::ext
+    fm["<b>Файловый менеджер ОС</b><br/>Explorer, Dolphin и др."]:::ext
+    clipboard["<b>Буфер обмена ОС</b><br/>файлы и текст"]:::ext
 
-    Rel(user, aisdme, "Работает в IDE")
-    Rel(aisdme, fs, "Читает, пишет, переносит файлы; следит за изменениями", "java.nio.file, WatchService")
-    Rel(aisdme, fm, "Показывает файл в менеджере", "ProcessBuilder")
-    BiRel(aisdme, clipboard, "Копирует и вставляет файлы и текст", "AWT Clipboard")
-    Rel(fm, clipboard, "Кладёт и берёт файлы", "формат ОС")
-    Rel(fm, fs, "Меняет файлы извне, AisDme это замечает")
-
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    user -->|"работает"| aisdme
+    aisdme <-->|"читает, пишет, следит"| fs
+    aisdme -->|"показать файл"| fm
+    aisdme <-->|"копировать, вставить"| clipboard
 ```
+
+| Связь | Технология |
+|---|---|
+| AisDme ↔ файловая система | `java.nio.file`, `WatchService` |
+| AisDme → файловый менеджер | `ProcessBuilder` |
+| AisDme ↔ буфер обмена | AWT `Clipboard`, пометка «вырезано» в формате ОС |
+
+Файловый менеджер и AisDme общаются не напрямую: менеджер меняет файлы на диске (AisDme замечает это через `WatchService`) и кладёт файлы в буфер обмена, откуда AisDme их вставляет, в том числе с пометкой «вырезано».
 
 ## 2. Container
 
-Приложение — один процесс JVM. Всё остальное — данные на диске: два конфига и кэш вкладок «из буфера обмена».
+Приложение — один процесс JVM. Всё остальное — данные на диске: два конфига и кэш вкладок «из буфера обмена». Зелёные хранилища принадлежат AisDme, серые системы — внешние.
 
 ```mermaid
-C4Container
-    title Контейнеры AisDme
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 40, "rankSpacing": 140}}}%%
+flowchart LR
+    classDef person fill:#08427b,stroke:#052e56,color:#fff
+    classDef system fill:#1168bd,stroke:#0b4884,color:#fff
+    classDef ext fill:#6b6b6b,stroke:#4a4a4a,color:#fff
+    classDef db fill:#2b7a4b,stroke:#1d5434,color:#fff
 
-    Person(user, "Пользователь", "Работает в IDE")
+    user(["<b>Пользователь</b><br/>Person"]):::person
+    app["<b>Desktop-приложение</b><br/>Kotlin, Compose for Desktop<br/>JVM 17"]:::system
+    globalCfg[("<b>Глобальный конфиг</b><br/>config.json")]:::db
+    projectCfg[("<b>Конфиг проекта</b><br/>.aisdme/config.json")]:::db
+    clipCache[("<b>Кэш вкладок из буфера</b><br/>.aisdme/pastedtab/*.clip")]:::db
+    projectFiles["<b>Файлы проекта</b><br/>файловая система"]:::ext
+    fm["<b>Файловый менеджер ОС</b><br/>Explorer, Dolphin и др."]:::ext
+    clipboard["<b>Буфер обмена ОС</b><br/>файлы и текст"]:::ext
 
-    System_Boundary(aisdme, "AisDme") {
-        Container(app, "Desktop-приложение", "Kotlin, Compose for Desktop, JVM 17", "Окно, дерево проекта, редактор, диалоги; контроллеры и шина событий")
-        ContainerDb(globalCfg, "Глобальный конфиг", "JSON, config.json", "Тема, последний проект, окно. Папка конфигов ОС: Linux ~/.config/AisDme, Windows %APPDATA%/AisDme")
-        ContainerDb(projectCfg, "Конфиг проекта", "JSON, .aisdme/config.json", "Дерево (корень и раскрытые папки), открытые вкладки, размеры панелей")
-        ContainerDb(clipCache, "Кэш вкладок из буфера", "Файлы .clip, .aisdme/pastedtab", "Текст вкладок «From Clipboard» между запусками")
-    }
-
-    System_Ext(projectFiles, "Файлы проекта", "Файловая система")
-    System_Ext(fm, "Файловый менеджер ОС", "Explorer, Dolphin и др.")
-    System_Ext(clipboard, "Буфер обмена ОС", "Файлы и текст")
-
-    Rel(user, app, "Работает в окне")
-    Rel(app, projectFiles, "Читает, пишет, переносит; следит за изменениями", "java.nio.file, WatchService")
-    Rel(app, globalCfg, "Читает при старте, пишет при смене темы и проекта", "kotlinx.serialization, атомарная запись")
-    Rel(app, projectCfg, "Читает при открытии проекта, пишет с задержкой (debounce)", "kotlinx.serialization, атомарная запись")
-    Rel(app, clipCache, "Пишет при выходе, читает при открытии, удаляет при закрытии вкладки", "java.nio.file")
-    Rel(app, fm, "Показать файл в менеджере", "ProcessBuilder")
-    BiRel(app, clipboard, "Копировать, вырезать, вставить", "AWT Clipboard")
-
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    user -->|"работает"| app
+    app -->|"тема, проект"| globalCfg
+    app -->|"дерево, вкладки"| projectCfg
+    app -->|"текст вкладок"| clipCache
+    app <-->|"читает, пишет, следит"| projectFiles
+    app -->|"показать файл"| fm
+    app <-->|"копировать, вставить"| clipboard
 ```
+
+| Связь | Когда | Технология |
+|---|---|---|
+| приложение → глобальный конфиг | читает при старте; пишет при смене темы и открытии проекта. Содержит тему, последний проект, окно | `kotlinx.serialization`, атомарная запись |
+| приложение → конфиг проекта | читает при открытии проекта; пишет с задержкой (debounce). Содержит дерево (корень и раскрытые папки), открытые вкладки, размеры панелей | `kotlinx.serialization`, атомарная запись |
+| приложение → кэш вкладок | пишет при выходе, читает при открытии, удаляет при закрытии вкладки | `java.nio.file` |
+| приложение ↔ файлы проекта | читает, пишет, переносит, следит за изменениями | `java.nio.file`, `WatchService` |
+| приложение → файловый менеджер | показать файл | `ProcessBuilder` |
+| приложение ↔ буфер обмена | копировать, вырезать, вставить | AWT `Clipboard` |
+
+Папка глобального конфига: Linux — `~/.config/AisDme`, Windows — `%APPDATA%/AisDme`.
 
 ## 3. Component
 
-Приложение разбито на две диаграммы: на одной контроллеры и события между ними, на другой данные, файлы и всё, что зависит от ОС. Одна диаграмма со всеми компонентами получилась бы перегруженной.
+Приложение показано четырьмя диаграммами: события через шину, прямые вызовы, конфиги и состояние, файлы и платформа. Одна диаграмма со всеми компонентами получилась бы перегруженной.
 
 Чего на диаграммах нет:
 
-- Compose UI показан одним элементом: экраны получают контроллеры через `LocalAppController`.
-- `AppController` создаёт все контроллеры и передаёт им шину. Стрелки к каждому не рисуются.
+- Compose UI: экраны получают контроллеры через `LocalAppController`.
+- Стрелок от `AppController` к каждому контроллеру: он создаёт их все и передаёт им шину. На диаграмме шины показана только его связь с самой шиной.
 - `UiController` — абстрактный предок контроллеров (корутины и поток сообщений), отдельным компонентом не показан. `GlobalMessages` подписывается на сообщения всех контроллеров (`collectFrom`) и показывает их в `ErrorOverlay`.
 - `MoveController` (состояние drag & drop) связан только с UI и нигде не показан.
 
 ### 3.1 Контроллеры и события
 
 ```mermaid
-C4Component
-    title Компоненты: контроллеры и события
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 50, "rankSpacing": 100}}}%%
+flowchart TB
+    classDef comp fill:#438dd5,stroke:#2e6295,color:#fff
+    classDef bus fill:#b45309,stroke:#7c3a06,color:#fff
 
-    Container_Boundary(app, "Desktop-приложение") {
-        Component(ui, "UI", "Compose for Desktop", "Дерево, редактор, диалоги, меню")
-        Component(appC, "AppController", "Kotlin", "Корень композиции: создаёт контроллеры и шину, открывает проект")
-        Component(bus, "AppEventBus", "MutableSharedFlow", "События: FileOpened, ShowFileInTree, RebuilDirRiff, MoveFile, DeleteFile, DeleteDir")
-        Component(projectC, "ProjectController", "Kotlin, ProjectTreeState", "Дерево файлов: узлы, выделение, ленивая загрузка папок")
-        Component(editorC, "EditorController", "Kotlin", "Две половины редактора, вкладки TabCash*")
-        Component(filesC, "FilesController", "Kotlin", "Создать, удалить, переименовать, переместить, вставить")
-        Component(watcher, "TreeReloadWatcher", "WatchService", "Изменения на диске пачкой раз в 200 мс")
-        Component(treeActions, "TreeActions", "Kotlin", "Операции над выделенными узлами дерева")
-        Component(dialogsC, "DialogsController", "Kotlin", "Диалоги: новый файл, переименование, удаление, вставка")
-    }
+    subgraph app["Desktop-приложение"]
+        appC["<b>AppController</b><br/>корень композиции"]:::comp
+        filesC["<b>FilesController</b><br/>файловые операции"]:::comp
+        watcher["<b>TreeReloadWatcher</b><br/>изменения на диске"]:::comp
+        bus["<b>AppEventBus</b><br/>MutableSharedFlow"]:::bus
+        projectC["<b>ProjectController</b><br/>дерево файлов"]:::comp
+        editorC["<b>EditorController</b><br/>вкладки редактора"]:::comp
+    end
+    style app fill:transparent,stroke:#888,stroke-dasharray:6 4
 
-    Rel(ui, appC, "Берёт контроллеры", "LocalAppController")
-    Rel(appC, bus, "Создаёт шину и передаёт контроллерам")
-
-    Rel(projectC, bus, "Двойной клик по файлу", "FileOpened")
-    Rel(bus, editorC, "Открыть вкладку; файл переехал или удалён", "FileOpened, MoveFile, DeleteFile, DeleteDir")
-    Rel(editorC, bus, "Показать файл вкладки в дереве", "ShowFileInTree")
-    Rel(filesC, bus, "Файл переехал или удалён", "MoveFile, DeleteFile, DeleteDir")
-    Rel(watcher, bus, "Папка изменилась на диске", "RebuilDirRiff")
-    Rel(bus, projectC, "Перечитать папку; показать файл", "RebuilDirRiff, ShowFileInTree")
-    Rel(projectC, watcher, "Прочитанные папки: на Linux следить за ними", "dirsLoaded, напрямую")
-
-    Rel(treeActions, projectC, "Выделенные узлы; пометка «вырезано»", "getSelectedNodes, markCut")
-    Rel(treeActions, editorC, "Открыть выделенные в половине", "openNodes")
-    Rel(treeActions, filesC, "Копировать в буфер", "copyToClipboard")
-    Rel(dialogsC, projectC, "Выделенные узлы для диалога", "getSelectedNodes")
-
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    appC -->|"создаёт"| bus
+    filesC -->|"MoveFile, DeleteFile,<br/>DeleteDir"| bus
+    watcher -->|"RebuilDirRiff"| bus
+    projectC <-->|"публикует: FileOpened<br/>слушает: RebuilDirRiff,<br/>ShowFileInTree"| bus
+    editorC <-->|"публикует: ShowFileInTree<br/>слушает: FileOpened, MoveFile,<br/>DeleteFile, DeleteDir"| bus
 ```
 
-### 3.2 Данные, файлы и платформа
+| Событие | Кто публикует | Кто слушает | Зачем |
+|---|---|---|---|
+| `FileOpened` | `ProjectController` | `EditorController` | двойной клик по файлу: открыть вкладку |
+| `ShowFileInTree` | `EditorController` | `ProjectController` | показать файл вкладки в дереве |
+| `RebuilDirRiff` | `TreeReloadWatcher` | `ProjectController` | папка изменилась на диске: перечитать |
+| `MoveFile`, `DeleteFile`, `DeleteDir` | `FilesController` | `EditorController` | файл переехал или удалён: обновить или закрыть вкладки |
+
+### 3.2 Прямые вызовы
+
+Связи, которые идут не через шину. Пунктир — вызов метода.
 
 ```mermaid
-C4Component
-    title Компоненты: данные, файлы и платформа
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 45, "rankSpacing": 130}}}%%
+flowchart LR
+    classDef comp fill:#438dd5,stroke:#2e6295,color:#fff
 
-    Container_Boundary(app, "Desktop-приложение") {
-        Component(editorC, "EditorController", "Kotlin", "Вкладки редактора")
-        Component(projectC, "ProjectController", "Kotlin", "Дерево файлов")
-        Component(themeC, "ThemeController", "Kotlin", "Светлая и тёмная тема")
-        Component(configC, "ConfigController", "Kotlin", "Автосохранение снимков на каждый проект")
-        Component(editorRep, "EditorStateRepository", "MutableStateFlow", "Снимок вкладок")
-        Component(treeRep, "TreeStateRepository", "MutableStateFlow", "Снимок дерева")
-        Component(store, "ConfigStore", "kotlinx.serialization", "Чтение и атомарная запись JSON, Mutex, кэш")
-        Component(filesC, "FilesController", "Kotlin", "Файловые операции и буфер обмена")
-        Component(executor, "FilesExecutor", "java.nio.file", "Создать, копировать, перенести, удалить; буфер обмена")
-        Component(transferable, "FileTransferable", "AWT datatransfer", "Файлы и пометка «вырезано» в буфере")
-        Component(watcher, "TreeReloadWatcher", "WatchService", "События CREATE и DELETE")
-        Component(platform, "Platform", "IPlatform: WindowsPlatform, LinuxPlatform", "Всё, что зависит от ОС")
-    }
+    subgraph app["Desktop-приложение"]
+        treeActions["<b>TreeActions</b><br/>операции над выделенным"]:::comp
+        dialogsC["<b>DialogsController</b><br/>диалоги"]:::comp
+        projectC["<b>ProjectController</b><br/>дерево файлов"]:::comp
+        editorC["<b>EditorController</b><br/>вкладки редактора"]:::comp
+        filesC["<b>FilesController</b><br/>файловые операции"]:::comp
+        watcher["<b>TreeReloadWatcher</b><br/>изменения на диске"]:::comp
+    end
+    style app fill:transparent,stroke:#888,stroke-dasharray:6 4
 
-    ContainerDb(globalCfg, "Глобальный конфиг", "JSON", "Папка конфигов ОС")
-    ContainerDb(projectCfg, "Конфиг проекта", "JSON", ".aisdme/config.json")
-    System_Ext(fs, "Файловая система", "Файлы проекта")
-    System_Ext(clipboard, "Буфер обмена ОС", "Файлы и текст")
-    System_Ext(fm, "Файловый менеджер ОС", "Explorer, Dolphin и др.")
-
-    Rel(editorC, editorRep, "Пишет снимок вкладок", "value =")
-    Rel(projectC, treeRep, "Пишет снимок дерева", "value =")
-    Rel(configC, editorRep, "Читает снимок", "debounce 4 с")
-    Rel(configC, treeRep, "Читает снимок", "debounce 2 с")
-    Rel(configC, store, "Обновляет конфиг проекта и последний проект", "update")
-    Rel(themeC, store, "Пишет тему в глобальный конфиг", "update")
-    Rel(store, globalCfg, "Читает и пишет", "JSON")
-    Rel(store, projectCfg, "Читает и пишет", "JSON")
-    Rel(store, platform, "Папка конфигов ОС", "configRoot, ConfigPaths")
-
-    Rel(filesC, executor, "Операции над Path")
-    Rel(executor, fs, "Читает, копирует, переносит, удаляет", "java.nio.file")
-    Rel(executor, transferable, "Создаёт содержимое для буфера")
-    BiRel(executor, clipboard, "Кладёт и берёт файлы", "AWT Clipboard")
-    Rel(transferable, platform, "Формат и байты пометки «вырезано»", "clipboardCutNative")
-    Rel(executor, platform, "Распознаёт «вырезано»", "isClipboardCut")
-
-    Rel(watcher, platform, "Регистрирует папки", "registerWatch")
-    Rel(platform, fs, "Следит за папками", "WatchService, FILE_TREE на Windows")
-    Rel(platform, fm, "Показывает файл", "showInFileManager")
-
-    UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")
+    treeActions -.->|"getSelectedNodes, markCut"| projectC
+    treeActions -.->|"openNodes"| editorC
+    treeActions -.->|"copyToClipboard"| filesC
+    dialogsC -.->|"getSelectedNodes"| projectC
+    projectC -.->|"dirsLoaded"| watcher
 ```
+
+| Вызов | Зачем |
+|---|---|
+| `TreeActions` → `ProjectController` | выделенные узлы; пометка «вырезано» |
+| `TreeActions` → `EditorController` | открыть выделенные файлы в левой или правой половине |
+| `TreeActions` → `FilesController` | положить выделенные файлы в буфер обмена |
+| `DialogsController` → `ProjectController` | выделенные узлы для диалога (функция из `AppController`) |
+| `ProjectController` → `TreeReloadWatcher` | `dirsLoaded`: прочитанные папки дерева, на Linux watcher следит только за ними |
+
+Связка `dirsLoaded` сделана в `AppController`, потому что шина при переполнении теряла события.
+
+### 3.3 Конфиги и состояние
+
+```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 45, "rankSpacing": 120}}}%%
+flowchart LR
+    classDef comp fill:#438dd5,stroke:#2e6295,color:#fff
+    classDef db fill:#2b7a4b,stroke:#1d5434,color:#fff
+
+    subgraph app["Desktop-приложение"]
+        editorC["<b>EditorController</b><br/>вкладки редактора"]:::comp
+        projectC["<b>ProjectController</b><br/>дерево файлов"]:::comp
+        themeC["<b>ThemeController</b><br/>тема"]:::comp
+        editorRep["<b>EditorStateRepository</b><br/>снимок вкладок"]:::comp
+        treeRep["<b>TreeStateRepository</b><br/>снимок дерева"]:::comp
+        configC["<b>ConfigController</b><br/>автосохранение"]:::comp
+        store["<b>ConfigStore</b><br/>kotlinx.serialization"]:::comp
+        platform["<b>Platform</b><br/>папка конфигов ОС"]:::comp
+    end
+    style app fill:transparent,stroke:#888,stroke-dasharray:6 4
+
+    projectCfg[("<b>Конфиг проекта</b><br/>.aisdme/config.json")]:::db
+    globalCfg[("<b>Глобальный конфиг</b><br/>config.json в папке ОС")]:::db
+
+    editorC -->|"снимок"| editorRep
+    projectC -->|"снимок"| treeRep
+    configC -->|"читает, debounce 4 с"| editorRep
+    configC -->|"читает, debounce 2 с"| treeRep
+    configC -->|"update"| store
+    themeC -->|"update"| store
+    store -->|"JSON"| projectCfg
+    store -->|"JSON"| globalCfg
+    store -.->|"configRoot"| platform
+```
+
+Репозитории — `MutableStateFlow`, в них пишут присваиванием `value`. `ConfigStore` пишет JSON атомарно, под `Mutex`, с кэшем.
+
+### 3.4 Файлы, буфер обмена и платформа
+
+```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 45, "rankSpacing": 120}}}%%
+flowchart LR
+    classDef comp fill:#438dd5,stroke:#2e6295,color:#fff
+    classDef ext fill:#6b6b6b,stroke:#4a4a4a,color:#fff
+
+    subgraph app["Desktop-приложение"]
+        filesC["<b>FilesController</b><br/>файловые операции"]:::comp
+        executor["<b>FilesExecutor</b><br/>java.nio.file"]:::comp
+        transferable["<b>FileTransferable</b><br/>AWT datatransfer"]:::comp
+        watcher["<b>TreeReloadWatcher</b><br/>WatchService"]:::comp
+        platform["<b>Platform</b><br/>Windows, Linux"]:::comp
+    end
+    style app fill:transparent,stroke:#888,stroke-dasharray:6 4
+
+    fs["<b>Файловая система</b><br/>файлы проекта"]:::ext
+    clipboard["<b>Буфер обмена ОС</b><br/>файлы и текст"]:::ext
+    fm["<b>Файловый менеджер ОС</b><br/>Explorer, Dolphin и др."]:::ext
+
+    filesC -->|"операции над Path"| executor
+    executor -->|"читает, переносит, удаляет"| fs
+    executor -->|"создаёт содержимое"| transferable
+    executor <-->|"файлы"| clipboard
+    transferable -.->|"формат «вырезано»"| platform
+    executor -.->|"isClipboardCut"| platform
+    watcher -->|"registerWatch"| platform
+    platform -->|"WatchService"| fs
+    platform -->|"showInFileManager"| fm
+```
+
+`Platform` — интерфейс `IPlatform` с реализациями `WindowsPlatform` и `LinuxPlatform`. На Windows `WatchService` регистрирует корень с `FILE_TREE`.
 
 ## 4. Dynamic
 
@@ -177,29 +246,25 @@ C4Component
 Двойной клик по файлу открывает вкладку, а состояние редактора попадает в конфиг проекта.
 
 ```mermaid
-C4Dynamic
-    title Открытие файла двойным кликом
+sequenceDiagram
+    actor user as Пользователь
+    participant projectC as ProjectController
+    participant bus as AppEventBus
+    participant editorC as EditorController
+    participant tab as TabCashFileText
+    participant fs as Файловая система
+    participant editorRep as EditorStateRepository
+    participant configC as ConfigController
+    participant cfg as Конфиг проекта
 
-    Person(user, "Пользователь", "Работает в IDE")
-    Component(projectC, "ProjectController", "Kotlin", "Дерево файлов")
-    Component(bus, "AppEventBus", "MutableSharedFlow", "События между контроллерами")
-    Component(editorC, "EditorController", "Kotlin", "Вкладки редактора")
-    Component(tab, "TabCashFileText", "Kotlin", "Текстовый файл во вкладке")
-    System_Ext(fs, "Файловая система", "Файлы проекта")
-    Component(editorRep, "EditorStateRepository", "MutableStateFlow", "Снимок вкладок")
-    Component(configC, "ConfigController", "Kotlin", "Автосохранение снимков")
-    ContainerDb(projectCfg, "Конфиг проекта", "JSON", ".aisdme/config.json")
-
-    RelIndex(1, user, projectC, "Двойной клик по файлу")
-    RelIndex(2, projectC, bus, "FileOpened")
-    RelIndex(3, bus, editorC, "FileOpened, на UI-потоке")
-    RelIndex(4, editorC, tab, "Создаёт вкладку и открывает файл")
-    RelIndex(5, tab, fs, "Читает текст", "java.io.File")
-    RelIndex(6, editorC, editorRep, "Пишет снимок вкладок")
-    RelIndex(7, configC, editorRep, "Читает снимок, debounce 4 с")
-    RelIndex(8, configC, projectCfg, "Пишет конфиг проекта", "ConfigStore")
-
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    user->>projectC: двойной клик по файлу
+    projectC->>bus: FileOpened
+    bus->>editorC: FileOpened (UI-поток)
+    editorC->>tab: создать вкладку, открыть файл
+    tab->>fs: прочитать текст
+    editorC->>editorRep: снимок вкладок
+    configC->>editorRep: прочитать снимок (debounce 4 с)
+    configC->>cfg: записать конфиг проекта (ConfigStore)
 ```
 
 ### 4.2 Изменение на диске извне
@@ -207,24 +272,21 @@ C4Dynamic
 Файл создали в файловом менеджере: дерево обновляется без действий пользователя. На Windows watcher следит за всем деревом одним ключом, на Linux — только за корнем и папками, прочитанными в дерево.
 
 ```mermaid
-C4Dynamic
-    title Обновление дерева после изменения на диске
+sequenceDiagram
+    participant fs as Файловая система
+    participant watcher as TreeReloadWatcher
+    participant bus as AppEventBus
+    participant projectC as ProjectController
+    participant treeState as ProjectTreeState
+    participant ui as UI
 
-    System_Ext(fs, "Файловая система", "Файлы проекта")
-    Component(watcher, "TreeReloadWatcher", "WatchService", "Изменения на диске")
-    Component(bus, "AppEventBus", "MutableSharedFlow", "События между контроллерами")
-    Component(projectC, "ProjectController", "Kotlin", "Дерево файлов")
-    Component(treeState, "ProjectTreeState", "Kotlin", "Узлы, выделение, слияние с диском")
-    Component(ui, "UI", "Compose for Desktop", "Дерево на экране")
-
-    RelIndex(1, fs, watcher, "ENTRY_CREATE, ENTRY_DELETE", "WatchService")
-    RelIndex(2, watcher, bus, "Через 200 мс одним пакетом: RebuilDirRiff для каждой папки, которая ещё есть")
-    RelIndex(3, bus, projectC, "RebuilDirRiff")
-    RelIndex(4, projectC, treeState, "rebuildDirDiff")
-    RelIndex(5, treeState, fs, "Читает прочитанные папки заново", "listFiles")
-    RelIndex(6, treeState, ui, "Новые узлы, state обновляется на UI-потоке")
-
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    fs->>watcher: ENTRY_CREATE, ENTRY_DELETE (WatchService)
+    Note over watcher: собирает события 200 мс
+    watcher->>bus: RebuilDirRiff для каждой папки, которая ещё есть
+    bus->>projectC: RebuilDirRiff
+    projectC->>treeState: rebuildDirDiff
+    treeState->>fs: перечитать прочитанные папки (listFiles)
+    treeState->>ui: новые узлы (на UI-потоке)
 ```
 
 ## Расхождения с решениями
