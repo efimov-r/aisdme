@@ -19,7 +19,13 @@ object DebugState {
         ProjectListLineHelper.buildLinearExpandedNodes(tree.getNodes()).forEach { appendLine(treeLine(tree, it)) }
         appendLine("left: ${halfLine(app, app.editorController.leftTabs)}")
         appendLine("right: ${halfLine(app, app.editorController.rightTabs)}")
+        appendLine("ui (tap имя; @x,y — центр):")
+        DebugTag.lines().forEach { appendLine("  $it") }
+        appendLine("messages: ${messagesLine(app)}")
     }
+
+    private fun messagesLine(app: AppController) =
+        app.messages.list.joinToString("; ") { "[${it.type}] ${it.title}: ${it.text}" }.ifEmpty { "-" }
 
     /** Полный текст активной вкладки половины: `left` (по умолчанию) или `right` */
     fun text(app: AppController, half: String): String {

@@ -18,8 +18,16 @@ object DebugControl {
     private const val ENV_DIR = "AISDME_DEBUG_DIR"
     private const val POLL_MS = 100L
 
+    private fun dir(): File? = (System.getProperty(PROP_DIR) ?: System.getenv(ENV_DIR))?.let { File(it) }
+
+    fun attachLog() { //в начале main: в app.log попадает и запуск
+        val dir = dir() ?: return
+        dir.mkdirs()
+        DebugLog.attach(dir)
+    }
+
     suspend fun run(window: ComposeWindow, app: AppController) {
-        val dir = (System.getProperty(PROP_DIR) ?: System.getenv(ENV_DIR))?.let { File(it) } ?: return
+        val dir = dir() ?: return
         dir.mkdirs()
         Log.d("DebugControl: ${dir.absolutePath}")
 

@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.debug.DebugControl
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.di.buildAppController
 import non.era.aisdme.theme.AisDmeShapes
@@ -36,6 +37,7 @@ import java.awt.event.WindowEvent
 
 fun main() = application {
     if(BuildConfig.DEBUG) {
+        DebugControl.attachLog()
         Log.d("Debug!!!!")
     }
 
@@ -107,7 +109,7 @@ fun AisDmeContent(configProjectStart: ProjectConfig?) {
                 Box(Modifier.fillMaxSize().panel())
             })
         Box(Modifier.fillMaxHeight().width(60.dp).padding(start = 6.dp).panel().padding(AisDmeSpacing.s)) {
-            IconButton(onClick = { app.themeController.toggle() }) {
+            IconButton(onClick = { app.themeController.toggle() }, modifier = Modifier.debugTag("theme-toggle")) {
                 Icon(
                     imageVector = if (app.themeController.isDarkTheme)
                         Icons.Default.Email

@@ -13,6 +13,8 @@
       "PowerShell(.\\gradlew.bat koverLog --console=plain)",
       "PowerShell(.\\gradlew.bat run -PdebugCtl)",
       "PowerShell(.\\scripts\\debug-ctl.ps1 *)",
+      "PowerShell(.\\scripts\\debug-scenario.ps1)",
+      "PowerShell(.\\scripts\\debug-scenario.ps1 *)",
       "PowerShell(git fetch --prune)",
       "Bash(git fetch --prune)"
     ]

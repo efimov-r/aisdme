@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.over.FileIcon
 import non.era.aisdme.ui.components.over.SvgButton
@@ -73,6 +74,7 @@ fun EditorTab(
                     size = Size(size.width, 4.dp.toPx())
                 )
             }
+            .debugTag("tab:${tab.name}#${tab.id}")
             .clickable { onSelect(tab.id) }
             .padding(horizontal = 14.dp, vertical = 2.dp), //внутри элемента, от текста до границ
         verticalAlignment = Alignment.CenterVertically
@@ -91,7 +93,7 @@ fun EditorTab(
         Spacer(Modifier.width(3.dp))
         SvgButton(
             baseName = "close",
-            modifier = Modifier.padding(top = 5.dp)
+            modifier = Modifier.padding(top = 5.dp).debugTag("tab-close:${tab.name}#${tab.id}")
         ){
             onClose(tab.id)
         }

@@ -1,0 +1,14 @@
+# Открыть файл двойным кликом, набрать текст в первой строке, статус «не сохранено», затем автосохранение, откат ввода
+waitfor state 120000 proj/
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+expect text mov eax, 1
+click 400 70
+type ZZ
+waitfor state 2000 *main.asm (save not)
+expect text section .textZZ
+waitfor state 6000 *main.asm (writable)
+key backspace
+key backspace
+expect not text ZZ
+waitfor state 6000 *main.asm (writable)

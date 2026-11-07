@@ -1,0 +1,17 @@
+# Удаление открытого файла снаружи (#9): без ввода вкладка закрывается, с вводом — «deleted» и плашка
+waitfor state 120000 proj/
+node double notes.txt
+waitfor state 3000 notes.txt (writable)
+ext delete notes.txt
+focus
+waitfor not state 4000 notes.txt (writable)
+node double a.txt
+waitfor state 3000 a.txt (writable)
+click 400 70
+type Q
+ext delete a.txt
+focus
+waitfor state 4000 a.txt (deleted)
+expect state banner:Save again
+tap banner:Close tab
+waitfor not state 3000 a.txt (deleted)

@@ -22,7 +22,7 @@ gradlew koverLog          # текущее покрытие; koverHtmlReport —
 
 На Windows `gradlew build` и `gradlew run` работают с JDK 17, если задан `JAVA_HOME` (проверено 2026-11-05).
 
-- **Запуск приложения агентом:** в PowerShell `.\gradlew.bat run -PdebugCtl` в фоне, затем команды пульту — `.\scripts\debug-ctl.ps1 "state" "shot a"`. Без `-p`, абсолютных путей, `$env:` и `&`: составная команда требует ручного апрува. То же для `build`, `test`, `detekt`, `koverLog`: точные формы разрешены в `.claude/settings.json`, новый вариант флагов — новый апрув. Как работать с пультом — [docs/ai/debug-ctl.md](docs/ai/debug-ctl.md).
+- **Запуск приложения агентом:** в PowerShell `.\gradlew.bat run -PdebugCtl` в фоне, затем команды пульту — `.\scripts\debug-ctl.ps1 "state" "shot a"`; готовые проверки — `.\scripts\debug-scenario.ps1`. Запуск идёт в песочнице (свежий тестовый проект и свой конфиг в `build/`), данные пользователя не трогаются. Без `-p`, абсолютных путей, `$env:` и `&`: составная команда требует ручного апрува. То же для `build`, `test`, `detekt`, `koverLog`: точные формы разрешены в `.claude/settings.json`, новый вариант флагов — новый апрув. Как работать с пультом — [docs/ai/debug-ctl.md](docs/ai/debug-ctl.md).
 - `BuildConfig` генерирует задача `generateBuildConfig` в `build/generated/buildconfig`, перед каждой компиляцией Kotlin. Руками его не создавать.
 - Главный класс — `non.era.aisdme.MainKt`.
 - CI — `.github/workflows/ci.yml`: `gradlew build` на Linux и Windows при push в `master` и в каждом PR. Actions закреплены по SHA, рядом — версия. Упавший прогон: `gh run view --log-failed`, отчёты — artifact `reports-<ОС>`.

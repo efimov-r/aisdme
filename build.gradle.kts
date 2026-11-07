@@ -1,3 +1,7 @@
+import java.awt.Color
+import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
+
 plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22"
@@ -56,14 +60,54 @@ kotlin {
     }
 }
 
+val debugCtl = project.hasProperty("debugCtl") && !isRelease //gradlew run -PdebugCtl: пульт отладки в песочнице
+val debugCtlDir = layout.buildDirectory.dir("debug-ctl")
+val debugFixtureDir = layout.buildDirectory.dir("debug-fixture")
+
+val prepareDebugFixture = tasks.register("prepareDebugFixture") { //свежий проект и конфиг: настоящие данные не трогаются
+    outputs.upToDateWhen { false }
+
+    doLast {
+        val ctl = debugCtlDir.get().asFile
+        val fixture = debugFixtureDir.get().asFile
+        //старые ответы, снимки и конфиг — долой; команды (.cmd, .tmp) остаются: их могли положить, пока шла сборка
+        ctl.listFiles()?.filter { it.extension != "cmd" && it.extension != "tmp" }?.forEach { it.deleteRecursively() }
+        fixture.deleteRecursively()
+
+        val proj = fixture.resolve("proj")
+        mapOf(
+            "main.asm" to "section .text\nglobal _start\n_start:\n    mov eax, 1\n    xor ebx, ebx\n    int 0x80",
+            "notes.txt" to "line 1\nline 2\nline 3",
+            "a.txt" to "a",
+            "тест.txt" to "первая строка\nвторая строка",
+            "fold/a.txt" to "a in fold",
+            "fold/folda/Текстовый документ.txt" to "doc",
+            "fold2/b.txt" to "b",
+        ).forEach { (path, text) -> proj.resolve(path).apply { parentFile.mkdirs() }.writeText(text) }
+        proj.resolve("fold/foldb").mkdirs() //пустая папка
+
+        val img = BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB)
+        for (x in 0 until 64) for (y in 0 until 64) img.setRGB(x, y, Color(x * 4, y * 4, 128).rgb)
+        ImageIO.write(img, "png", proj.resolve("pic.png"))
+
+        val config = ctl.resolve("config").apply { mkdirs() }.resolve("config.json") //глобальный конфиг песочницы
+        config.writeText("""{"lastOpenProject": "${proj.absolutePath.replace("\\", "\\\\")}"}""")
+    }
+}
+
 compose.desktop {
     application {
         mainClass = "non.era.aisdme.MainKt"
 
-        if (project.hasProperty("debugCtl") && !isRelease) { //gradlew run -PdebugCtl: включает пульт отладки, папка фиксированная
-            jvmArgs += "-Daisdme.debug.dir=${layout.buildDirectory.dir("debug-ctl").get().asFile.absolutePath}"
+        if (debugCtl) {
+            jvmArgs += "-Daisdme.debug.dir=${debugCtlDir.get().asFile.absolutePath}"
+            jvmArgs += "-Daisdme.debug.config=${debugCtlDir.get().asFile.resolve("config").absolutePath}"
         }
     }
+}
+
+tasks.matching { it.name == "run" }.configureEach {
+    if (debugCtl) dependsOn(prepareDebugFixture)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

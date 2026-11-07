@@ -4,20 +4,19 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 object Log {
-    fun i(str: String) {
-        println("[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] $str")
+    @Volatile var sink: ((String) -> Unit)? = null //пульт отладки копирует строки в файл
+
+    private fun out(str: String) {
+        val line = "[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] $str"
+        println(line)
+        sink?.invoke(line)
     }
 
-    fun e(e: Throwable) {
-        val stackTrace = e.stackTraceToString()
-        println("[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] Error: ${e.message}\n\n$stackTrace")
-    }
+    fun i(str: String) = out(str)
 
-    fun e(str: String) {
-        println("[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] $str")
-    }
+    fun e(e: Throwable) = out("Error: ${e.message}\n\n${e.stackTraceToString()}")
 
-    fun d(str: String) {
-        println("[${SimpleDateFormat("HH:mm:ss.SSS").format(Date())}] $str")
-    }
+    fun e(str: String) = out(str)
+
+    fun d(str: String) = out(str)
 }

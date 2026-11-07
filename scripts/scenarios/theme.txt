@@ -1,0 +1,7 @@
+# Переключатель темы меняет тему туда и обратно
+waitfor state 120000 proj/
+expect state theme: light
+tap theme-toggle
+waitfor state 2000 theme: dark
+tap theme-toggle
+waitfor state 2000 theme: light

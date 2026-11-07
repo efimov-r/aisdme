@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.over.SvgIcon
@@ -42,6 +43,7 @@ fun MenuItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(28.dp)
+            .debugTag("menu:${item.title}")
             .clickable {
                 onDismiss()
                 item.onClick()

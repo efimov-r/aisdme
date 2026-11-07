@@ -1,0 +1,18 @@
+# Правка открытого файла снаружи (#9): без ввода перечитывается, с вводом — плашка выбора
+waitfor state 120000 proj/
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+ext write main.asm | replaced outside\nline two
+focus
+waitfor text 4000 replaced outside
+click 400 70
+type X
+expect state *main.asm (save not)
+ext write main.asm | external two
+focus
+waitfor state 4000 (changed)
+waitfor state 2000 banner:Load from disk
+tap banner:Load from disk
+waitfor text 3000 external two
+waitfor state 3000 (writable)
+expect not text X
