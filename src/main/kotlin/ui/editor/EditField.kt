@@ -78,6 +78,7 @@ fun EditorHalf(
                             activeTab,
                             half.inFocus,
                             { half.inFocus = it.isFocused },
+                            { editor.closeTab(activeTab.id) },
                         )
                     }
                 }

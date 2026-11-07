@@ -9,6 +9,7 @@ import kotlinx.coroutines.withTimeout
 import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.DeleteDir
 import non.era.aisdme.bus.MoveFile
+import non.era.aisdme.bus.RebuilDirRiff
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotEditor
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.configs.repositories.EditorStateRepository
@@ -238,6 +239,42 @@ class EditorControllerTest {
 
         waitUntil { !controller.leftTabs.listTabs.contains(inside) }
         assertTrue(controller.leftTabs.listTabs.contains(sibling))
+    }
+
+    // файл без правок удалили снаружи: сверка закрывает его вкладку
+    @Test
+    fun checkOpenFilesClosesTabOfDeletedFile() {
+        val id = openFile("a.asm")
+        File(dir, "a.asm").delete()
+
+        runBlocking { controller.checkOpenFiles().join() }
+
+        assertFalse(controller.leftTabs.listTabs.contains(id))
+    }
+
+    // сверка одной папки не трогает вкладки файлов из других папок
+    @Test
+    fun checkOpenFilesOfDirSkipsOtherDirs() {
+        val inside = openFile("foo/a.asm")
+        val outside = openFile("bar/b.asm")
+        File(dir, "foo/a.asm").delete()
+        File(dir, "bar/b.asm").delete()
+
+        runBlocking { controller.checkOpenFiles(File(dir, "foo").toPath()).join() }
+
+        assertFalse(controller.leftTabs.listTabs.contains(inside))
+        assertTrue(controller.leftTabs.listTabs.contains(outside))
+    }
+
+    // событие об изменении папки на диске запускает сверку открытых в ней файлов
+    @Test
+    fun rebuildDirEventChecksTabsInside() {
+        val id = openFile("a.asm")
+        File(dir, "a.asm").delete()
+
+        bus.publish(RebuilDirRiff(dir))
+
+        waitUntil { !controller.leftTabs.listTabs.contains(id) }
     }
 
     // при открытии проекта закрытые вкладки из конфига не загружаются и уходят из конфига

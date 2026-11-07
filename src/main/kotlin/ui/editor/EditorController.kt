@@ -33,6 +33,7 @@ class EditorController(
 ) : UiController() {
     private val _tabsCash = mutableStateMapOf<Int, TabCash>() //state: getTab читается в derivedStateOf
     private val removeMutex = Mutex()
+    private val checkMutex = Mutex()
     private val tabFactory = HalfViewModelFactory()
 
     private val updateLeftTabs: (List<Int>) -> Unit = { rep.updateLeftTabs(it); removeClosedTabs() }
@@ -58,6 +59,7 @@ class EditorController(
                 }
                 is DeleteFile -> closeTabs(tabsInside(event.file))
                 is DeleteDir -> closeTabs(tabsInside(event.dir))
+                is RebuilDirRiff -> checkOpenFiles(event.dir.toPath()) //создание и удаление извне: файл мог пропасть
                 else -> {}
             }
         }
@@ -81,6 +83,20 @@ class EditorController(
     }
 
     fun getTab(id: Int) = _tabsCash[id]
+
+    fun closeTab(id: Int) = closeTabs(listOfNotNull(_tabsCash[id])) //из ui: в обеих половинах
+
+    /** Сверить открытые файлы с диском: при возврате фокуса окну и при событии о папке (тогда только её файлы) */
+    fun checkOpenFiles(dir: Path? = null) = scope.launch {
+        checkMutex.withLock { //по очереди: сверки не должны перекрываться
+            val tabs = withContext(Dispatchers.Swing) {
+                _tabsCash.values.filterIsInstance<TabCashFile>()
+                    .filter { dir == null || it.getFile().toPath().startsWith(dir) }
+            }
+            val deleted = tabs.filter { it.checkDisk() }
+            if (deleted.isNotEmpty()) withContext(Dispatchers.Swing) { closeTabs(deleted) }
+        }
+    }
 
     fun showSelectedInTree() {
         when {

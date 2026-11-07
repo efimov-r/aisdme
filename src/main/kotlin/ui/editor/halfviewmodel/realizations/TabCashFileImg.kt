@@ -40,12 +40,29 @@ class TabCashFileImg(
     }
 
     override suspend fun openExistFile(typeOpen: OpenFileType) = withContext(Dispatchers.IO) {
+        val stamp = readStamp() //до чтения: правка во время чтения будет замечена при сверке
         FileInputStream(_file).use {
             val tmp = loadImageBitmap(it)
             withContext(Dispatchers.Swing) {
                 _imgBitmap = tmp
             }
         }
+        diskStamp = stamp
         writeStatus(WriteStatus.READ_ONLY_FS)
+    }
+
+    override suspend fun checkDisk(): Boolean {
+        if (_writeStatus != WriteStatus.READ_ONLY_FS) return false //не загружена
+        val stamp = readStamp() ?: return true //файл удалён, терять нечего
+        if (stamp == diskStamp) return false
+
+        runCatching {
+            val tmp = withContext(Dispatchers.IO) { FileInputStream(_file).use { loadImageBitmap(it) } }
+            withContext(Dispatchers.Swing) {
+                _imgBitmap = tmp
+                diskStamp = stamp
+            }
+        }.onFailure { Log.e(it) } //файл ещё пишут или он не картинка: отпечаток не обновлён, проверим в следующий раз
+        return false
     }
 }

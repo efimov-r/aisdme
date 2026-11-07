@@ -123,14 +123,14 @@ flowchart TB
     filesC -->|"MoveFile, DeleteFile,<br/>DeleteDir"| bus
     watcher -->|"RebuilDirRiff"| bus
     projectC <-->|"публикует: FileOpened<br/>слушает: RebuilDirRiff,<br/>ShowFileInTree"| bus
-    editorC <-->|"публикует: ShowFileInTree<br/>слушает: FileOpened, MoveFile,<br/>DeleteFile, DeleteDir"| bus
+    editorC <-->|"публикует: ShowFileInTree<br/>слушает: FileOpened, MoveFile,<br/>DeleteFile, DeleteDir, RebuilDirRiff"| bus
 ```
 
 | Событие | Кто публикует | Кто слушает | Зачем |
 |---|---|---|---|
 | `FileOpened` | `ProjectController` | `EditorController` | двойной клик по файлу: открыть вкладку |
 | `ShowFileInTree` | `EditorController` | `ProjectController` | показать файл вкладки в дереве |
-| `RebuilDirRiff` | `TreeReloadWatcher` | `ProjectController` | папка изменилась на диске: перечитать |
+| `RebuilDirRiff` | `TreeReloadWatcher` | `ProjectController`, `EditorController` | папка изменилась на диске: перечитать; сверить с диском открытые в ней файлы |
 | `MoveFile`, `DeleteFile`, `DeleteDir` | `FilesController` | `EditorController` | файл переехал или удалён: обновить или закрыть вкладки |
 
 ### 3.2 Прямые вызовы
@@ -149,9 +149,11 @@ flowchart LR
         editorC["<b>EditorController</b><br/>вкладки редактора"]:::comp
         filesC["<b>FilesController</b><br/>файловые операции"]:::comp
         watcher["<b>TreeReloadWatcher</b><br/>изменения на диске"]:::comp
+        window["<b>Главное окно</b><br/>Main.kt"]:::comp
     end
     style app fill:transparent,stroke:#888,stroke-dasharray:6 4
 
+    window -.->|"checkOpenFiles"| editorC
     treeActions -.->|"getSelectedNodes, markCut"| projectC
     treeActions -.->|"openNodes"| editorC
     treeActions -.->|"copyToClipboard"| filesC
@@ -161,6 +163,7 @@ flowchart LR
 
 | Вызов | Зачем |
 |---|---|
+| Главное окно → `EditorController` | `checkOpenFiles`: окно получило фокус — сверить открытые файлы с диском |
 | `TreeActions` → `ProjectController` | выделенные узлы; пометка «вырезано» |
 | `TreeActions` → `EditorController` | открыть выделенные файлы в левой или правой половине |
 | `TreeActions` → `FilesController` | положить выделенные файлы в буфер обмена |
@@ -287,4 +290,33 @@ sequenceDiagram
     projectC->>treeState: rebuildDirDiff
     treeState->>fs: перечитать прочитанные папки (listFiles)
     treeState->>ui: новые узлы (на UI-потоке)
+```
+
+### 4.3 Открытый файл изменили или удалили извне
+
+Файл, открытый во вкладке, правят в другой программе. Сверка идёт по отпечатку файла (время правки и размер), а не по `ENTRY_MODIFY`: `RebuilDirRiff` ловит только создание и удаление, поэтому правку находит сверка при возврате фокуса окну и перед каждой записью вкладки.
+
+```mermaid
+sequenceDiagram
+    participant fs as Файловая система
+    participant bus as AppEventBus
+    participant window as Главное окно
+    participant editorC as EditorController
+    participant tab as TabCashFileText
+    participant ui as UI
+
+    alt папка изменилась
+        bus->>editorC: RebuilDirRiff
+    else окно получило фокус
+        window->>editorC: checkOpenFiles
+    end
+    editorC->>tab: checkDisk для вкладок
+    tab->>fs: отпечаток файла (время правки, размер)
+    alt правок нет, файл изменён
+        tab->>ui: новый текст
+    else есть несохранённый ввод, файл изменён
+        tab->>ui: статус CONFLICT, плашка Load from disk / Keep mine
+    else файл удалён
+        tab->>editorC: закрыть вкладку (без ввода) или статус DELETED
+    end
 ```

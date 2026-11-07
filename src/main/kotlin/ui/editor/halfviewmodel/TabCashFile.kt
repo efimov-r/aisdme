@@ -13,6 +13,11 @@ import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.utils.Log
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.FileTime
+
+data class DiskStamp(val modified: FileTime, val size: Long) //по нему узнаём, что файл изменили снаружи
 
 abstract class TabCashFile(
     id: Int,
@@ -31,6 +36,16 @@ abstract class TabCashFile(
         if(!writeStatus.toConfig) return null
         return SnapshotTabCash(_file.path, typeFile)
     }
+
+    protected var diskStamp: DiskStamp? = null //состояние файла, которое вкладка прочитала или записала сама
+
+    protected fun readStamp(): DiskStamp? = runCatching { //null — файла нет
+        val attrs = Files.readAttributes(_file.toPath(), BasicFileAttributes::class.java)
+        DiskStamp(attrs.lastModifiedTime(), attrs.size())
+    }.getOrNull()
+
+    /** Сверка с диском. true — файл удалён и в вкладке нечего терять: её нужно закрыть */
+    abstract suspend fun checkDisk(): Boolean
 
     protected abstract suspend fun openExistFile(typeOpen: OpenFileType)
 
