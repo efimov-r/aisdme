@@ -2,6 +2,16 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## Тест с вкладкой редактора падает при очистке `@TempDir` на Windows
+- **Что случилось:** `EditorControllerTest.newTabIdAfterSnapshotIds` падал в 3 прогонах из 4: `Failed to delete temp directory ... b.asm: файл занят другим процессом`; сами проверки проходили ([#39](https://github.com/efimov-r/aisdme/issues/39))
+- **Причина:** вкладка читает файл в фоне (в debug перед этим `delay(300)`), а тест кончается раньше; `dispose()` не ждёт блокирующее `readText`. На Linux открытый файл удалить можно, поэтому CI ошибку не видел. Причина подтверждена только тем, что ожидание загрузки убрало падение (3 прогона подряд)
+- **Как правильно:** перед `controller.dispose()` дождаться, пока вкладки выйдут из `WriteStatus.LOAD` (`EditorControllerTest.dispose`)
+
+## `snapshotFlow` в тесте не видит изменение state
+- **Что случилось:** `ProjectController` подгружает раскрытые папки через `snapshotFlow`; тест выставил `expanded = true`, а папка не читалась
+- **Причина:** вне Compose нет `GlobalSnapshotManager`, который рассылает уведомления о записи в глобальный снимок
+- **Как правильно:** в тесте после записи в state вызвать `Snapshot.sendApplyNotifications()` (`ProjectControllerTest.expandedDirIsLoadedAndSaved`)
+
 ## detekt: свой `excludes` затирает стандартный
 - **Что случилось:** после `excludes: ['**/theme/**']` у `MagicNumber` detekt упал на 41 числе в тестах ([#11](https://github.com/efimov-r/aisdme/issues/11))
 - **Причина:** `excludes` в `detekt.yml` не дополняет, а заменяет стандартный список правила; у `MagicNumber` в нём тестовые папки и `*.kts`

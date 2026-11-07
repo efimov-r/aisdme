@@ -1,12 +1,12 @@
 # Архитектура
 
-Как устроено приложение сейчас. Почему так — в [decisions.md](decisions.md). Карта пакетов — в [AGENTS.md](../../AGENTS.md), «Структура кода».
+Как устроено приложение сейчас. Почему так — в [decisions.md](decisions.md). Карта пакетов — в [AGENTS.md](../../AGENTS.md), «Структура кода». Диаграммы C4 — в [docs/architecture.md](../architecture.md).
 
 ## Обзор
 
 Слева дерево проекта, справа редактор из двух половин (левой и правой), у каждой свои вкладки. Внизу панель с путём файла и статусом записи. Под редактором — пустая панель на будущее (терминал), справа — узкая панель с переключателем темы. Размеры панелей сохраняются в конфиг проекта.
 
-Состояние хранится в контроллерах. UI получает их через `LocalAppController` (`CompositionLocal`). Контроллеры не зависят друг от друга напрямую: общаются через `AppEventBus`, сообщения (ошибки, info, success) отдают в `GlobalMessages` через `UiController.subscribeMessages`.
+Состояние хранится в контроллерах. UI получает их через `LocalAppController` (`CompositionLocal`). Контроллеры друг о друге не знают: события между ними идут через `AppEventBus`. Исключения — прямые вызовы: `TreeActions` (дерево, редактор, файлы), `DialogsController` (выделение дерева) и `ProjectTreeState.onDirsLoaded` → `TreeReloadWatcher.dirsLoaded` (шина при переполнении теряла события). Сообщения (ошибки, info, success) контроллеры отдают в `GlobalMessages` через `UiController.subscribeMessages`.
 
 ## Запуск
 

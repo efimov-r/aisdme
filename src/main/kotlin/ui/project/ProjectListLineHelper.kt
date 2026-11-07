@@ -35,7 +35,10 @@ object ProjectListLineHelper {
     }
 
     fun next(nodes: List<ProjectNode>, selected: List<ProjectNode>, selection: TreeSelection) {
-        val r = getNextNodeOf(buildLinearExpandedNodes(nodes), selected.last())
+        val linear = buildLinearExpandedNodes(nodes)
+        val r = selected.lastOrNull()?.let { getNextNodeOf(linear, it) }
+            ?: linear.firstOrNull() //ничего не выделено — верхний
+            ?: return
         selection.clear()
         selection.set(r, true)
     }
@@ -46,7 +49,10 @@ object ProjectListLineHelper {
     }
 
     fun last(nodes: List<ProjectNode>, selected: List<ProjectNode>, selection: TreeSelection) {
-        val r = getLastNodeOf(buildLinearExpandedNodes(nodes), selected.first())
+        val linear = buildLinearExpandedNodes(nodes)
+        val r = selected.firstOrNull()?.let { getLastNodeOf(linear, it) }
+            ?: linear.lastOrNull() //ничего не выделено — нижний
+            ?: return
         selection.clear()
         selection.set(r, true)
     }

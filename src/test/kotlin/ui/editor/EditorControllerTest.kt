@@ -35,8 +35,17 @@ class EditorControllerTest {
     private val bus = AppEventBus()
     private val controller = EditorController(bus, rep, CurrentProject())
 
+    private val openedIds = mutableListOf<Int>()
+
     @AfterEach
-    fun dispose() = controller.dispose()
+    fun dispose() {
+        openedIds.forEach { waitLoaded(it) } //на Windows читаемый в фоне файл не даёт удалить @TempDir
+        controller.dispose()
+    }
+
+    private fun waitLoaded(id: Int) = waitUntil {
+        (controller.getTab(id) as? TabCashFile)?.writeStatus != WriteStatus.LOAD
+    }
 
     private fun onUi(block: () -> Unit) = runBlocking(Dispatchers.Swing) { block() }
 
@@ -53,6 +62,7 @@ class EditorControllerTest {
         val half = if(panel == Panels.LEFT) controller.leftTabs else controller.rightTabs
         val id = half.activeTabId!!
         waitUntil { rep.files.value?.containsKey(id) == true } //открытие дошло до конфига
+        openedIds += id
         return id
     }
 
@@ -199,6 +209,7 @@ class EditorControllerTest {
                 SnapshotEditor(files = mapOf(5 to SnapshotTabCash(a.path, TypeFile.TEXT_FILE)), leftTabs = listOf(5))
             )
         }
+        openedIds += 5
 
         val id = openFile("b.asm")
 
