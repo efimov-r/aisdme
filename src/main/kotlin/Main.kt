@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import non.era.aisdme.configs.dataclass.ProjectConfig
+import non.era.aisdme.debug.DebugControl
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.di.buildAppController
 import non.era.aisdme.theme.AisDmeShapes
@@ -55,6 +56,10 @@ fun main() = application {
             }
             window.addWindowFocusListener(listener)
             onDispose { window.removeWindowFocusListener(listener) }
+        }
+
+        if (BuildConfig.DEBUG) { //пульт для отладки, включается переменной AISDME_DEBUG_DIR
+            LaunchedEffect(window) { DebugControl.run(window) }
         }
 
         DisposableEffect(Unit) {

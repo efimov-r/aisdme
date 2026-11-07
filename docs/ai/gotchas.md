@@ -2,6 +2,11 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
+## Синтетические события не доходят до окна Compose
+- **Что случилось:** пульт отладки слал `MouseEvent` в найденный `SkiaLayer`: команды выполнялись без ошибок, а окно не реагировало
+- **Причина:** слушатели мыши и клавиатуры висят на вложенном компоненте (`org.jetbrains.skiko.SkiaLayer$1`), а у самого `SkiaLayer` их нет. Нашлось командой `dump`
+- **Как правильно:** слать события в `SwingUtilities.getDeepestComponentAt(layer, …)` (`DebugInput.target`)
+
 ## Сверка вкладки с диском держит `saveMutex` и ждёт ui-поток
 - **Что случилось:** риск зависания при выходе ([#9](https://github.com/efimov-r/aisdme/issues/9)): `syncWithDisk` под `saveMutex` переключается на `Dispatchers.Swing`, а `disposeBeforeBlocked` на EDT (через `runBlocking`) ждёт тот же `saveMutex`
 - **Как правильно:** в `disposeBeforeBlocked` ждать мьютекс с `withTimeoutOrNull`, не бесконечно. Новый код под `saveMutex` не должен ждать ui-поток дольше, чем нужно; в `disposeBeforeBlocked` по-прежнему не звать `writeStatus`

@@ -84,6 +84,7 @@ kover {
                 annotatedBy("androidx.compose.runtime.Composable") //UI модульными тестами не покрываем
                 classes("*ComposableSingletons*", "non.era.aisdme.BuildConfig")
                 packages("non.era.aisdme.theme")
+                packages("non.era.aisdme.debug") //пульт отладки: нужно живое окно, решение пользователя
             }
         }
 
