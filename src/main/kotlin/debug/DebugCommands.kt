@@ -10,20 +10,20 @@ import java.awt.event.WindowEvent
 import java.io.File
 
 private const val CROP_VALUES = 4 //x, y, ширина, высота
-private const val ARROW_DX = 18 //от точки узла до стрелки раскрытия папки, пиксели
-private const val ROW_DX = 40 //от точки узла до имени: клик по ряду
 private const val LOG_LINES = 30
 private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
 
 /**
  * Команды в файле — по одной в строке, координаты — в пикселях скриншота:
  * `shot [имя]`, `wait мс`, `move x y`, `click x y [left|right|middle] [число]`, `drag x1 y1 x2 y2`,
+ * `drag A -> B` и `dragby A dx dy` (A, B — `node имя`, `tap имя` или `x y`; `DebugDrag`),
+ * `mark имя` и `expect moved имя dx dy допуск` — сдвиг помеченного элемента (разделители панелей),
  * `scroll x y шаги`, `type текст`, `key ctrl+shift+s`, `state` (дерево, вкладки, тема), `text [left|right]`,
  * `node [right] [double] имя` (клик по узлу дерева), `arrow имя` (раскрыть или свернуть папку),
  * `log [строк]` (хвост лога приложения), `dump` (дерево компонентов AWT), `close` (закрыть окно),
  * `shot имя x y ширина высота` — вырезка области,
  * `expect [not] источник подстрока` и `waitfor [not] источник мс подстрока` — проверка и ожидание
- * (источники: state, text, text-right, log; подробнее — `DebugCheck`),
+ * (источники: state, text, text-right, log, exists; подробнее — `DebugCheck`),
  * `tap [right] [double] имя` — клик по помеченному элементу из раздела `ui` в `state` (`DebugTag`),
  * `ext write|delete|mkdir|rename …` — правки файлов проекта «снаружи» (`DebugExt`), `focus` — окно получило фокус,
  * строки с `#` в начале пропускаются.
@@ -32,6 +32,7 @@ private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
 class DebugCommands(private val window: ComposeWindow, private val app: AppController, private val dir: File) {
     private val check = DebugCheck(app)
     private val ext = DebugExt(app)
+    private val drag = DebugDrag(app)
 
     suspend fun handle(file: File) {
         val id = file.nameWithoutExtension
@@ -87,9 +88,12 @@ class DebugCommands(private val window: ComposeWindow, private val app: AppContr
         when (cmd) {
             "type" -> input.type(rest)
             "key" -> input.key(rest)
-            "node" -> clickPoint(input, rest, ROW_DX) { DebugState.nodePoint(app, it) }
-            "arrow" -> clickPoint(input, rest, -ARROW_DX) { DebugState.nodePoint(app, it) }
+            "node" -> clickPoint(input, rest, DebugState.ROW_DX) { DebugState.nodePoint(app, it) }
+            "arrow" -> clickPoint(input, rest, -DebugState.ARROW_DX) { DebugState.nodePoint(app, it) }
             "tap" -> clickPoint(input, rest, 0, DebugTag::point)
+            "drag" -> if ("->" in rest) drag.between(input, rest) else pointer(input, cmd, rest)
+            "dragby" -> drag.by(input, rest)
+            "mark" -> check.mark(rest)
             "ext" -> ext.run(rest)
             "focus" -> window.windowFocusListeners.forEach { //напрямую: AWT гасит событие у окна без настоящего фокуса
                 it.windowGainedFocus(WindowEvent(window, WindowEvent.WINDOW_GAINED_FOCUS))

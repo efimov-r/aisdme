@@ -1,0 +1,6 @@
+# ИЗВЕСТНЫЙ БАГ (docs/ai/bugs.md): файл, брошенный на пустой редактор, не открывается. Сценарий упадёт, пока баг не починен.
+# Запуск: .\scripts\debug-scenario.ps1 dnd-empty-editor
+waitfor state 120000 proj/
+node notes.txt
+drag node notes.txt -> tap half-empty:left
+waitfor state 3000 *notes.txt

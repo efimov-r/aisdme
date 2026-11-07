@@ -12,6 +12,9 @@ import kotlin.math.roundToInt
 
 /** Состояние приложения текстом: проверять результат без скриншота. Вызывать на ui-потоке. */
 object DebugState {
+    const val ARROW_DX = 18 //от точки узла до стрелки раскрытия папки, пиксели
+    const val ROW_DX = 40 //от точки узла до имени: клик по ряду
+
     fun dump(app: AppController): String = buildString {
         appendLine("theme: ${if (app.themeController.isDarkTheme) "dark" else "light"}")
         appendLine("tree (* — выделен, @x,y — точка клика в пикселях скриншота):")

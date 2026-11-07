@@ -11,6 +11,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.debounce
+import non.era.aisdme.debug.debugTag
 import java.awt.Cursor
 
 @Composable
@@ -63,6 +64,7 @@ fun ResizableRow(
             Modifier
                 .width(6.dp)
                 .fillMaxHeight()
+                .debugTag("split:tree-editor")
                 .cursorForHorizontalResize()
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->

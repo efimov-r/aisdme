@@ -14,7 +14,12 @@ function Stop-App { # штатно через пульт; если не вышл
     Get-AppProcs | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 }
 
-$files = Get-ChildItem "$PSScriptRoot\scenarios\*.txt" | Where-Object { -not $Names -or $Names -contains $_.BaseName }
+# без имён — только основные сценарии; по имени находятся и сценарии из подпапок (known-bugs: падают, пока баг не починен)
+$files = if ($Names) {
+    Get-ChildItem "$PSScriptRoot\scenarios" -Filter *.txt -Recurse | Where-Object { $Names -contains $_.BaseName }
+} else {
+    Get-ChildItem "$PSScriptRoot\scenarios\*.txt"
+}
 if (-not $files) { Write-Output 'no scenarios found'; exit 1 }
 
 $failed = 0

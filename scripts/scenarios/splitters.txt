@@ -1,0 +1,18 @@
+# Разделители панелей двигаются мышью ровно на сдвиг: дерево и редактор, редактор и нижняя панель, две половины
+waitfor state 120000 proj/
+mark split:tree-editor
+dragby tap split:tree-editor 80 0
+expect moved split:tree-editor 80 0 5
+dragby tap split:tree-editor -50 0
+expect moved split:tree-editor 30 0 5
+mark split:terminal
+dragby tap split:terminal 0 -60
+expect moved split:terminal 0 -60 5
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+node right a.txt
+tap menu:Open in Right
+waitfor state 3000 right: *a.txt
+mark split:halves
+dragby tap split:halves 100 0
+expect moved split:halves 100 0 5

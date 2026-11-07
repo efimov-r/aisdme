@@ -1,0 +1,16 @@
+# Перетаскивание файла на папку: диалог Move, перенос на диске; на саму себя папка не перетаскивается
+waitfor state 120000 proj/
+node notes.txt
+drag node notes.txt -> node fold2
+waitfor state 3000 dialog:Move
+tap button:Ok
+waitfor not state 3000 dialog:Move
+expect exists fold2/notes.txt
+expect not exists notes.txt
+arrow fold2
+waitfor state 3000 fold2/ [-]
+node fold2
+drag node fold2 -> node fold2
+wait 500
+expect not state dialog:Move
+expect not state messages: [
