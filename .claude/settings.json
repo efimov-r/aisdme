@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(.\\gradlew.bat build)",
+      "PowerShell(.\\gradlew.bat build --console=plain)",
+      "PowerShell(.\\gradlew.bat build -q)",
+      "PowerShell(.\\gradlew.bat build koverLog)",
+      "PowerShell(.\\gradlew.bat test)",
+      "PowerShell(.\\gradlew.bat test --console=plain)",
+      "PowerShell(.\\gradlew.bat detekt)",
+      "PowerShell(.\\gradlew.bat detekt --quiet)",
+      "PowerShell(.\\gradlew.bat koverLog)",
+      "PowerShell(.\\gradlew.bat koverLog --console=plain)",
+      "PowerShell(.\\gradlew.bat run -PdebugCtl)",
+      "PowerShell(git fetch --prune)",
+      "Bash(git fetch --prune)"
+    ]
+  }
+}

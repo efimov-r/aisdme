@@ -22,6 +22,7 @@ gradlew koverLog          # текущее покрытие; koverHtmlReport —
 
 На Windows `gradlew build` и `gradlew run` работают с JDK 17, если задан `JAVA_HOME` (проверено 2026-11-05).
 
+- **Запуск приложения агентом:** в PowerShell `.\gradlew.bat run -PdebugCtl` в фоне, пульт отладки пишет в `build/debug-ctl`. Без `-p`, абсолютных путей, `$env:` и `&`: составная команда требует ручного апрува. То же для `build`, `test`, `detekt`, `koverLog`: точные формы разрешены в `.claude/settings.json`, новый вариант флагов — новый апрув.
 - `BuildConfig` генерирует задача `generateBuildConfig` в `build/generated/buildconfig`, перед каждой компиляцией Kotlin. Руками его не создавать.
 - Главный класс — `non.era.aisdme.MainKt`.
 - CI — `.github/workflows/ci.yml`: `gradlew build` на Linux и Windows при push в `master` и в каждом PR. Actions закреплены по SHA, рядом — версия. Упавший прогон: `gh run view --log-failed`, отчёты — artifact `reports-<ОС>`.
@@ -42,7 +43,7 @@ gradlew koverLog          # текущее покрытие; koverHtmlReport —
 - `Main.kt` — `main()`, корневой Compose-экран `AisDmeContent`
 - `di/` — `AppController`: корень композиции, сам создаёт и связывает контроллеры, доступен через `LocalAppController`; `buildAppController` — `remember` над ним
 - `bus/` — `AppEventBus` на `MutableSharedFlow`: события между контроллерами
-- `debug/` — `DebugControl`: пульт для агента (скриншот окна, клики, ввод), только debug-сборка и переменная `AISDME_DEBUG_DIR`: [docs/ai/architecture.md](docs/ai/architecture.md), «Пульт отладки»
+- `debug/` — `DebugControl`: пульт для агента (скриншот окна, клики, ввод), только debug-сборка и `gradlew run -PdebugCtl`: [docs/ai/architecture.md](docs/ai/architecture.md), «Пульт отладки»
 - `configs/` — `ConfigController`, `GlobalConfig`, `store/` (`ConfigStore`, `ConfigPaths`), `configs/` (`AppConfig`, `ProjectConfig`), `snapshots/` (сохранённое состояние редактора и дерева), `repositories/`
 - `files/` — `TypeFile`, `work/`: `FilesController`, `FilesExecutor`, `FileTransferable` (буфер обмена)
 - `platform/` — всё, что зависит от ОС: папка конфигов, отслеживание диска, показ в файловом менеджере. `IPlatform`, `WindowsPlatform`, `LinuxPlatform`, выбор — `Platform.current`

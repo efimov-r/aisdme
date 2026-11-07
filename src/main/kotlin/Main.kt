@@ -58,7 +58,7 @@ fun main() = application {
             onDispose { window.removeWindowFocusListener(listener) }
         }
 
-        if (BuildConfig.DEBUG) { //пульт для отладки, включается переменной AISDME_DEBUG_DIR
+        if (BuildConfig.DEBUG) { //пульт для отладки, включается gradlew run -PdebugCtl или переменной AISDME_DEBUG_DIR
             LaunchedEffect(window) { DebugControl.run(window) }
         }
 

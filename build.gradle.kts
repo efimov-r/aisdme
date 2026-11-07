@@ -59,6 +59,10 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "non.era.aisdme.MainKt"
+
+        if (project.hasProperty("debugCtl") && !isRelease) { //gradlew run -PdebugCtl: включает пульт отладки, папка фиксированная
+            jvmArgs += "-Daisdme.debug.dir=${layout.buildDirectory.dir("debug-ctl").get().asFile.absolutePath}"
+        }
     }
 }
 
