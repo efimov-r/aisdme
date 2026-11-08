@@ -21,6 +21,7 @@
 | `AppController` | корень композиции | держит все контроллеры, связывает их (сообщения, дерево → watcher), открывает проект (`reselectProject`), `dispose` |
 | `CurrentProject` | корень открытого проекта | один `mutableStateOf`: читается и в UI, и из фоновых потоков |
 | `ThemeController` | тема | `isDarkTheme`, `toggle()` пишет в глобальный конфиг значение на момент записи |
+| `UncaughtErrors` | необработанные исключения любого потока | `Thread.setDefaultUncaughtExceptionHandler` (ставится в `Main.kt`): пишет в лог и через `invokeLater` добавляет ошибку в `GlobalMessages.addError`; такая же ошибка, пока она на экране, второй раз не добавляется. Не помогает, если исключение вылетело в отрисовке: цикл отрисовки Skiko при этом останавливается ([gotchas.md](gotchas.md)) |
 | `GlobalMessages` | сообщения для `ErrorOverlay` | state-список; `collectFrom` подписывается на `subscribeMessages` контроллеров — сразу, до возврата (`UNDISPATCHED`): у потока `replay = 0`, сообщение без подписчика теряется |
 | `TreeActions` | операции над выделенными узлами | открыть в редакторе, показать в файловом менеджере, копировать / вырезать в буфер |
 | `EditorController` | открытые файлы и вкладки | две половины `HalfEditorTabs`, у каждой свой список вкладок и активная вкладка. Левая опустела, а в правой есть вкладки — правая переносится в левую: `HalfEditorTabs.onChanged` → `mergeHalvesLater`, после операции целиком |

@@ -1,0 +1,9 @@
+# Необработанное исключение показывается в приложении (ErrorOverlay), а не только в консоли (#36)
+waitfor state 120000 proj/
+expect state messages: -
+throw boom-from-ui-thread
+waitfor state 3000 [ERROR] IllegalStateException: boom-from-ui-thread
+waitfor log 2000 boom-from-ui-thread
+# приложение живо: после ошибки работает обычное действие
+node double main.asm
+waitfor state 3000 *main.asm (writable)

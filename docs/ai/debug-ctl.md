@@ -20,7 +20,7 @@
 
 ## Сценарии
 
-`scripts/scenarios/*.txt` — проверки на свежем приложении: команды пульта, строки с `#` — комментарии. Основные: `theme`, `rename-dialog`, `open-and-edit`, `tabs`, `tree-arrows`, `external-change`, `external-delete`, `dnd-move`, `dnd-editor`, `dnd-empty-editor`, `splitters`, `tabs-scroll-to-active`, `tabs-scroll-on-activate`, `bottom-panel-narrow`, `bottom-panel-halves`. Сценарий на найденный, но не починенный баг класть в `known-bugs/`: по умолчанию он не запускается, по имени запускается и падает; после починки перенести в основные. Запуск: `.\scripts\debug-scenario.ps1` (основные) или `.\scripts\debug-scenario.ps1 theme tabs` (названные, в том числе из `known-bugs`). Раннер сам запускает и закрывает приложение на каждый сценарий (около 15–30 с на штуку), печатает `PASS` или `FAIL` с выводом упавшего. Всё сразу дольше 10 минут не бывает, но запускать лучше в фоне. Не запускать, пока приложение открыто вручную.
+`scripts/scenarios/*.txt` — проверки на свежем приложении: команды пульта, строки с `#` — комментарии. Основные: `theme`, `rename-dialog`, `open-and-edit`, `tabs`, `tree-arrows`, `external-change`, `external-delete`, `dnd-move`, `dnd-editor`, `dnd-empty-editor`, `splitters`, `tabs-scroll-to-active`, `tabs-scroll-on-activate`, `bottom-panel-narrow`, `bottom-panel-halves`, `uncaught-error`. Сценарий на найденный, но не починенный баг класть в `known-bugs/`: по умолчанию он не запускается, по имени запускается и падает; после починки перенести в основные. Запуск: `.\scripts\debug-scenario.ps1` (основные) или `.\scripts\debug-scenario.ps1 theme tabs` (названные, в том числе из `known-bugs`). Раннер сам запускает и закрывает приложение на каждый сценарий (около 15–30 с на штуку), печатает `PASS` или `FAIL` с выводом упавшего. Всё сразу дольше 10 минут не бывает, но запускать лучше в фоне. Не запускать, пока приложение открыто вручную.
 
 Новая проверка в приложении — новый сценарий: первой строкой `waitfor state 120000 proj/`, дальше шаги, в конце `expect`/`waitfor`. Пункты «Проверить руками» в [todo.md](todo.md) по возможности превращать в сценарии.
 
@@ -73,6 +73,7 @@
 | `ext write путь \| текст` | правка «снаружи» (`\n` — перевод строки); ещё `ext delete путь`, `ext mkdir путь`, `ext rename старый \| новый`. Пути от корня проекта, наружу нельзя |
 | `focus` | окно «получило фокус»: запускает сверку открытых файлов с диском (в песочнице фокус настоящий не приходит) |
 | `wait мс`, `dump`, `close` | пауза; дерево компонентов AWT (отладка самого пульта); закрыть окно |
+| `throw текст` | необработанное исключение на ui-потоке (проверка показа ошибок в `ErrorOverlay`: `waitfor state … [ERROR] IllegalStateException`) |
 
 ## Приёмы
 

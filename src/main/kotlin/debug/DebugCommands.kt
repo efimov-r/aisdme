@@ -8,10 +8,12 @@ import non.era.aisdme.di.AppController
 import org.jetbrains.skiko.SkiaLayer
 import java.awt.event.WindowEvent
 import java.io.File
+import javax.swing.SwingUtilities
 
 private const val CROP_VALUES = 4 //x, y, ширина, высота
 private const val LOG_LINES = 30
 private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
+private val APP_COMMANDS = setOf("wait", "close", "throw")
 
 /**
  * Команды в файле — по одной в строке, координаты — в пикселях скриншота:
@@ -26,7 +28,7 @@ private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
  * (источники: state, text, text-right, log, exists; подробнее — `DebugCheck`),
  * `expect inside A in B` и `waitfor inside мс A in B` — элемент A целиком внутри элемента B (по меткам),
  * `expect apart A and B` — элементы не пересекаются (`DebugGeometry`),
- * `hover имя` — навести мышь на помеченный элемент,
+ * `hover имя` — навести мышь на помеченный элемент, `throw текст` — необработанное исключение на ui-потоке,
  * `tap [right] [double] имя` — клик по помеченному элементу из раздела `ui` в `state` (`DebugTag`);
  * `tap A within B` — клик по видимой части A внутри B (например, `tap tab:main.asm within tabs:left`),
  * `ext write|delete|mkdir|rename …` — правки файлов проекта «снаружи» (`DebugExt`), `focus` — окно получило фокус,
@@ -66,9 +68,16 @@ class DebugCommands(private val window: ComposeWindow, private val app: AppContr
             in INFO_COMMANDS -> "\n" + info(cmd, rest)
             "expect" -> check.verify(rest, withTimeout = false)
             "waitfor" -> check.verify(rest, withTimeout = true)
-            "wait" -> "ok".also { delay(rest.toLong()) }
-            "close" -> "ok".also { window.dispatchEvent(WindowEvent(window, WindowEvent.WINDOW_CLOSING)) }
+            in APP_COMMANDS -> "ok".also { app(cmd, rest) }
             else -> "ok".also { input(DebugInput(layer), cmd, rest) }
+        }
+    }
+
+    private suspend fun app(cmd: String, rest: String) {
+        when (cmd) {
+            "wait" -> delay(rest.toLong())
+            "close" -> window.dispatchEvent(WindowEvent(window, WindowEvent.WINDOW_CLOSING))
+            else -> SwingUtilities.invokeLater { error(rest) } //необработанное исключение на ui-потоке
         }
     }
 

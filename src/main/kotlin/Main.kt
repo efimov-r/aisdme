@@ -27,6 +27,7 @@ import non.era.aisdme.ui.components.dialogs.elements.UiDialog
 import non.era.aisdme.ui.components.dialogs.elements.DialogsStarter
 import non.era.aisdme.ui.components.dialogs.elements.TooltipStarter
 import non.era.aisdme.ui.editor.Editor
+import non.era.aisdme.ui.errors.UncaughtErrors
 import non.era.aisdme.ui.errors.view.ErrorOverlay
 import non.era.aisdme.ui.move.DragPreviewLayer
 import non.era.aisdme.ui.project.view.ProjectTreeView
@@ -62,6 +63,11 @@ fun main() = application {
 
         if (BuildConfig.DEBUG && configProjectStart != null) { //пульт для отладки, включается gradlew run -PdebugCtl
             LaunchedEffect(window) { DebugControl.run(window, appController) } //команды ждут, пока загрузится конфиг
+        }
+
+        DisposableEffect(appController) { //необработанные исключения — в ErrorOverlay, а не только в консоль
+            val handler = UncaughtErrors(appController.messages).install()
+            onDispose { handler.close() }
         }
 
         DisposableEffect(Unit) {
