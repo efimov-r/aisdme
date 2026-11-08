@@ -4,7 +4,7 @@
 
 ## Открытые
 
-- 2026-11-08 — две половины редактора, одну сузить разделителем (`dragby tap split:halves 800 0`): `IllegalArgumentException: maxWidth(-4) must be >= than minWidth(0)` в `LineNumbers.kt:49` (`drawText` с отрицательной шириной у узкой половины). Исключение брошено в отрисовке и повторяется в каждом кадре: оверлей ошибок, рисующийся последним, не появляется ([gotchas.md](gotchas.md)). Раньше Compose показывал системный диалог «Error» и закрывал окно, теперь ошибка уходит в `ErrorOverlay` (`WindowErrors`). Найдено пользователем и воспроизведено пультом. Не починено: пользователь сначала проверяет показ ошибок в приложении. Сценарий — `scripts/scenarios/known-bugs/halves-narrow-line-numbers.txt`
+- 2026-11-08 — две половины редактора, одну сузить разделителем (`dragby tap split:halves 800 0`): `IllegalArgumentException: maxWidth(-4) must be >= than minWidth(0)` в `LineNumbers.kt:49` (`drawText` с отрицательной шириной у узкой половины). Исключение брошено в отрисовке и повторяется в каждом кадре: оверлей ошибок, рисующийся последним, не появляется ([gotchas.md](gotchas.md)). Compose показывает системный диалог «Error» и после OK закрывает окно; сохранённая узкая раскладка половин повторяет сбой при каждом запуске (размер хранится в `keyValue` конфига проекта, ключ `ResizableProporcialRowEditorLeftAndRight`). Найдено пользователем и воспроизведено пультом. Не починено: пользователь сначала проверяет показ ошибок в приложении. Сценарий — `scripts/scenarios/known-bugs/halves-narrow-line-numbers.txt`
 
 ## Решённые
 

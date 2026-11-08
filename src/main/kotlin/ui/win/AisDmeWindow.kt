@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -21,7 +20,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.FrameWindowScope
-import androidx.compose.ui.window.LocalWindowExceptionHandlerFactory
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
@@ -29,7 +27,6 @@ import kotlinx.coroutines.delay
 import non.era.aisdme.BuildConfig
 import non.era.aisdme.configs.GlobalConfig
 import non.era.aisdme.configs.dataclass.AppConfig
-import non.era.aisdme.ui.errors.WindowErrors
 import java.io.File
 
 sealed interface AppStartState {
@@ -89,22 +86,18 @@ fun AisDmeWindow(onCloseRequest: () -> Unit,
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MainWindow(globalConf: AppConfig,
                onCloseRequest: () -> Unit,
                project: File,
                content: @Composable FrameWindowScope.(config: AppConfig, project: File) -> Unit) {
-    //ошибки окна (отрисовка, события) — в ErrorOverlay, а не системным диалогом с закрытием окна
-    CompositionLocalProvider(LocalWindowExceptionHandlerFactory provides WindowErrors) {
-        Window(
-            onCloseRequest = onCloseRequest,
-            title = "AisDme",
-            state = rememberPersistentWindowState(globalConf, GlobalConfig.store),
-            icon = painterResource("logos/AisDme.png")
-        ) {
-            content(globalConf, project)
-        }
+    Window(
+        onCloseRequest = onCloseRequest,
+        title = "AisDme",
+        state = rememberPersistentWindowState(globalConf, GlobalConfig.store),
+        icon = painterResource("logos/AisDme.png")
+    ) {
+        content(globalConf, project)
     }
 }
 

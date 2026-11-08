@@ -6,8 +6,9 @@ import javax.swing.SwingUtilities
 private const val SAME_ERROR_LOG_MS = 5000L //одну и ту же ошибку в лог не чаще: отрисовка повторяет её каждый кадр
 
 /**
- * Необработанные исключения любого потока и окна Compose (отрисовка, события) показываются в `ErrorOverlay`,
- * как остальные ошибки приложения: без системного диалога и без закрытия окна ([WindowErrors]).
+ * Необработанные исключения потоков (события, корутины без обработчика) показываются в `ErrorOverlay`,
+ * как остальные ошибки приложения, а не только в консоли. Ошибки кадра и событий окна Compose сюда не доходят:
+ * их ловит сам Compose и показывает системным диалогом «Error» ([gotchas.md]).
  */
 class UncaughtErrors(private val messages: GlobalMessages) : Thread.UncaughtExceptionHandler {
     private var lastText = ""
@@ -26,14 +27,10 @@ class UncaughtErrors(private val messages: GlobalMessages) : Thread.UncaughtExce
         }
     }
 
-    /** Ставит обработчик по умолчанию и для окон Compose; результат — вернуть прежние */
+    /** Ставит обработчик по умолчанию; результат — вернуть прежний */
     fun install(): AutoCloseable {
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(this)
-        WindowErrors.target = this
-        return AutoCloseable {
-            Thread.setDefaultUncaughtExceptionHandler(previous)
-            WindowErrors.target = null
-        }
+        return AutoCloseable { Thread.setDefaultUncaughtExceptionHandler(previous) }
     }
 }
