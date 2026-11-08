@@ -2,12 +2,16 @@ package non.era.aisdme.ui.editor
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +22,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,11 +45,15 @@ fun EditorTab(
     modifier: Modifier = Modifier
 ) {
     val colors = LocalAisDmeColors.current
-    val colorSurfaceBorder = colors.surfaceBorder
-    val colorBack = remember(colors, isActive, halfInFocus) {
+    val interaction = remember { MutableInteractionSource() }
+    val hovered by interaction.collectIsHoveredAsState()
+    val colorBorder = if (isActive) colors.primary else colors.surfaceBorder //активная — зелёный контур
+    val borderWidth = if (isActive) 1.5.dp else 1.dp
+    val colorBack = remember(colors, isActive, halfInFocus, hovered) {
         when {
-            isActive && halfInFocus -> colors.selectAndFocus
-            isActive && !halfInFocus -> colors.selectAndNotFocus
+            isActive && halfInFocus -> colors.tabActive
+            isActive -> colors.selectAndNotFocus
+            hovered -> colors.hoverButton.compositeOver(colors.surface) //лёгкая зелёная подсветка, как у кнопок
             else -> colors.surface
         }
     }
@@ -53,30 +62,12 @@ fun EditorTab(
             .padding(0.dp) //между элементами
             .clip(TrapezoidBottomShape())
             .background(colorBack)
-            .drawBehind {
-                val outline = TrapezoidBottomShape()
-                    .createOutline(size, layoutDirection, this)
-
-                val path = (outline as Outline.Generic).path
-
-                drawPath(
-                    path = path,
-                    color = colorSurfaceBorder,
-                    style = Stroke(
-                        width = 1.dp.toPx(),
-                        cap = StrokeCap.Square,
-                        join = StrokeJoin.Round
-                    )
-                )
-
-                drawRect(// стираем нижнюю линию
-                    color = colorBack,
-                    topLeft = Offset(0f, size.height - 2.dp.toPx()),
-                    size = Size(size.width, 4.dp.toPx())
-                )
-            }
+            .tabBorder(colorBorder, borderWidth, colorBack)
             .debugTag("tab:${tab.name}#${tab.id}")
-            .clickable { onSelect(tab.id) }
+            .hoverable(interaction)
+            .clickable(interactionSource = interaction, indication = null) { //без затемнения при фокусе
+                onSelect(tab.id)
+            }
             .padding(horizontal = 14.dp, vertical = 2.dp), //внутри элемента, от текста до границ
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -99,6 +90,27 @@ fun EditorTab(
             onClose(tab.id)
         }
     }
+}
+
+private fun Modifier.tabBorder(color: Color, width: Dp, back: Color) = drawBehind {
+    val outline = TrapezoidBottomShape().createOutline(size, layoutDirection, this)
+    val path = (outline as Outline.Generic).path
+
+    drawPath(
+        path = path,
+        color = color,
+        style = Stroke(
+            width = width.toPx(),
+            cap = StrokeCap.Square,
+            join = StrokeJoin.Round
+        )
+    )
+
+    drawRect(// стираем нижнюю линию
+        color = back,
+        topLeft = Offset(0f, size.height - 2.dp.toPx()),
+        size = Size(size.width, 4.dp.toPx())
+    )
 }
 
 class TrapezoidBottomShape : Shape {

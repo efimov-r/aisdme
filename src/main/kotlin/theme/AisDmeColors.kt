@@ -22,6 +22,7 @@ data class AisDmeColors(
     val error: Color,
     val selectAndFocus: Color,
     val selectAndNotFocus: Color,
+    val tabActive: Color, //активная вкладка в половине с фокусом
     val dropTargetElement: Color,
     val menuSelected: Color,
     val textSecondary: Color,
@@ -55,6 +56,7 @@ val LightAisDmeColors = AisDmeColors(
     error = Color(0xFFD32F2F),
     selectAndFocus = Color(0xFFCDEFD9),
     selectAndNotFocus = Color(0xFFECEEF1),
+    tabActive = Color(0xFFA6EBC1),
     dropTargetElement = Color(0xFFE1F6E8),
     menuSelected = Color(0xFFCDEFD9),
     textSecondary = Color(0xFF6B7078),
@@ -88,6 +90,7 @@ val DarkAisDmeColors = AisDmeColors(
     error = Color(0xFFF06B6B),
     selectAndFocus = Color(0xFF1F4D33),
     selectAndNotFocus = Color(0xFF2B2E33),
+    tabActive = Color(0xFF1F4D33),
     dropTargetElement = Color(0xFF16291E),
     menuSelected = Color(0xFF1F4D33),
     textSecondary = Color(0xFF8B9098),
