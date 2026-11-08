@@ -12,6 +12,8 @@ import javax.swing.SwingUtilities
 
 private const val CROP_VALUES = 4 //x, y, ширина, высота
 private const val LOG_LINES = 30
+private const val POSITION_WAIT_MS = 1500L
+private const val POSITION_POLL_MS = 50L
 private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
 private val APP_COMMANDS = setOf("wait", "close", "throw")
 
@@ -92,9 +94,22 @@ class DebugCommands(private val window: ComposeWindow, private val app: AppContr
     private suspend fun clickPoint(input: DebugInput, rest: String, dx: Int, point: (String) -> Pair<Int, Int>) {
         val tokens = rest.split(' ')
         val mods = tokens.takeWhile { it == "right" || it == "double" }
-        val (x, y) = point(tokens.drop(mods.size).joinToString(" "))
+        val (x, y) = awaitPoint { point(tokens.drop(mods.size).joinToString(" ")) }
         val button = if ("right" in mods) "right" else "left"
         input.click(x + dx, y, button, if ("double" in mods) 2 else 1)
+    }
+
+    //позиции узлов дерева появляются после первой раскладки: сразу после старта их ещё может не быть
+    private suspend fun awaitPoint(point: () -> Pair<Int, Int>): Pair<Int, Int> {
+        val until = System.currentTimeMillis() + POSITION_WAIT_MS
+        while (true) {
+            try {
+                return point()
+            } catch (e: IllegalStateException) {
+                if (e.message?.contains("нет позиции") != true || System.currentTimeMillis() > until) throw e
+                delay(POSITION_POLL_MS)
+            }
+        }
     }
 
     private suspend fun input(input: DebugInput, cmd: String, rest: String) {
