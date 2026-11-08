@@ -2,10 +2,10 @@
 
 На чём уже ошибались и как правильно. Новые записи — сверху.
 
-## Исключение в отрисовке замораживает окно
-- **Что случилось:** `IllegalArgumentException` в `drawText` (`LineNumbers`) у слишком узкой половины редактора: окно перестало реагировать, `ErrorOverlay` не появился, хотя сообщение было в `GlobalMessages`
-- **Причина:** исключение вылетает из `FrameDispatcher` Skiko (`SkiaLayer.update`) и завершает его корутину: следующих кадров нет. Необработанное исключение ловит `UncaughtErrors`, но показать его уже нечем
-- **Как правильно:** то, что рисуется в `drawBehind` / `Canvas`, не должно бросать на любых размерах: у `drawText` ширину ограничивать снизу нулём. Для ошибок вне отрисовки (события, корутины) `UncaughtErrors` показывает их в `ErrorOverlay`; проверка — `throw текст` в пульте, сценарий `uncaught-error`
+## Compose Desktop показывает ошибку системным диалогом и закрывает окно
+- **Что случилось:** `IllegalArgumentException` в `drawText` (`LineNumbers`) у слишком узкой половины редактора: поверх приложения всплыло системное окно «Error» с кнопкой OK, после неё окно закрывалось. В пульте это выглядело как «зависание»: системные окна на снимок не попадают, а диалог модальный
+- **Причина:** исключения кадра и событий окна Compose ловит `WindowExceptionHandler` из `LocalWindowExceptionHandlerFactory`; по умолчанию (`DefaultWindowExceptionHandlerFactory`) это `JOptionPane` и закрытие окна. Обычный `Thread.setDefaultUncaughtExceptionHandler` этот путь не перехватывает
+- **Как правильно:** свой `WindowErrors` в `LocalWindowExceptionHandlerFactory` (`MainWindow`) отдаёт ошибку в `UncaughtErrors` → `ErrorOverlay`. Исключение, которое повторяется в каждом кадре (как в `LineNumbers`), оверлей показать не даёт: кадр падает раньше, чем рисуется оверлей (он последний). Такое надо чинить в причине: то, что рисуется в `drawBehind` / `Canvas`, не должно бросать ни на каких размерах (у `drawText` ширину ограничивать снизу нулём). Проверка показа ошибок — `throw текст` в пульте, сценарий `uncaught-error`
 
 ## Метки пульта: `boundsInWindow` обрезает по родителю
 - **Что случилось:** `expect inside tab:… in tabs:left` проходил для вкладки, наполовину вылезшей за край панели ([#36](https://github.com/efimov-r/aisdme/issues/36))
