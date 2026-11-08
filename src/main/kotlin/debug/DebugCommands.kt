@@ -25,6 +25,8 @@ private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
  * `expect [not] источник подстрока` и `waitfor [not] источник мс подстрока` — проверка и ожидание
  * (источники: state, text, text-right, log, exists; подробнее — `DebugCheck`),
  * `expect inside A in B` и `waitfor inside мс A in B` — элемент A целиком внутри элемента B (по меткам),
+ * `expect apart A and B` — элементы не пересекаются (`DebugGeometry`),
+ * `hover имя` — навести мышь на помеченный элемент,
  * `tap [right] [double] имя` — клик по помеченному элементу из раздела `ui` в `state` (`DebugTag`);
  * `tap A within B` — клик по видимой части A внутри B (например, `tap tab:main.asm within tabs:left`),
  * `ext write|delete|mkdir|rename …` — правки файлов проекта «снаружи» (`DebugExt`), `focus` — окно получило фокус,
@@ -111,6 +113,7 @@ class DebugCommands(private val window: ComposeWindow, private val app: AppContr
 
         when (cmd) {
             "move" -> nums.let { (x, y) -> input.move(x, y) }
+            "hover" -> DebugTag.point(rest).let { (x, y) -> input.move(x, y) } //на помеченный элемент
             "click" -> nums.let { (x, y) -> input.click(x, y, word ?: "left", nums.getOrNull(2) ?: 1) }
             "drag" -> nums.chunked(2).let { (from, to) -> input.drag(from[0], from[1], to[0], to[1]) }
             "scroll" -> nums.let { (x, y, amount) -> input.scroll(x, y, amount) }

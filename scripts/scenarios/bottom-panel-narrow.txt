@@ -1,0 +1,25 @@
+# Нижняя панель вкладки: когда поле сужается, путь сокращается из середины, статус остаётся на месте (#36)
+waitfor state 120000 proj/
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+waitfor inside 2000 bottom-path:left in half:left
+expect apart bottom-path:left and bottom-status:left
+# широкое поле: путь целиком, подсказки нет
+hover bottom-path:left
+wait 500
+expect not state tooltip
+move 5 5
+# сужение: путь сокращён, статус виден целиком и не перекрыт
+dragby tap split:tree-editor 450 0
+waitfor inside 2000 bottom-status:left in half:left
+waitfor inside 2000 bottom-path:left in half:left
+expect apart bottom-path:left and bottom-status:left
+# путь сокращён — наведение показывает полный путь
+hover bottom-path:left
+waitfor state 2000 tooltip
+move 5 5
+waitfor not state 2000 tooltip
+# совсем узко: пути нет, статус остаётся
+dragby tap split:tree-editor 400 0
+waitfor not inside 2000 bottom-path:left in half:left
+waitfor inside 2000 bottom-status:left in half:left

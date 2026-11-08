@@ -20,7 +20,7 @@
 
 ## Сценарии
 
-`scripts/scenarios/*.txt` — проверки на свежем приложении: команды пульта, строки с `#` — комментарии. Основные: `theme`, `rename-dialog`, `open-and-edit`, `tabs`, `tree-arrows`, `external-change`, `external-delete`, `dnd-move`, `dnd-editor`, `dnd-empty-editor`, `splitters`, `tabs-scroll-to-active`, `tabs-scroll-on-activate`. Сценарий на найденный, но не починенный баг класть в `known-bugs/`: по умолчанию он не запускается, по имени запускается и падает; после починки перенести в основные. Запуск: `.\scripts\debug-scenario.ps1` (основные) или `.\scripts\debug-scenario.ps1 theme tabs` (названные, в том числе из `known-bugs`). Раннер сам запускает и закрывает приложение на каждый сценарий (около 15–30 с на штуку), печатает `PASS` или `FAIL` с выводом упавшего. Всё сразу дольше 10 минут не бывает, но запускать лучше в фоне. Не запускать, пока приложение открыто вручную.
+`scripts/scenarios/*.txt` — проверки на свежем приложении: команды пульта, строки с `#` — комментарии. Основные: `theme`, `rename-dialog`, `open-and-edit`, `tabs`, `tree-arrows`, `external-change`, `external-delete`, `dnd-move`, `dnd-editor`, `dnd-empty-editor`, `splitters`, `tabs-scroll-to-active`, `tabs-scroll-on-activate`, `bottom-panel-narrow`, `bottom-panel-halves`. Сценарий на найденный, но не починенный баг класть в `known-bugs/`: по умолчанию он не запускается, по имени запускается и падает; после починки перенести в основные. Запуск: `.\scripts\debug-scenario.ps1` (основные) или `.\scripts\debug-scenario.ps1 theme tabs` (названные, в том числе из `known-bugs`). Раннер сам запускает и закрывает приложение на каждый сценарий (около 15–30 с на штуку), печатает `PASS` или `FAIL` с выводом упавшего. Всё сразу дольше 10 минут не бывает, но запускать лучше в фоне. Не запускать, пока приложение открыто вручную.
 
 Новая проверка в приложении — новый сценарий: первой строкой `waitfor state 120000 proj/`, дальше шаги, в конце `expect`/`waitfor`. Пункты «Проверить руками» в [todo.md](todo.md) по возможности превращать в сценарии.
 
@@ -55,6 +55,7 @@
 | `expect [not] exists путь` | есть ли файл на диске (путь от корня проекта): проверка move, rename, delete |
 | `mark имя`, `expect moved имя dx dy допуск` | запомнить центр помеченного элемента и проверить сдвиг от запомненного (допуск в пикселях) |
 | `expect [not] inside A in B`, `waitfor [not] inside мс A in B` | помеченный элемент A целиком в границах помеченного B (например, `tab:pic.png in tabs:left`: вкладка видна на панели). Элемента нет в композиции (вне экрана) — тоже «не внутри». Границы меток не обрезаются родителем, иначе вкладка за краем панели считалась бы целой |
+| `expect [not] apart A and B` | помеченные элементы не пересекаются (путь файла и статус внизу: `bottom-path:left and bottom-status:left`) |
 
 **Действовать**
 
@@ -63,6 +64,7 @@
 | `node [right] [double] имя` | клик по узлу дерева; имя как в `state`, для одинаковых — путь от корня: `fold/a.txt` |
 | `arrow имя` | раскрыть или свернуть папку |
 | `tap [right] [double] имя` | клик по элементу из раздела `ui`: `menu:Rename`, `button:Ok`, `dialog:Rename`, `tab:main.asm`, `tab-close:main.asm`, `banner:Keep mine`, `tree:collapseAll`, `theme-toggle`. Имя — точное или часть; не однозначно — ошибка со списком видимых. `tap tab:main.asm within tabs:left` — по видимой части вкладки, обрезанной краем панели (центр самой вкладки может лежать за краем) |
+| `hover имя` | навести мышь на помеченный элемент (подсказка пути внизу — метка `tooltip`); убрать — `move 5 5` |
 | `drag A -> B` | перетаскивание по именам. `A`, `B` — `node имя` (узел дерева), `tap имя` (метка: `half:left`, `half:right`, `half-empty:left`, `split:…`) или `x y`. Тащится **выделенное**: перед `drag node …` выделить узел (`node имя`) |
 | `dragby A dx dy` | сдвинуть на `dx dy` пикселей: разделители панелей (`dragby tap split:tree-editor 80 0`). Сдвиг получается точным |
 | `click x y [left\|right\|middle] [число]`, `move x y`, `drag x1 y1 x2 y2`, `scroll x y шаги` | мышь по координатам; `scroll` > 0 — вниз |
