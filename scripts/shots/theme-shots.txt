@@ -1,0 +1,52 @@
+# Скриншоты для сравнения оформления: запускать на свежем приложении; тема — как в приложении (для тёмной сначала tap settings, tap menu:Dark)
+waitfor state 120000 proj/
+arrow fold
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+node double pic.png
+waitfor state 4000 *pic.png (read only)
+tap tab:main.asm
+waitfor state 3000 *main.asm (writable)
+click 500 70
+shot 01-main
+node right fold
+waitfor state 2000 menu:Delete
+shot 02-tree-menu
+key esc
+tap right tab:main.asm
+waitfor state 2000 menu:Close All Tabs
+shot 03-tab-menu
+key esc
+tap settings
+waitfor state 2000 menu:Dark
+shot 04-settings-menu
+key esc
+node main.asm
+key shift+f6
+waitfor state 2000 dialog:Rename
+type x
+shot 05-rename-dialog
+key esc
+tap tab:pic.png
+waitfor state 3000 *pic.png (read only)
+shot 06-image
+tap tab:main.asm
+waitfor state 3000 *main.asm (writable)
+click 500 70
+type hello
+ext write main.asm | changed outside
+focus
+waitfor state 3000 banner:Keep mine
+shot 07-banner
+tap banner:Load from disk
+waitfor state 3000 (writable)
+tap right tab:main.asm
+waitfor state 2000 menu:Split Other Half
+tap menu:Split Other Half
+waitfor state 3000 half:right
+shot 08-halves
+throw Test error
+waitfor state 3000 [ERROR]
+shot 09-error
+tap errors:closeAll
+waitfor not state 2000 [ERROR]
