@@ -62,12 +62,14 @@ fun TabsBar(
             }
         }
 
-        LaunchedEffect(listState, half) { //панель сузилась: активная вкладка должна остаться видна
-            snapshotFlow { listState.layoutInfo.viewportSize.width }
-                .filter { it > 0 }
+        LaunchedEffect(listState, half) { //панель сузилась или активная вкладка сменилась: она должна быть видна
+            snapshotFlow {
+                Triple(listState.layoutInfo.viewportSize.width, half.activeTabId, listState.layoutInfo.totalItemsCount)
+            }
+                .filter { (width, _, count) -> width > 0 && count == tabs.size } //раскладка уже знает все вкладки
                 .distinctUntilChanged()
-                .collectLatest {
-                    val index = tabs.indexOfFirst { tab -> tab.id == half.activeTabId }
+                .collectLatest { (_, activeId, _) ->
+                    val index = tabs.indexOfFirst { tab -> tab.id == activeId }
                     if (index >= 0) listState.showItem(index)
                 }
         }

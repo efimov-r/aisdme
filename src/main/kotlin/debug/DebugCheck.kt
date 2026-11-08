@@ -26,7 +26,9 @@ class DebugCheck(private val app: AppController) {
 
     suspend fun verify(rest: String, withTimeout: Boolean): String {
         if (rest.startsWith("moved ")) return moved(rest.removePrefix("moved "))
-        if (rest.startsWith("inside ")) return inside(rest.removePrefix("inside "), withTimeout)
+        if (rest.removePrefix("not ").startsWith("inside ")) {
+            return inside(rest.removePrefix("not ").removePrefix("inside "), withTimeout, rest.startsWith("not "))
+        }
         val negate = rest.startsWith("not ")
         val parts = rest.removePrefix("not ").split(' ', limit = if (withTimeout) 3 else 2)
         val source = parts[0]
@@ -63,7 +65,8 @@ class DebugCheck(private val app: AppController) {
     }
 
     //`внутреннее in внешнее` (waitfor — `мс внутреннее in внешнее`): внутренний элемент целиком в границах внешнего
-    private suspend fun inside(rest: String, withTimeout: Boolean): String {
+    //negate (`not inside`): успех, если элемент не внутри — в том числе когда его нет в композиции
+    private suspend fun inside(rest: String, withTimeout: Boolean, negate: Boolean): String {
         val timeout = if (withTimeout) rest.substringBefore(' ').toLong() else 0L
         val names = if (withTimeout) rest.substringAfter(' ') else rest
         val (inner, outer) = names.split(" in ", limit = 2).also { require(it.size == 2) { "нужно «A in B»" } }
@@ -78,8 +81,8 @@ class DebugCheck(private val app: AppController) {
                 if (frame.contains(a.topLeft) && frame.contains(a.bottomRight)) null
                 else "«$inner» $a выходит за «$outer» $b"
             }.getOrElse { it.message.orEmpty() }
-            if (problem == null) return "ok (${System.currentTimeMillis() - start} мс)"
-            if (System.currentTimeMillis() - start >= timeout) error(problem)
+            if ((problem == null) != negate) return "ok (${System.currentTimeMillis() - start} мс)"
+            if (System.currentTimeMillis() - start >= timeout) error(problem ?: "«$inner» внутри «$outer»")
             delay(CHECK_POLL_MS)
         }
     }

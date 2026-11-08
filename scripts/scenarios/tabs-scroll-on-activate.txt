@@ -1,0 +1,27 @@
+# Активная вкладка видна целиком не только при сужении панели, но и при клике по обрезанной вкладке и при открытии файла (#36)
+waitfor state 120000 proj/
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+node double notes.txt
+node double a.txt
+node double тест.txt
+waitfor state 3000 *тест.txt (writable)
+wait 500
+tap tab:main.asm
+waitfor state 2000 *main.asm (writable)
+dragby tap split:tree-editor 470 0
+# активная первая видна, последняя вкладка обрезана справа
+waitfor inside 2000 tab:main.asm in tabs:left
+waitfor not inside 2000 tab:тест.txt in tabs:left
+# клик по видимой части обрезанной вкладки выводит её целиком
+tap tab:тест.txt within tabs:left
+waitfor state 2000 *тест.txt (writable)
+waitfor inside 2000 tab:тест.txt in tabs:left
+# новый файл открывается последней вкладкой за правым краем: панель прокручивается к ней
+node double pic.png
+waitfor state 3000 *pic.png
+waitfor inside 2000 tab:pic.png in tabs:left
+# закрыли активную: активной стала предыдущая, она тоже видна
+tap tab-close:pic.png
+waitfor state 2000 *тест.txt (writable)
+waitfor inside 2000 tab:тест.txt in tabs:left

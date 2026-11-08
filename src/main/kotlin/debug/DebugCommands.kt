@@ -25,7 +25,8 @@ private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
  * `expect [not] источник подстрока` и `waitfor [not] источник мс подстрока` — проверка и ожидание
  * (источники: state, text, text-right, log, exists; подробнее — `DebugCheck`),
  * `expect inside A in B` и `waitfor inside мс A in B` — элемент A целиком внутри элемента B (по меткам),
- * `tap [right] [double] имя` — клик по помеченному элементу из раздела `ui` в `state` (`DebugTag`),
+ * `tap [right] [double] имя` — клик по помеченному элементу из раздела `ui` в `state` (`DebugTag`);
+ * `tap A within B` — клик по видимой части A внутри B (например, `tap tab:main.asm within tabs:left`),
  * `ext write|delete|mkdir|rename …` — правки файлов проекта «снаружи» (`DebugExt`), `focus` — окно получило фокус,
  * строки с `#` в начале пропускаются.
  * Первая ошибка прерывает файл.
