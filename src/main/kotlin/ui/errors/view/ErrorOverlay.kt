@@ -20,7 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.flow.first
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
 import non.era.aisdme.theme.LocalAisDmeColors
@@ -88,15 +90,16 @@ fun ErrorOverlay() {
                 onClick = app.messages::clear,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .debugTag("errors:closeAll"),
                 border = aisDmeButtonBorder(),
                 shape = AisDmeShapes.medium,
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = LocalAisDmeColors.current.surface,
+                    backgroundColor = LocalAisDmeColors.current.surfaceRaised,
                     contentColor = LocalAisDmeColors.current.onSurface
                 )
             ) {
-                Text("Close all")
+                Text(I18n.s.closeAll)
             }
         }
     }

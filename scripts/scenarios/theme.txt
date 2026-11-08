@@ -1,7 +1,18 @@
-# Переключатель темы меняет тему туда и обратно
+# Меню настроек (шестерёнка): выбор темы и языка
 waitfor state 120000 proj/
 expect state theme: light
-tap theme-toggle
+tap settings
+waitfor state 2000 menu:Dark
+tap menu:Dark
 waitfor state 2000 theme: dark
-tap theme-toggle
+tap settings
+tap menu:Light
 waitfor state 2000 theme: light
+tap settings
+waitfor state 2000 menu:Русский
+tap menu:Русский
+waitfor state 2000 language: ru
+tap settings
+waitfor state 2000 menu:Тёмная
+tap menu:English
+waitfor state 2000 language: en

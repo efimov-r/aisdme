@@ -20,7 +20,9 @@
 |---|---|---|
 | `AppController` | корень композиции | держит все контроллеры, связывает их (сообщения, дерево → watcher), открывает проект (`reselectProject`), `dispose` |
 | `CurrentProject` | корень открытого проекта | один `mutableStateOf`: читается и в UI, и из фоновых потоков |
-| `ThemeController` | тема | `isDarkTheme`, `toggle()` пишет в глобальный конфиг значение на момент записи |
+| `ThemeController` | тема | `isDarkTheme`, `select(dark)` пишет в глобальный конфиг значение на момент записи |
+| `LanguageController`, `I18n` | язык интерфейса | `Lang` (EN, RU) → объект `Strings` (`StringsEn`, `StringsRu`, пакет `i18n/`). `I18n.lang` — `mutableStateOf`, `I18n.s` — тексты текущего языка: читается и из `@Composable`, и из контроллеров (сообщения об ошибках), поэтому смена языка перерисовывает экран сразу. `select(lang)` пишет код в глобальный конфиг. Язык по умолчанию — английский, по ОС не определяется. Новый язык — новая реализация `Strings` и значение в `Lang`: компилятор не даст пропустить строку |
+| `SettingsButton` | шестерёнка справа вверху | `SvgButton("settings")` открывает `ButtonsMenu` (через `ContextMenu`): заголовки групп (`MenuEntry.Header`), пункты с галочкой выбранного (`MenuEntry.Item.checked`) — тема и язык. Метки пульта: `settings`, `menu:<название>` |
 | `UncaughtErrors` | необработанные исключения потоков | `Thread.setDefaultUncaughtExceptionHandler` (ставится в `Main.kt`): лог (одинаковая ошибка не чаще раза в 5 с) и через `invokeLater` ошибка в `GlobalMessages.addError`; такая же ошибка, пока она на экране, второй раз не добавляется. Ошибки кадра и событий окна Compose сюда не доходят: их показывает сам Compose системным диалогом «Error» и закрывает окно ([gotchas.md](gotchas.md)) |
 | `GlobalMessages` | сообщения для `ErrorOverlay` | state-список; `collectFrom` подписывается на `subscribeMessages` контроллеров — сразу, до возврата (`UNDISPATCHED`): у потока `replay = 0`, сообщение без подписчика теряется |
 | `TreeActions` | операции над выделенными узлами | открыть в редакторе, показать в файловом менеджере, копировать / вырезать в буфер |
@@ -39,13 +41,13 @@
 | `ConfigStore<T>` | конфиги | kotlinx.serialization, атомарная запись, `Mutex`, кэш; пишет на диск при каждом `update`, без задержки |
 | `DialogsController` | диалоги и подсказки | новый файл, переименование, удаление, перемещение, вставка; `DialogsStarter`, `TooltipStarter`. Выделение проверяется при запросе (`requestPasteDialog` и др.): не подходит — ошибка, диалог не открывается; узлы передаются в `UiDialog` |
 | `Platform` | всё, что зависит от ОС | интерфейс `IPlatform`, реализации `WindowsPlatform` и `LinuxPlatform` (macOS тоже идёт в неё); `Platform.current` выбирается по `os.name` один раз. Остальной код от ОС не зависит |
-| `AisDmeTheme` | тема | светлая и тёмная, цвета через `LocalAisDmeColors`, фирменный зелёный `0xFF35F074`; вкладки в форме трапеции |
+| `AisDmeTheme` | тема | светлая и тёмная, цвета через `LocalAisDmeColors`, фирменный зелёный `0xFF35F074`; вкладки в форме трапеции. Цвета `MaterialTheme` строятся из `AisDmeColors` (`toMaterial`), а не заданы отдельно. Слои: `background` (окно) → `surface` (панели) → `surfaceRaised` (меню, диалоги, карточки сообщений); `surfaceBorder` — тонкая рамка, `scrim` — затемнение за диалогом; статусы записи (`statusOk`, `statusWarn`, `statusAlert`, `statusError`, `statusLoad`, `onStatus`) — в теме, не в `WriteStatus` |
 
 ## Конфиги
 
 | Конфиг | Где лежит | Что в нём |
 |---|---|---|
-| Глобальный (`AppConfig`) | Linux — `~/.config/AisDme/config.json`, Windows — `%APPDATA%\AisDme\config.json` | тема, последний открытый проект, окно |
+| Глобальный (`AppConfig`) | Linux — `~/.config/AisDme/config.json`, Windows — `%APPDATA%\AisDme\config.json` | тема, язык (`language`: `en` или `ru`), последний открытый проект, окно |
 | Проекта (`ProjectConfig`) | `<корень проекта>/.aisdme/config.json` | состояние дерева (только корень и раскрытые папки) и редактора (открытые вкладки — путь и тип), размеры панелей (`keyValue`) |
 
 Пути — в `ConfigPaths`, папка конфигов ОС — `IPlatform.configRoot()`.

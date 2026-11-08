@@ -1,5 +1,6 @@
 package non.era.aisdme.ui.errors
 
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.utils.Log
 import javax.swing.SwingUtilities
 
@@ -16,14 +17,14 @@ class UncaughtErrors(private val messages: GlobalMessages) : Thread.UncaughtExce
 
     override fun uncaughtException(thread: Thread, e: Throwable) {
         runCatching {
-            val text = "${e.message ?: "Unknown error"}\n\n${e.stackTraceToString()}"
+            val text = "${e.message ?: I18n.s.unknownError}\n\n${e.stackTraceToString()}"
             if (text != lastText || System.currentTimeMillis() - lastLogged > SAME_ERROR_LOG_MS) {
                 lastText = text
                 lastLogged = System.currentTimeMillis()
                 Log.e(e)
             }
             //состояние окна меняется на ui-потоке, но не посреди отрисовки, в которой исключение и случилось
-            SwingUtilities.invokeLater { messages.addError(e::class.simpleName ?: "Error", text) }
+            SwingUtilities.invokeLater { messages.addError(e::class.simpleName ?: I18n.s.error, text) }
         }
     }
 

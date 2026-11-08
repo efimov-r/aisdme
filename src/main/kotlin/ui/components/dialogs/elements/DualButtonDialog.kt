@@ -11,6 +11,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import non.era.aisdme.debug.debugTag
 import non.era.aisdme.theme.AisDmeShapes
+import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.theme.aisDmeButtonBorder
+import non.era.aisdme.theme.aisDmeDialogProperties
 import non.era.aisdme.ui.components.over.ButtonCancel
 import non.era.aisdme.ui.components.over.ButtonOk
 
@@ -23,7 +26,7 @@ fun DualButtonDialog(
     enterActive: () -> Boolean,
     content: @Composable (() -> Unit)
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = onDismiss, properties = aisDmeDialogProperties()) {
         Surface(modifier = modifier
             .debugTag("dialog:$title")
             .onPreviewKeyEvent {
@@ -45,6 +48,9 @@ fun DualButtonDialog(
                 }
             },
             shape = AisDmeShapes.medium,
+            color = LocalAisDmeColors.current.surfaceRaised,
+            contentColor = LocalAisDmeColors.current.onSurface,
+            border = aisDmeButtonBorder(),
             elevation = 8.dp
         ) {
             Column(Modifier.padding(vertical = 16.dp)) {

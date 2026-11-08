@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.debug.debugTag
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.ResizableProporcialRow
 import non.era.aisdme.ui.editor.halfview.FromClipboardHalfContent
@@ -103,7 +104,7 @@ fun EditorHalf(
                 }
                 else -> {
                     Text(
-                        text = "Error type half",
+                        text = I18n.s.errorTypeHalf,
                         color = LocalAisDmeColors.current.onSurface,
                     )
                 }
@@ -120,7 +121,7 @@ fun EditorHalf(
             .onGloballyPositioned { half.rect = it.boundsInWindow() }, //цель для броска файла
             contentAlignment = Alignment.Center) {
             Text(
-                text = "Drop files here to open them",
+                text = I18n.s.dropFilesHere,
                 color = LocalAisDmeColors.current.textSecondary,
             )
         }

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.debug.debugTag
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeButtonBorder
@@ -22,5 +23,5 @@ fun ButtonCancel(onClick: () -> Unit) =
         border = aisDmeButtonBorder(),
         colors = ButtonDefaults.textButtonColors(contentColor = LocalAisDmeColors.current.onSurface)
     ) {
-        Text("Cancel")
+        Text(I18n.s.cancel)
     }

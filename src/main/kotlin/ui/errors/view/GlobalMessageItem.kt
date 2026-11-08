@@ -1,6 +1,10 @@
 package non.era.aisdme.ui.errors.view
 
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -10,11 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.AisDmeShapes
+import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeButtonBorder
 import non.era.aisdme.ui.components.over.SvgIcon
 import non.era.aisdme.ui.errors.GlobalMessage
 import non.era.aisdme.ui.errors.TypeGlobalMessage
+
+private val MAX_TEXT_HEIGHT = 320.dp
 
 @Composable
 fun GlobalMessageItem(
@@ -25,6 +33,8 @@ fun GlobalMessageItem(
     Surface(
         elevation = 3.dp,
         shape = AisDmeShapes.medium,
+        color = LocalAisDmeColors.current.surfaceRaised,
+        contentColor = LocalAisDmeColors.current.onSurface,
         border = aisDmeButtonBorder(),
         modifier = modifier.fillMaxWidth()
     ) {
@@ -63,19 +73,34 @@ fun GlobalMessageItem(
                         onClick = onClose,
                         modifier = Modifier.padding(iconPadding).size(iconSize)
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
+                        Icon(Icons.Default.Close, contentDescription = I18n.s.close)
                     }
                 }
 
 
                 Spacer(Modifier.height(4.dp))
 
-                Text(
-                    modifier = Modifier.padding(end = endAndBottomPadding, bottom = endAndBottomPadding),
-                    text = mess.text,
-                    style = LocalTextStyle.current.copy(fontSize = 14.sp, lineHeight = 16.sp),
-                )
+                MessageText(mess.text, Modifier.padding(end = endAndBottomPadding, bottom = endAndBottomPadding))
             }
+        }
+    }
+}
+
+@Composable
+private fun MessageText(text: String, modifier: Modifier = Modifier) {
+    val scroll = rememberScrollState()
+
+    Box(modifier.heightIn(max = MAX_TEXT_HEIGHT)) {
+        Text( //длинный текст (stack trace) прокручивается внутри карточки, а не вылезает за окно
+            modifier = Modifier.verticalScroll(scroll).padding(end = 10.dp),
+            text = text.replace("\t", "    "), //таб шрифт не рисует — квадратик
+            style = LocalTextStyle.current.copy(fontSize = 14.sp, lineHeight = 16.sp),
+        )
+        if (scroll.maxValue > 0) {
+            VerticalScrollbar(
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(8.dp),
+                adapter = rememberScrollbarAdapter(scroll),
+            )
         }
     }
 }

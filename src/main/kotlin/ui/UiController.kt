@@ -3,6 +3,7 @@ package non.era.aisdme.ui
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.swing.Swing
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.utils.Log
 import non.era.aisdme.ui.errors.GlobalMessage
 
@@ -57,14 +58,14 @@ abstract class UiController {
 
     protected suspend fun newGlobalError(err: String) {
         Log.e("Error: $err")
-        _messages.emit(GlobalMessage.createGlobalError("Error", err))
+        _messages.emit(GlobalMessage.createGlobalError(I18n.s.error, err))
     }
 
     protected suspend fun newGlobalError(e: Throwable) {
         Log.e(e)
 
-        val title = e::class.simpleName ?: "Error"
-        val message = e.message ?: "Unknown error"
+        val title = e::class.simpleName ?: I18n.s.error
+        val message = e.message ?: I18n.s.unknownError
         val stackTrace = e.stackTraceToString()
 
         _messages.emit(GlobalMessage.createGlobalError(

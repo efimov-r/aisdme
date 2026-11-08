@@ -8,6 +8,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.files.work.FilesExecutor
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.over.ErrorableTextField
 import non.era.aisdme.ui.project.data.ProjectNode
@@ -25,7 +26,7 @@ fun MoveDialog(src: List<ProjectNode>, target: File, onDismiss: () -> Unit) {
     }
 
     DualButtonDialog(
-        title = "Move",
+        title = I18n.s.dialogMove,
         onConfirm = {
             app.filesController.move(src.map { it.getFilePath() }, File(textState.text).toPath())
         },
@@ -45,19 +46,20 @@ fun MoveDialog(src: List<ProjectNode>, target: File, onDismiss: () -> Unit) {
 private fun dialogTargetDirValidate(src: List<ProjectNode>, text: String): String? {
     try{
         val f = File(text)
-        if(!f.exists()) return "not found"
-        if(!f.isDirectory) return "its not directory"
+        val s = I18n.s
+        if(!f.exists()) return s.notFound
+        if(!f.isDirectory) return s.notDirectory
         src.forEach {
             val srcFile = it.getFile()
             if (srcFile.isDirectory && f.toPath().startsWith(srcFile.toPath())) {
-                return "Cannot move directory into itself"
+                return s.cannotMoveIntoItself
             }
         }
         FilesExecutor.findTakenTarget(src.map { it.getFilePath() }, f.toPath())?.let {
-            return "Already exists: ${it.fileName}"
+            return s.alreadyExists(it.fileName.toString())
         }
         return null
     } catch (_: Throwable) {
-        return "not found"
+        return I18n.s.notFound
     }
 }

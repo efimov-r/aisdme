@@ -10,6 +10,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.components.contexmenu.ContextMenu
 import non.era.aisdme.ui.components.contexmenu.ContextMenuState
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
@@ -73,31 +74,32 @@ private fun TabContextMenu(
     onDismiss: () -> Unit
 ) {
     val editController = LocalAppController.current.editorController
+    val s = I18n.s
 
     buildList {
-        add(MenuEntry.Item("Close") {
+        add(MenuEntry.Item(s.tabClose) {
             half.closeTab(tab.id)
         })
-        add(MenuEntry.Item("Close Other Tabs") {
+        add(MenuEntry.Item(s.tabCloseOthers) {
             half.closeOtherTabs(tab.id)
         })
-        add(MenuEntry.Item("Close All Tabs") {
+        add(MenuEntry.Item(s.tabCloseAll) {
             half.closeAllTabs()
         })
-        add(MenuEntry.Item("Close Tabs to the Left") {
+        add(MenuEntry.Item(s.tabCloseLeft) {
             half.closeLeftTabs(tab.id)
         })
-        add(MenuEntry.Item("Close Tabs to the Right") {
+        add(MenuEntry.Item(s.tabCloseRight) {
             half.closeRightTabs(tab.id)
         })
 
         add(MenuEntry.Divider)
 
-        add(MenuEntry.Item("Split Other Half") {
+        add(MenuEntry.Item(s.tabSplitOther) {
             oppositeHalf.activateTab(tab.id)
         })
 
-        add(MenuEntry.Item("Split and Move Other Half") {
+        add(MenuEntry.Item(s.tabSplitMoveOther) {
             half.closeTab(tab.id)
             oppositeHalf.activateTab(tab.id)
             oppositeHalf.inFocus = true
@@ -106,7 +108,7 @@ private fun TabContextMenu(
         if(tab is TabCashFileText) {
             add(MenuEntry.Divider)
 
-            add(MenuEntry.Item("Show in Tree") {
+            add(MenuEntry.Item(s.tabShowInTree) {
                 editController.showInTree(tab.id)
             })
         }

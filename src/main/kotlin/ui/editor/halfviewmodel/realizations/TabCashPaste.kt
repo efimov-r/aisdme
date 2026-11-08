@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import non.era.aisdme.configs.dataclass.snapshots.SnapshotTabCash
 import non.era.aisdme.configs.store.ConfigPaths.PROJECT_CONFIG_DIR
 import non.era.aisdme.files.TypeFile
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.editor.halfviewmodel.TabCash
 import non.era.aisdme.ui.project.CurrentProject
 import non.era.aisdme.utils.ClipboardHelper
@@ -32,7 +33,9 @@ class TabCashPaste(
     val textFieldValue: TextFieldValue get() = _textFieldValue
 
     override val typeFile: TypeFile = TypeFile.PASTE_TAB
-    override var _name  by mutableStateOf("From Clipboard")
+    override var _name: String
+        get() = I18n.s.tabFromClipboard //зависит от языка, поэтому не хранится
+        set(_) {}
 
     override suspend fun beforeRemove() { //удалить файл
         try {

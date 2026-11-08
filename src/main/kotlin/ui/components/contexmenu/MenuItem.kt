@@ -27,8 +27,11 @@ sealed class MenuEntry {
         val title: String,
         val icon: String? = null,
         val shortcut: Hotkeys? = null,
+        val checked: Boolean = false, //отмечен галочкой на месте иконки: выбранное значение настройки
         val onClick: () -> Unit
     ) : MenuEntry()
+
+    data class Header(val title: String) : MenuEntry() //заголовок группы, не выбирается
 
     object Divider : MenuEntry()
 }
@@ -55,7 +58,14 @@ fun MenuItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        if (item.icon != null) {
+        if (item.checked) {
+            Text(
+                text = "✓",
+                modifier = Modifier.width(16.dp).padding(bottom = 4.dp),
+                color = LocalAisDmeColors.current.onSurface,
+                fontSize = 13.sp
+            )
+        } else if (item.icon != null) {
             SvgIcon(item.icon, Modifier.size(16.dp))
         } else {
             Spacer(Modifier.width(16.dp))
@@ -79,6 +89,16 @@ fun MenuItem(
             )
         }
     }
+}
+
+@Composable
+fun MenuHeader(title: String) {
+    Text(
+        text = title,
+        modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 2.dp),
+        color = LocalAisDmeColors.current.textSecondary,
+        fontSize = 12.sp
+    )
 }
 
 @Composable

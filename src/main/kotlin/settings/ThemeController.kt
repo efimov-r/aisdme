@@ -15,8 +15,8 @@ class ThemeController(
     var isDarkTheme by mutableStateOf(startDark)
         private set
 
-    fun toggle(): Job { //с ui-потока
-        isDarkTheme = !isDarkTheme
+    fun select(dark: Boolean): Job { //с ui-потока
+        isDarkTheme = dark
         return safeLaunch {
             globalStore.update { it.copy(isDarkTheme = isDarkTheme) } //значение на момент записи, не нажатия
         }

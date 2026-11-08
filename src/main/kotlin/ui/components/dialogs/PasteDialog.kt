@@ -8,6 +8,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.files.work.FilesExecutor
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.over.ErrorableTextField
 import non.era.aisdme.ui.project.data.DirNode
@@ -25,7 +26,7 @@ fun PasteDialog(node: DirNode, onDismiss: () -> Unit) {
     }
 
     DualButtonDialog(
-        title = "Paste",
+        title = I18n.s.paste,
         onConfirm = {
             app.filesController.pasteFromClipboard(File(textState.text).toPath() )
         },
@@ -45,12 +46,13 @@ fun PasteDialog(node: DirNode, onDismiss: () -> Unit) {
 private fun pasteDialogTargetDirValidate(text: String): String? {
     try{
         val f = File(text)
-        if(!f.exists()) return "not found"
-        if(!f.isDirectory) return "its not directory"
-        if(FilesExecutor.findPasteIntoItself(f.toPath()) != null) return "Cannot paste directory into itself"
-        FilesExecutor.findTakenTarget(f.toPath())?.let { return "Already exists: ${it.fileName}" }
+        val s = I18n.s
+        if(!f.exists()) return s.notFound
+        if(!f.isDirectory) return s.notDirectory
+        if(FilesExecutor.findPasteIntoItself(f.toPath()) != null) return s.cannotPasteIntoItself
+        FilesExecutor.findTakenTarget(f.toPath())?.let { return s.alreadyExists(it.fileName.toString()) }
         return null
     } catch (_: Throwable) {
-        return "not found"
+        return I18n.s.notFound
     }
 }

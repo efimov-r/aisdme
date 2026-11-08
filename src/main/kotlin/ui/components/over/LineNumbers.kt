@@ -55,7 +55,7 @@ fun LineNumbers(
                 topLeft = Offset(NUMBER_LEFT, y),
                 style = TextStyle(
                     fontSize = 12.sp,
-                    color = colors.surfaceBorder
+                    color = colors.lineNumber
                 )
             )
 

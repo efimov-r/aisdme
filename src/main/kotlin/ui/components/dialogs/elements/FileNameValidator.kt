@@ -1,5 +1,7 @@
 package non.era.aisdme.ui.components.dialogs.elements
 
+import non.era.aisdme.i18n.I18n
+
 object FileNameValidator {
     private val windowsReserved = setOf(
         "CON","PRN","AUX","NUL",
@@ -8,23 +10,24 @@ object FileNameValidator {
     )
 
     fun validateFileName(name: String): String? {
-        if (name.isBlank()) return "The name cannot be empty"
+        val s = I18n.s
+        if (name.isBlank()) return s.nameEmpty
 
         if (name.contains('/'))
-            return "The name must not contain /"
+            return s.nameHasSlash
 
         val winInvalid = Regex("""[<>:"\\|?*]""")
         if (winInvalid.containsMatchIn(name))
-            return "Invalid characters: <>:\"\\|?*"
+            return s.nameInvalidChars
 
         if (name.last() == ' ' || name.last() == '.')
-            return "The name must not end with a space or dot."
+            return s.nameBadEnd
 
         if (windowsReserved.contains(name.uppercase()))
-            return "Windows reserved"
+            return s.nameReserved
 
         if (name.length > 255)
-            return "The name is too long"
+            return s.nameTooLong
 
         return null
     }

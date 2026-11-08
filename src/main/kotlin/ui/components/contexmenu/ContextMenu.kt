@@ -11,6 +11,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
@@ -22,12 +23,14 @@ import non.era.aisdme.theme.dialogBorder
 fun ContextMenu(
     entries: List<MenuEntry>,
     state: ContextMenuState,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    width: Dp = 300.dp,
 ) {
     ButtonsMenu(
         entries = entries,
         popupPositionProvider = SmartMenuPositionProvider(state.position),
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        width = width,
     )
 }
 
@@ -35,7 +38,8 @@ fun ContextMenu(
 fun ButtonsMenu(
     entries: List<MenuEntry>,
     popupPositionProvider: PopupPositionProvider,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    width: Dp = 300.dp,
 ) {
     val items = remember { entries.filterIsInstance<MenuEntry.Item>() }
     var selectedIndex by remember { mutableStateOf(-1) }
@@ -86,9 +90,9 @@ fun ButtonsMenu(
                         else -> false
                     }
                 }
-                .width(300.dp)
+                .width(width)
                 .background(
-                    color = LocalAisDmeColors.current.surface,
+                    color = LocalAisDmeColors.current.surfaceRaised,
                     shape = AisDmeShapes.medium
                 )
                 .dialogBorder()
@@ -121,6 +125,8 @@ private fun MenuItems(
                 )
                 itemIndex++
             }
+
+            is MenuEntry.Header -> MenuHeader(entry.title)
 
             MenuEntry.Divider -> MenuDivider()
         }

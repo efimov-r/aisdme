@@ -11,6 +11,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.editor.AisDmeTextField
 import non.era.aisdme.ui.components.custom.editor.BottomPanel
@@ -26,7 +27,7 @@ fun HalfContentFileText(
 ) {
     if (file.writeStatus == WriteStatus.LOAD) {
         Text(
-            text = "Load ... ",
+            text = I18n.s.contentLoading,
             color = LocalAisDmeColors.current.onBackground,
             fontSize = 14.sp
         )

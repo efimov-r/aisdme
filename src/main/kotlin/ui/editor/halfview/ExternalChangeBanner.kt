@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.debug.debugTag
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeButtonBorder
@@ -39,19 +40,19 @@ fun ExternalChangeBanner(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = if (changed) "File changed on disk" else "File deleted from disk",
+                text = if (changed) I18n.s.fileChanged else I18n.s.fileDeleted,
                 color = colors.onSurface,
                 fontSize = 12.sp,
             )
             Spacer(Modifier.weight(1f))
             if (changed) {
-                BannerButton("Load from disk") { file.resolve(ExternalChoice.LOAD_FROM_DISK) }
+                BannerButton(I18n.s.loadFromDisk) { file.resolve(ExternalChoice.LOAD_FROM_DISK) }
                 Spacer(Modifier.width(8.dp))
-                BannerButton("Keep mine") { file.resolve(ExternalChoice.KEEP_MINE) }
+                BannerButton(I18n.s.keepMine) { file.resolve(ExternalChoice.KEEP_MINE) }
             } else {
-                BannerButton("Save again") { file.resolve(ExternalChoice.SAVE_AGAIN) }
+                BannerButton(I18n.s.saveAgain) { file.resolve(ExternalChoice.SAVE_AGAIN) }
                 Spacer(Modifier.width(8.dp))
-                BannerButton("Close tab", onCloseTab)
+                BannerButton(I18n.s.closeTabButton, onCloseTab)
             }
         }
         Spacer(Modifier.fillMaxWidth().height(1.dp).background(colors.surfaceBorder))

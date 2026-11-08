@@ -15,6 +15,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import non.era.aisdme.di.AppController
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.platform.Platform
 import non.era.aisdme.settings.Hotkeys
 import non.era.aisdme.ui.components.contexmenu.ContextMenu
@@ -142,69 +143,69 @@ private fun TreeContextMenu(
 }
 
 private fun newDirectoryItem(onClick: () -> Unit) = MenuEntry.Item(
-    title = "New Directory",
+    title = I18n.s.newDirectory,
     icon = "addDirectory",
     onClick = onClick
 )
 
 private fun newFileItem(onClick: () -> Unit) = MenuEntry.Item(
-    title = "New File",
+    title = I18n.s.newFile,
     icon = "addFile",
     onClick = onClick
 )
 
 private fun pasteItem(app: AppController) = MenuEntry.Item(
-    title = "Paste",
+    title = I18n.s.paste,
     icon = "paste",
     shortcut = Hotkeys.PASTE
 ) { app.dialogController.requestPasteDialog() }
 
 private fun copyItem(app: AppController) = MenuEntry.Item(
-    title = "Copy",
+    title = I18n.s.copy,
     icon = "copy",
     shortcut = Hotkeys.COPY
 ) { app.treeActions.copySelectedToClipboard(false) }
 
 private fun cutItem(app: AppController) = MenuEntry.Item(
-    title = "Cut",
+    title = I18n.s.cut,
     icon = "cut",
     shortcut = Hotkeys.CUT
 ) { app.treeActions.copySelectedToClipboard(true) }
 
 private fun deleteItem(onClick: () -> Unit) = MenuEntry.Item(
-    title = "Delete",
+    title = I18n.s.delete,
     icon = "delete",
     shortcut = Hotkeys.DELETE,
     onClick = onClick
 )
 
 private fun renameItem(onClick: () -> Unit) = MenuEntry.Item(
-    title = "Rename",
+    title = I18n.s.rename,
     icon = null,
     shortcut = Hotkeys.RENAME,
     onClick = onClick
 )
 
 private fun openInLeftItem(app: AppController) = MenuEntry.Item(
-    title = "Open in Left",
+    title = I18n.s.openInLeft,
     icon = "applyNotConflictsRight",
     shortcut = Hotkeys.LEFT
 ) { app.treeActions.openSelectedInEditor(Panels.LEFT) }
 
 private fun openInRightItem(app: AppController) = MenuEntry.Item(
-    title = "Open in Right",
+    title = I18n.s.openInRight,
     icon = "applyNotConflictsLeft",
     shortcut = Hotkeys.RIGHT
 ) { app.treeActions.openSelectedInEditor(Panels.RIGHT) }
 
 private fun showInFileManagerItem(app: AppController) = MenuEntry.Item(
-    title = "Show in ${Platform.current.fileManagerName}",
+    title = I18n.s.showInFileManager(Platform.current.fileManagerName),
     icon = "npm",
     shortcut = Hotkeys.SHOW_IN_FILE_MANAGER
 ) { app.treeActions.showSelectedInFileManager() }
 
 private fun reloadDiskItem(app: AppController) = MenuEntry.Item(
-    title = "Reload from disk",
+    title = I18n.s.reloadFromDisk,
     icon = "buildLoadChanges"
 ) { app.projectController.reloadSelectedDirFromDisk() }
 

@@ -24,6 +24,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.dialogs.elements.DialogNode
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
@@ -32,7 +33,7 @@ import non.era.aisdme.ui.project.data.ProjectNode
 @Composable
 fun DeleteSelectedNodeDialog(nodes: List<ProjectNode>, onDismiss: () -> Unit) { //удаляются те, что показаны
     val app = LocalAppController.current
-    val title = "Delete object${if(nodes.size > 1) "s" else ""}?"
+    val title = I18n.s.dialogDelete(nodes.size)
     val scrollState = rememberLazyListState()
     val focusRequester = remember { FocusRequester() }
     val itemHeight = 32.dp
