@@ -14,6 +14,7 @@ private const val SHOWN_CHARS = 400 //сколько показать в соо�
  * `expect [not] источник подстрока` и `waitfor [not] источник мс подстрока`.
  * Источники: state, text, text-right, log, exists (подстрока — путь от корня проекта; есть ли такой файл).
  * `mark имя` запоминает центр помеченного элемента, `expect moved имя dx dy допуск` проверяет сдвиг от метки.
+ * `inside` и `apart` (раскладка по меткам) — `DebugGeometry`.
  */
 class DebugCheck(private val app: AppController) {
     private val marks = mutableMapOf<String, Pair<Int, Int>>()
@@ -24,6 +25,11 @@ class DebugCheck(private val app: AppController) {
 
     suspend fun verify(rest: String, withTimeout: Boolean): String {
         if (rest.startsWith("moved ")) return moved(rest.removePrefix("moved "))
+        val positive = rest.removePrefix("not ")
+        val kind = positive.substringBefore(' ')
+        if (DebugGeometry.isCheck(kind)) {
+            return DebugGeometry.verify(kind, positive.substringAfter(' '), withTimeout, negate = positive != rest)
+        }
         val negate = rest.startsWith("not ")
         val parts = rest.removePrefix("not ").split(' ', limit = if (withTimeout) 3 else 2)
         val source = parts[0]

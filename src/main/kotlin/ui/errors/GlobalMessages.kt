@@ -13,6 +13,13 @@ class GlobalMessages { //сообщения всех контроллеров д
 
     fun add(mess: GlobalMessage) { _list += mess }
 
+    /** Ошибка, которая уже показана, второй раз не добавляется: исключение в отрисовке повторяется каждый кадр */
+    fun addError(title: String, text: String) {
+        if (_list.none { it.type == TypeGlobalMessage.ERROR && it.title == title && it.text == text }) {
+            add(GlobalMessage.createGlobalError(title, text))
+        }
+    }
+
     fun remove(id: Int) { _list.removeIf { it.id == id } }
 
     fun clear() { _list.clear() }

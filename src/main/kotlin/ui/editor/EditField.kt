@@ -76,7 +76,7 @@ fun EditorHalf(
             Spacer(Modifier.height(1.dp).fillMaxWidth().background(LocalAisDmeColors.current.surfaceBorder))
             when(activeTab) {
                 is TabCashFileText -> {
-                    HalfContentFile(activeTab) {
+                    HalfContentFile(activeTab, side) {
                         HalfContentFileText(
                             activeTab,
                             half.inFocus,
@@ -93,7 +93,7 @@ fun EditorHalf(
                     )
                 }
                 is TabCashFileImg -> {
-                    HalfContentFile(activeTab) {
+                    HalfContentFile(activeTab, side) {
                         HalfContentFileImg(
                             activeTab,
                             half.inFocus,

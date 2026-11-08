@@ -12,6 +12,7 @@ import non.era.aisdme.ui.editor.halfviewmodel.TabCashFile
 @Composable
 fun HalfContentFile(
     tab: TabCashFile,
+    side: String, //left или right: для меток пульта
     content: @Composable BoxScope.() -> Unit
 ) {
     Column(
@@ -27,6 +28,6 @@ fun HalfContentFile(
             }
         }
         Spacer(Modifier.fillMaxWidth().height(1.dp).background(LocalAisDmeColors.current.surfaceBorder))
-        BottomPanel(tab)
+        BottomPanel(tab, side)
     }
 }

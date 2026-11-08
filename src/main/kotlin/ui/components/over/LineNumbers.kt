@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import non.era.aisdme.theme.LocalAisDmeColors
 import kotlin.math.max
 
+private const val NUMBER_LEFT = 8f //отступ номера слева, пиксели
+
 @Composable
 fun LineNumbers(
     layoutResult: TextLayoutResult?,
@@ -38,6 +40,7 @@ fun LineNumbers(
             .clipToBounds()
     ) {
         val layout = layoutResult ?: return@Canvas
+        if (size.width <= NUMBER_LEFT) return@Canvas //половина уже отступа: drawText получил бы отрицательную ширину
 
         val scrollY = scrollState.value.toFloat()
 
@@ -49,7 +52,7 @@ fun LineNumbers(
             drawText(
                 textMeasurer = textMeasurer,
                 text = (line + 1).toString(),
-                topLeft = Offset(8f, y),
+                topLeft = Offset(NUMBER_LEFT, y),
                 style = TextStyle(
                     fontSize = 12.sp,
                     color = colors.surfaceBorder

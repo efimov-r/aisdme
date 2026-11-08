@@ -1,0 +1,19 @@
+# Две половины редактора: у каждой свой путь и свой статус, они не перекрываются и после сужения (#36)
+waitfor state 120000 proj/
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+node right a.txt
+tap menu:Open in Right
+waitfor state 3000 right: *a.txt (writable)
+waitfor inside 2000 bottom-status:right in half:right
+waitfor inside 2000 bottom-path:right in half:right
+expect inside bottom-status:left in half:left
+expect inside bottom-path:left in half:left
+expect apart bottom-path:left and bottom-status:left
+expect apart bottom-path:right and bottom-status:right
+# окно уже: сокращённые пути по-прежнему не заезжают на статус
+dragby tap split:tree-editor 250 0
+waitfor inside 2000 bottom-status:right in half:right
+waitfor inside 2000 bottom-status:left in half:left
+expect apart bottom-path:left and bottom-status:left
+expect apart bottom-path:right and bottom-status:right

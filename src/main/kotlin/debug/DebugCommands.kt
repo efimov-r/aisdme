@@ -8,10 +8,14 @@ import non.era.aisdme.di.AppController
 import org.jetbrains.skiko.SkiaLayer
 import java.awt.event.WindowEvent
 import java.io.File
+import javax.swing.SwingUtilities
 
 private const val CROP_VALUES = 4 //x, y, ширина, высота
 private const val LOG_LINES = 30
+private const val POSITION_WAIT_MS = 1500L
+private const val POSITION_POLL_MS = 50L
 private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
+private val APP_COMMANDS = setOf("wait", "close", "throw")
 
 /**
  * Команды в файле — по одной в строке, координаты — в пикселях скриншота:
@@ -24,7 +28,11 @@ private val INFO_COMMANDS = setOf("state", "text", "dump", "log")
  * `shot имя x y ширина высота` — вырезка области,
  * `expect [not] источник подстрока` и `waitfor [not] источник мс подстрока` — проверка и ожидание
  * (источники: state, text, text-right, log, exists; подробнее — `DebugCheck`),
- * `tap [right] [double] имя` — клик по помеченному элементу из раздела `ui` в `state` (`DebugTag`),
+ * `expect inside A in B` и `waitfor inside мс A in B` — элемент A целиком внутри элемента B (по меткам),
+ * `expect apart A and B` — элементы не пересекаются (`DebugGeometry`),
+ * `hover имя` — навести мышь на помеченный элемент, `throw текст` — необработанное исключение на ui-потоке,
+ * `tap [right] [double] имя` — клик по помеченному элементу из раздела `ui` в `state` (`DebugTag`);
+ * `tap A within B` — клик по видимой части A внутри B (например, `tap tab:main.asm within tabs:left`),
  * `ext write|delete|mkdir|rename …` — правки файлов проекта «снаружи» (`DebugExt`), `focus` — окно получило фокус,
  * строки с `#` в начале пропускаются.
  * Первая ошибка прерывает файл.
@@ -62,9 +70,16 @@ class DebugCommands(private val window: ComposeWindow, private val app: AppContr
             in INFO_COMMANDS -> "\n" + info(cmd, rest)
             "expect" -> check.verify(rest, withTimeout = false)
             "waitfor" -> check.verify(rest, withTimeout = true)
-            "wait" -> "ok".also { delay(rest.toLong()) }
-            "close" -> "ok".also { window.dispatchEvent(WindowEvent(window, WindowEvent.WINDOW_CLOSING)) }
+            in APP_COMMANDS -> "ok".also { app(cmd, rest) }
             else -> "ok".also { input(DebugInput(layer), cmd, rest) }
+        }
+    }
+
+    private suspend fun app(cmd: String, rest: String) {
+        when (cmd) {
+            "wait" -> delay(rest.toLong())
+            "close" -> window.dispatchEvent(WindowEvent(window, WindowEvent.WINDOW_CLOSING))
+            else -> SwingUtilities.invokeLater { error(rest) } //необработанное исключение на ui-потоке
         }
     }
 
@@ -79,9 +94,22 @@ class DebugCommands(private val window: ComposeWindow, private val app: AppContr
     private suspend fun clickPoint(input: DebugInput, rest: String, dx: Int, point: (String) -> Pair<Int, Int>) {
         val tokens = rest.split(' ')
         val mods = tokens.takeWhile { it == "right" || it == "double" }
-        val (x, y) = point(tokens.drop(mods.size).joinToString(" "))
+        val (x, y) = awaitPoint { point(tokens.drop(mods.size).joinToString(" ")) }
         val button = if ("right" in mods) "right" else "left"
         input.click(x + dx, y, button, if ("double" in mods) 2 else 1)
+    }
+
+    //позиции узлов дерева появляются после первой раскладки: сразу после старта их ещё может не быть
+    private suspend fun awaitPoint(point: () -> Pair<Int, Int>): Pair<Int, Int> {
+        val until = System.currentTimeMillis() + POSITION_WAIT_MS
+        while (true) {
+            try {
+                return point()
+            } catch (e: IllegalStateException) {
+                if (e.message?.contains("нет позиции") != true || System.currentTimeMillis() > until) throw e
+                delay(POSITION_POLL_MS)
+            }
+        }
     }
 
     private suspend fun input(input: DebugInput, cmd: String, rest: String) {
@@ -109,6 +137,7 @@ class DebugCommands(private val window: ComposeWindow, private val app: AppContr
 
         when (cmd) {
             "move" -> nums.let { (x, y) -> input.move(x, y) }
+            "hover" -> DebugTag.point(rest).let { (x, y) -> input.move(x, y) } //на помеченный элемент
             "click" -> nums.let { (x, y) -> input.click(x, y, word ?: "left", nums.getOrNull(2) ?: 1) }
             "drag" -> nums.chunked(2).let { (from, to) -> input.drag(from[0], from[1], to[0], to[1]) }
             "scroll" -> nums.let { (x, y, amount) -> input.scroll(x, y, amount) }

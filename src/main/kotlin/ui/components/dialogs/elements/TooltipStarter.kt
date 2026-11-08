@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import non.era.aisdme.debug.debugTag
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.SmartMenuPositionProvider
@@ -24,6 +25,7 @@ fun TooltipStarter(state: TolltipState) {
             focusable = false
         ) {
             Box(Modifier
+                .debugTag("tooltip")
                 .clip(AisDmeShapes.small)
                 .background(LocalAisDmeColors.current.surface)
                 .border(1.dp, LocalAisDmeColors.current.surfaceBorder, AisDmeShapes.small)) {
