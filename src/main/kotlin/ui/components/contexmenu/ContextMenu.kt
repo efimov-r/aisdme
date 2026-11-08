@@ -92,7 +92,7 @@ fun ButtonsMenu(
                 }
                 .width(width)
                 .background(
-                    color = LocalAisDmeColors.current.surface,
+                    color = LocalAisDmeColors.current.surfaceRaised,
                     shape = AisDmeShapes.medium
                 )
                 .dialogBorder()

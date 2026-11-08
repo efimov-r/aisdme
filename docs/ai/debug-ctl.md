@@ -22,6 +22,8 @@
 
 `scripts/scenarios/*.txt` — проверки на свежем приложении: команды пульта, строки с `#` — комментарии. Язык песочницы — английский (по умолчанию), метки строятся из показанных названий (`menu:Rename`): сценарий, сменивший язык, в конце возвращает английский. Основные: `theme`, `rename-dialog`, `open-and-edit`, `tabs`, `tree-arrows`, `external-change`, `external-delete`, `dnd-move`, `dnd-editor`, `dnd-empty-editor`, `splitters`, `tabs-scroll-to-active`, `tabs-scroll-on-activate`, `bottom-panel-narrow`, `bottom-panel-halves`, `halves-narrow-line-numbers`, `uncaught-error`. Сценарий на найденный, но не починенный баг класть в `known-bugs/`: по умолчанию он не запускается, по имени запускается и падает; после починки перенести в основные. Запуск: `.\scripts\debug-scenario.ps1` (основные) или `.\scripts\debug-scenario.ps1 theme tabs` (названные, в том числе из `known-bugs`). Раннер сам запускает и закрывает приложение на каждый сценарий (около 15–30 с на штуку), печатает `PASS` или `FAIL` с выводом упавшего. Всё сразу дольше 10 минут не бывает, но запускать лучше в фоне. Не запускать, пока приложение открыто вручную.
 
+Скриншоты для сравнения оформления — не сценарий, а набор снимков: `.\scripts\debug-ctl.ps1 "@scripts\shots\theme-shots.txt"` на свежем приложении (для тёмной темы перед ним — `"tap settings" "tap menu:Dark"`). PNG появляются в `build/debug-ctl/01-main.png` … `09-error.png`; перед следующим запуском их надо скопировать.
+
 Новая проверка в приложении — новый сценарий: первой строкой `waitfor state 120000 proj/`, дальше шаги, в конце `expect`/`waitfor`. Пункты «Проверить руками» в [todo.md](todo.md) по возможности превращать в сценарии.
 
 ## Без ручных апрувов

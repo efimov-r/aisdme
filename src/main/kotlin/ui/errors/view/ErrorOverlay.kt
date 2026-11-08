@@ -95,7 +95,7 @@ fun ErrorOverlay() {
                 border = aisDmeButtonBorder(),
                 shape = AisDmeShapes.medium,
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = LocalAisDmeColors.current.surface,
+                    backgroundColor = LocalAisDmeColors.current.surfaceRaised,
                     contentColor = LocalAisDmeColors.current.onSurface
                 )
             ) {

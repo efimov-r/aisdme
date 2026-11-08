@@ -123,7 +123,7 @@ private fun WriteStatus(writeStatus: WriteStatus, tag: String, modifier: Modifie
     Box(modifier = modifier.width(STATUS_WIDTH).height(24.dp)
         .debugTag(tag)
         .clip(AisDmeShapes.large)
-        .background(writeStatus.back)
+        .background(writeStatus.back(LocalAisDmeColors.current))
         .border(1.dp, LocalAisDmeColors.current.surfaceBorder, AisDmeShapes.large),
         contentAlignment = Alignment.Center
     ) {
@@ -133,7 +133,7 @@ private fun WriteStatus(writeStatus: WriteStatus, tag: String, modifier: Modifie
             fontSize = 11.sp,
             lineHeight = 12.sp,
             maxLines = 1,
-            color = writeStatus.te
+            color = LocalAisDmeColors.current.onStatus
         )
     }
 }

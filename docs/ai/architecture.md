@@ -41,7 +41,7 @@
 | `ConfigStore<T>` | конфиги | kotlinx.serialization, атомарная запись, `Mutex`, кэш; пишет на диск при каждом `update`, без задержки |
 | `DialogsController` | диалоги и подсказки | новый файл, переименование, удаление, перемещение, вставка; `DialogsStarter`, `TooltipStarter`. Выделение проверяется при запросе (`requestPasteDialog` и др.): не подходит — ошибка, диалог не открывается; узлы передаются в `UiDialog` |
 | `Platform` | всё, что зависит от ОС | интерфейс `IPlatform`, реализации `WindowsPlatform` и `LinuxPlatform` (macOS тоже идёт в неё); `Platform.current` выбирается по `os.name` один раз. Остальной код от ОС не зависит |
-| `AisDmeTheme` | тема | светлая и тёмная, цвета через `LocalAisDmeColors`, фирменный зелёный `0xFF35F074`; вкладки в форме трапеции |
+| `AisDmeTheme` | тема | светлая и тёмная, цвета через `LocalAisDmeColors`, фирменный зелёный `0xFF35F074`; вкладки в форме трапеции. Цвета `MaterialTheme` строятся из `AisDmeColors` (`toMaterial`), а не заданы отдельно. Слои: `background` (окно) → `surface` (панели) → `surfaceRaised` (меню, диалоги, карточки сообщений); `surfaceBorder` — тонкая рамка, `scrim` — затемнение за диалогом; статусы записи (`statusOk`, `statusWarn`, `statusAlert`, `statusError`, `statusLoad`, `onStatus`) — в теме, не в `WriteStatus` |
 
 ## Конфиги
 

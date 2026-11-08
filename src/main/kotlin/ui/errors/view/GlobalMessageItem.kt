@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.AisDmeShapes
+import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.theme.aisDmeButtonBorder
 import non.era.aisdme.ui.components.over.SvgIcon
 import non.era.aisdme.ui.errors.GlobalMessage
@@ -32,6 +33,8 @@ fun GlobalMessageItem(
     Surface(
         elevation = 3.dp,
         shape = AisDmeShapes.medium,
+        color = LocalAisDmeColors.current.surfaceRaised,
+        contentColor = LocalAisDmeColors.current.onSurface,
         border = aisDmeButtonBorder(),
         modifier = modifier.fillMaxWidth()
     ) {

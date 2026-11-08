@@ -12,7 +12,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 
@@ -21,29 +20,32 @@ fun Modifier.dialogBorder() = this.border(1.dp, LocalAisDmeColors.current.surfac
 
 @Composable
 @OptIn(ExperimentalComposeUiApi::class)
-fun aisDmeDialogProperties() = DialogProperties( scrimColor = LocalAisDmeColors.current.transparent )
+fun aisDmeDialogProperties() = DialogProperties( scrimColor = LocalAisDmeColors.current.scrim )
 
 @Composable
 fun aisDmeButtonBorder() = BorderStroke(1.dp, LocalAisDmeColors.current.surfaceBorder)
 
-val darkColors = darkColors(
-        primary = Color(0xFFBB86FC),
-        primaryVariant = Color(0xFF3700B3),
-        secondary = Color(0xFF03DAC6),
-        background = Color(0xFF121212), // Основной фон
-        surface = Color(0xFF1E1E1E),  // Поверхности (карточки, панели)
-        onBackground = Color.White, // Текст на фоне
-        onSurface = Color.White // Текст на поверхностях
-    )
-
-val lightColors = lightColors(
-        primary = Color(0xFF6200EE),
-        primaryVariant = Color(0xFF3700B3),
-        secondary = Color(0xFF03DAC6),
-        background = Color(0xFFD5D5D5),
-        surface = Color(0xFFFFFFFF),
-        onBackground = Color.Black,
-        onSurface = Color.Black
+private fun AisDmeColors.toMaterial(dark: Boolean) = //Material берёт цвета у нас: текст по умолчанию, поля ввода
+    if (dark) darkColors(
+        primary = primary,
+        primaryVariant = primaryVariant,
+        secondary = secondary,
+        background = background,
+        surface = surface,
+        onPrimary = onPrimary,
+        onBackground = onBackground,
+        onSurface = onSurface,
+        error = error,
+    ) else lightColors(
+        primary = primary,
+        primaryVariant = primaryVariant,
+        secondary = secondary,
+        background = background,
+        surface = surface,
+        onPrimary = onPrimary,
+        onBackground = onBackground,
+        onSurface = onSurface,
+        error = error,
     )
 
 val NoRoundedShapes = Shapes(
@@ -68,7 +70,7 @@ fun AisDmeTheme(
         LocalAisDmeColors provides colors
     ) {
         MaterialTheme(
-            colors = if (darkTheme)  darkColors  else  lightColors ,
+            colors = colors.toMaterial(darkTheme),
             typography = MaterialTheme.typography,
             shapes = NoRoundedShapes,
             content = content
