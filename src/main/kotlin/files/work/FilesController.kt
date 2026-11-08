@@ -5,6 +5,7 @@ import non.era.aisdme.bus.AppEventBus
 import non.era.aisdme.bus.DeleteDir
 import non.era.aisdme.bus.DeleteFile
 import non.era.aisdme.bus.MoveFile
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.utils.Log
 import java.nio.file.Files
@@ -29,7 +30,7 @@ class FilesController(
     override fun delete(paths: List<Path>) {
         if(paths.isEmpty()) {
             scope.launch {
-                newGlobalError("Directory or file for delete is not selected")
+                newGlobalError(I18n.s.errDeleteNotSelected)
             }
             return
         }
@@ -55,13 +56,13 @@ class FilesController(
     override fun copyToClipboard(paths: List<Path>, cut: Boolean) {
         if(paths.isEmpty()) {
             scope.launch {
-                newGlobalError("Directory or file for copy/cut is not selected")
+                newGlobalError(I18n.s.errCopyNotSelected)
             }
             return
         }
         if(!areAllInSameDirectory(paths)) {
             scope.launch {
-                newGlobalError("Files must be in the same directory")
+                newGlobalError(I18n.s.errNotSameDir)
             }
             return
         }

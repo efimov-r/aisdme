@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.custom.editor.ImageViewer
@@ -38,7 +39,7 @@ fun HalfContentFileImg(
     when (file.writeStatus) {
         WriteStatus.LOAD -> {
             Text(
-                text = "Load ... ",
+                text = I18n.s.contentLoading,
                 color = LocalAisDmeColors.current.onBackground,
                 fontSize = 14.sp
             )
@@ -72,7 +73,7 @@ fun HalfContentFileImg(
         }
         else -> {
             Text(
-                text = "Not load",
+                text = I18n.s.contentNotLoaded,
                 color = LocalAisDmeColors.current.onBackground,
                 fontSize = 14.sp
             )

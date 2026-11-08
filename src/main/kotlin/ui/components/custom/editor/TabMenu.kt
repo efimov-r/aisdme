@@ -3,6 +3,7 @@ package non.era.aisdme.ui.components.custom.editor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.components.contexmenu.ButtonsMenu
 import non.era.aisdme.ui.components.contexmenu.MenuEntry
 import non.era.aisdme.ui.components.contexmenu.SmartMenuPositionProvider
@@ -18,7 +19,7 @@ fun TabMenuView(
     val editController = LocalAppController.current.editorController
     buildList {
         if(ClipboardHelper.clipboardHasText()) {
-            add(MenuEntry.Item("New from clipboard", "paste") {
+            add(MenuEntry.Item(I18n.s.tabNewFromClipboard, "paste") {
                 val tabId = editController.addFromCpipboardTab()
                 half.activateTab(tabId)
             })

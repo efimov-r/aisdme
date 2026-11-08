@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.flow.first
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
 import non.era.aisdme.theme.LocalAisDmeColors
@@ -96,7 +97,7 @@ fun ErrorOverlay() {
                     contentColor = LocalAisDmeColors.current.onSurface
                 )
             ) {
-                Text("Close all")
+                Text(I18n.s.closeAll)
             }
         }
     }

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import non.era.aisdme.debug.debugTag
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.over.FileIcon
 import non.era.aisdme.ui.components.over.SvgButton
@@ -85,7 +86,7 @@ fun EditorTab(
         Spacer(Modifier.width(2.dp))
         Text(
             modifier = Modifier.padding(bottom = 1.dp),
-            text = tab.name ?: "Untitled",
+            text = tab.name ?: I18n.s.untitled,
             color = LocalAisDmeColors.current.onSurface,
             maxLines = 1,
             fontSize = 13.sp,

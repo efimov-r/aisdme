@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.components.dialogs.elements.DualButtonDialog
 import non.era.aisdme.ui.components.dialogs.elements.FileNameValidator.validateFileName
 import non.era.aisdme.ui.components.over.ErrorableTextField
@@ -25,8 +26,8 @@ fun NewNodeDialog(
     when (typeNew) {
         TypeNew.FILE -> {
             FileNodeDialog(
-                title = "Create new File",
-                placeholder = "filename",
+                title = I18n.s.dialogCreateFile,
+                placeholder = I18n.s.placeholderFileName,
                 onConfirm = { app.filesController.createFile(dir, it) },
                 onDismiss = onDismiss
             )
@@ -34,8 +35,8 @@ fun NewNodeDialog(
 
         TypeNew.DIRECTORY -> {
             FileNodeDialog(
-                title = "Create new Directory",
-                placeholder = "name directory",
+                title = I18n.s.dialogCreateDirectory,
+                placeholder = I18n.s.placeholderDirectoryName,
                 onConfirm = { app.filesController.createDirectory(dir, it) },
                 onDismiss = onDismiss
             )

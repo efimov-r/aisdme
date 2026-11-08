@@ -2,25 +2,21 @@ package non.era.aisdme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.debug.DebugControl
-import non.era.aisdme.debug.debugTag
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.di.buildAppController
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.AisDmeSpacing
 import non.era.aisdme.theme.AisDmeTheme
 import non.era.aisdme.theme.LocalAisDmeColors
+import non.era.aisdme.ui.components.contexmenu.realisation.SettingsButton
 import non.era.aisdme.ui.components.custom.ResizableColumn
 import non.era.aisdme.ui.components.custom.ResizableRow
 import non.era.aisdme.ui.components.dialogs.elements.UiDialog
@@ -115,15 +111,7 @@ fun AisDmeContent(configProjectStart: ProjectConfig?) {
                 Box(Modifier.fillMaxSize().panel())
             })
         Box(Modifier.fillMaxHeight().width(60.dp).padding(start = 6.dp).panel().padding(AisDmeSpacing.s)) {
-            IconButton(onClick = { app.themeController.toggle() }, modifier = Modifier.debugTag("theme-toggle")) {
-                Icon(
-                    imageVector = if (app.themeController.isDarkTheme)
-                        Icons.Default.Email
-                    else
-                        Icons.Default.DateRange,
-                    contentDescription = "Toggle theme"
-                )
-            }
+            SettingsButton(Modifier.align(Alignment.TopCenter))
         }
     }
     ErrorOverlay()

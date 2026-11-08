@@ -17,6 +17,7 @@ object DebugState {
 
     fun dump(app: AppController): String = buildString {
         appendLine("theme: ${if (app.themeController.isDarkTheme) "dark" else "light"}")
+        appendLine("language: ${app.languageController.lang.code}")
         appendLine("tree (* — выделен, @x,y — точка клика в пикселях скриншота):")
         val tree = app.projectController.treeState
         ProjectListLineHelper.buildLinearExpandedNodes(tree.getNodes()).forEach { appendLine(treeLine(tree, it)) }

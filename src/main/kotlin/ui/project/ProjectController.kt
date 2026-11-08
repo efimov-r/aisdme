@@ -12,6 +12,7 @@ import non.era.aisdme.bus.RebuilDirRiff
 import non.era.aisdme.bus.ShowFileInTree
 import non.era.aisdme.configs.dataclass.child.SnapshotTree
 import non.era.aisdme.configs.repositories.TreeStateRepository
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.project.data.DirNode
 import non.era.aisdme.ui.project.data.FileNode
@@ -44,7 +45,7 @@ class ProjectController(
                     scope.launch {
                         treeState.rebuildDirDiff(event.dir) {
                             scope.launch {
-                                newGlobalError("The directory ${event.dir} was not found during the update.")
+                                newGlobalError(I18n.s.errDirNotFound(event.dir))
                             }
                         }
                     }

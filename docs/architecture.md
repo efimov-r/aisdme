@@ -184,6 +184,7 @@ flowchart LR
         editorC["<b>EditorController</b><br/>вкладки редактора"]:::comp
         projectC["<b>ProjectController</b><br/>дерево файлов"]:::comp
         themeC["<b>ThemeController</b><br/>тема"]:::comp
+        langC["<b>LanguageController</b><br/>язык интерфейса"]:::comp
         editorRep["<b>EditorStateRepository</b><br/>снимок вкладок"]:::comp
         treeRep["<b>TreeStateRepository</b><br/>снимок дерева"]:::comp
         configC["<b>ConfigController</b><br/>автосохранение"]:::comp
@@ -201,6 +202,7 @@ flowchart LR
     configC -->|"читает, debounce 2 с"| treeRep
     configC -->|"update"| store
     themeC -->|"update"| store
+    langC -->|"update"| store
     store -->|"JSON"| projectCfg
     store -->|"JSON"| globalCfg
     store -.->|"configRoot"| platform

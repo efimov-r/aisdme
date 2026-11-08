@@ -9,6 +9,8 @@ import non.era.aisdme.configs.dataclass.ProjectConfig
 import non.era.aisdme.configs.repositories.EditorStateRepository
 import non.era.aisdme.configs.repositories.TreeStateRepository
 import non.era.aisdme.files.work.FilesController
+import non.era.aisdme.i18n.Lang
+import non.era.aisdme.settings.LanguageController
 import non.era.aisdme.settings.ThemeController
 import non.era.aisdme.ui.components.dialogs.elements.DialogsController
 import non.era.aisdme.ui.editor.EditorController
@@ -38,6 +40,7 @@ class AppController(startGlobalConfig: AppConfig?) { //корень композ
     val configController = ConfigController(editorStateRepository, treeStateRepository)
     val dialogController = DialogsController { projectController.treeState.getSelectedNodes() }
     val themeController = ThemeController(startGlobalConfig?.isDarkTheme ?: false, GlobalConfig.store)
+    val languageController = LanguageController(Lang.fromCode(startGlobalConfig?.language), GlobalConfig.store)
 
     val messages = GlobalMessages()
     val treeActions = TreeActions(projectController.treeState, editorController, filesController)
@@ -52,6 +55,7 @@ class AppController(startGlobalConfig: AppConfig?) { //корень композ
             configController,
             dialogController,
             themeController,
+            languageController,
         )
         projectController.treeState.onDirsLoaded = reloadWatcher::dirsLoaded //напрямую: шина может потерять событие
     }
@@ -74,5 +78,6 @@ class AppController(startGlobalConfig: AppConfig?) { //корень композ
         configController.dispose()
         dialogController.dispose()
         themeController.dispose()
+        languageController.dispose()
     }
 }

@@ -20,21 +20,30 @@ class ThemeControllerTest {
     @AfterEach
     fun dispose() = controller.dispose()
 
-    // переключение меняет тему и пишет её в глобальный конфиг
+    // выбор тёмной темы меняет тему и пишет её в глобальный конфиг
     @Test
-    fun toggleSavesTheme() {
-        runBlocking { controller.toggle().join() }
+    fun selectDarkSavesTheme() {
+        runBlocking { controller.select(true).join() }
 
         assertTrue(controller.isDarkTheme)
         assertTrue(runBlocking { store.get() }.isDarkTheme)
     }
 
-    // два переключения подряд: в конфиге то же, что на экране
+    // два выбора подряд: в конфиге то же, что на экране
     @Test
-    fun doubleToggleSavesLastValue() {
-        val first = controller.toggle()
-        val second = controller.toggle()
+    fun doubleSelectSavesLastValue() {
+        val first = controller.select(true)
+        val second = controller.select(false)
         runBlocking { first.join(); second.join() }
+
+        assertFalse(controller.isDarkTheme)
+        assertFalse(runBlocking { store.get() }.isDarkTheme)
+    }
+
+    // выбор той же темы ничего не ломает
+    @Test
+    fun selectSameThemeKeepsIt() {
+        runBlocking { controller.select(false).join() }
 
         assertFalse(controller.isDarkTheme)
         assertFalse(runBlocking { store.get() }.isDarkTheme)

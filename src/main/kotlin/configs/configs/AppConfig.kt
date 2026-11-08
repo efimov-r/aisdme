@@ -12,6 +12,7 @@ data class AppConfig(
     val placement: String = "Floating",
 
     val isDarkTheme: Boolean = false,
+    val language: String = "en",
 
     val lastOpenProject: String? = null,
 )

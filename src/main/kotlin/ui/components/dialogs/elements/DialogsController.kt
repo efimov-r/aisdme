@@ -7,6 +7,7 @@ import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.ui.UiController
 import non.era.aisdme.ui.components.dialogs.TypeNew
 import non.era.aisdme.ui.project.data.DirNode
@@ -58,7 +59,7 @@ class DialogsController(
     }
 
     fun requestRenameDialog() {
-        val node = selectedNodes().singleOrNull() ?: return error("Multi rename")
+        val node = selectedNodes().singleOrNull() ?: return error(I18n.s.errMultiRename)
         requestDialog(UiDialog.ShowRenameDialog(node))
     }
 
@@ -66,9 +67,9 @@ class DialogsController(
         val selected = selectedNodes()
         val target = selected.singleOrNull() as? DirNode ?: return error(
             when {
-                selected.isEmpty() -> "Directory for paste is not selected"
-                selected.size != 1 -> "Pasting is only available in one directory."
-                else -> "Pasting is only available in directory."
+                selected.isEmpty() -> I18n.s.errPasteNoDir
+                selected.size != 1 -> I18n.s.errPasteOneDir
+                else -> I18n.s.errPasteOnlyDir
             }
         )
         requestDialog(UiDialog.ShowPasteDialog(target))
@@ -78,16 +79,16 @@ class DialogsController(
         val selected = selectedNodes()
         val dir = selected.singleOrNull() as? DirNode ?: return error(
             when {
-                selected.isEmpty() -> "Directory for creation is not selected"
-                selected.size != 1 -> "Create only in one directory"
-                else -> "Create only in directory"
+                selected.isEmpty() -> I18n.s.errCreateNoDir
+                selected.size != 1 -> I18n.s.errCreateOneDir
+                else -> I18n.s.errCreateOnlyDir
             }
         )
         requestDialog(UiDialog.ShowCreateObjDialog(typeNew, dir.getFilePath()))
     }
 
     fun requestMoveDialog(src: List<ProjectNode>, target: File) {
-        if(src.isEmpty()) return error("Selected file to move does not exist.")
+        if(src.isEmpty()) return error(I18n.s.errMoveNothing)
         requestDialog(UiDialog.ShowMoveDialog(src, target))
     }
 

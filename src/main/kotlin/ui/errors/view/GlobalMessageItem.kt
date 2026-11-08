@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.AisDmeShapes
 import non.era.aisdme.theme.aisDmeButtonBorder
 import non.era.aisdme.ui.components.over.SvgIcon
@@ -63,7 +64,7 @@ fun GlobalMessageItem(
                         onClick = onClose,
                         modifier = Modifier.padding(iconPadding).size(iconSize)
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
+                        Icon(Icons.Default.Close, contentDescription = I18n.s.close)
                     }
                 }
 

@@ -1,6 +1,7 @@
 package non.era.aisdme.ui.editor.halfviewmodel
 
 import androidx.compose.ui.graphics.Color
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.StatusOrange
 import non.era.aisdme.theme.StatusRed
 
@@ -13,6 +14,19 @@ enum class WriteStatus(val text: String, val back: Color, val te: Color, val toC
     ERROR("error", Color(0xFFe20300), Color.Black, false, true), //!file.exists()
     CONFLICT("changed", StatusOrange, Color.Black, true, true), //изменён снаружи, во вкладке есть ввод
     DELETED("deleted", StatusRed, Color.Black, false, true); //удалён снаружи, во вкладке есть ввод
+
+    val label get() = with(I18n.s) { //для экрана; text — стабильное имя для отладки и конфига
+        when (this@WriteStatus) {
+            LOAD -> statusLoad
+            NOT_SAVE -> statusNotSaved
+            WRITABLE -> statusWritable
+            READ_ONLY_FS -> statusReadOnly
+            LOCKED -> statusLocked
+            ERROR -> statusError
+            CONFLICT -> statusChanged
+            DELETED -> statusDeleted
+        }
+    }
 
     val awaitsChoice get() = this == CONFLICT || this == DELETED //ввод закрыт, пока пользователь не выберет
 }

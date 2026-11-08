@@ -18,6 +18,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.debug.debugTag
 import non.era.aisdme.di.LocalAppController
+import non.era.aisdme.i18n.I18n
 import non.era.aisdme.theme.LocalAisDmeColors
 import non.era.aisdme.ui.components.contexmenu.realisation.ProjectTreeContextMenu
 import non.era.aisdme.ui.components.custom.BoxFocusedTree
@@ -37,13 +38,13 @@ fun ProjectTreeView(modifier: Modifier = Modifier) {
             val buttonPadding = 2.dp
 
             Spacer(modifier = Modifier.weight(1f))
-            SvgButton("locate", "Selected Opened File", Modifier.padding(buttonPadding).debugTag("tree:locate")) {
+            SvgButton("locate", I18n.s.locateOpenedFile, Modifier.padding(buttonPadding).debugTag("tree:locate")) {
                 app.editorController.showSelectedInTree()
             }
-            SvgButton("expandAll", "Expand selected", Modifier.padding(buttonPadding).debugTag("tree:expandAll")) {
+            SvgButton("expandAll", I18n.s.expandSelected, Modifier.padding(buttonPadding).debugTag("tree:expandAll")) {
                 app.projectController.expandSelected()
             }
-            SvgButton("collapseAll", "Collapse all", Modifier.padding(buttonPadding).debugTag("tree:collapseAll")) {
+            SvgButton("collapseAll", I18n.s.collapseAll, Modifier.padding(buttonPadding).debugTag("tree:collapseAll")) {
                 app.projectController.treeState.collapseAll()
             }
             Spacer(modifier = Modifier.width(8.dp))

@@ -128,7 +128,7 @@ private fun WriteStatus(writeStatus: WriteStatus, tag: String, modifier: Modifie
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = writeStatus.text,
+            text = writeStatus.label,
             modifier = Modifier.padding(bottom = 1.dp),
             fontSize = 11.sp,
             lineHeight = 12.sp,
