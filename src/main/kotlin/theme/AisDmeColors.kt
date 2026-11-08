@@ -7,16 +7,12 @@ import androidx.compose.ui.graphics.Color
 data class AisDmeColors(
     val primary: Color,
     val onPrimary: Color,
-    val primaryVariant: Color,
-    val secondary: Color,
     val background: Color,
     val surface: Color,
     val surfaceRaised: Color, //меню, диалоги, карточки сообщений: над панелями
     val onBackground: Color,
     val onSurface: Color,
     val surfaceBorder: Color,
-    val custom: Color,
-    val selectedRow: Color,
     val cutted: Color,
     val transparent: Color,
     val error: Color,
@@ -41,16 +37,12 @@ data class AisDmeColors(
 val LightAisDmeColors = AisDmeColors(
     primary = Color(0xFF35F074),
     onPrimary = Color(0xFF0B2615),
-    primaryVariant = Color(0xFF3700B3),
-    secondary = Color(0xFF03DAC6),
     background = Color(0xFFE9EBEE),
     surface = Color(0xFFFFFFFF),
     surfaceRaised = Color(0xFFFFFFFF),
     onBackground = Color(0xFF1E2126),
     onSurface = Color(0xFF1E2126),
     surfaceBorder = Color(0xFFD0D3D8),
-    custom = Color.Red,
-    selectedRow = Color(0xFFD5D5D5),
     cutted = Color(0xFF858585),
     transparent = Color(0x00000000),
     error = Color(0xFFD32F2F),
@@ -75,16 +67,12 @@ val LightAisDmeColors = AisDmeColors(
 val DarkAisDmeColors = AisDmeColors(
     primary = Color(0xFF2EC866),
     onPrimary = Color(0xFF0B2615),
-    primaryVariant = Color(0xFF3700B3),
-    secondary = Color(0xFF03DAC6),
     background = Color(0xFF131416), // Основной фон
     surface = Color(0xFF1E2024),    // Поверхности (карточки, панели)
     surfaceRaised = Color(0xFF26282D),
     onBackground = Color(0xFFDFE1E5), // Текст на фоне
     onSurface = Color(0xFFDFE1E5),    // Текст на поверхностях
     surfaceBorder = Color(0xFF2E3137), //рамка карточек
-    custom = Color.Green, //отладка
-    selectedRow = Color(0xFF2B2E33),
     cutted = Color(0xFF6B7078),
     transparent = Color(0x00000000),
     error = Color(0xFFF06B6B),
@@ -105,6 +93,3 @@ val DarkAisDmeColors = AisDmeColors(
     statusError = Color(0xFFD14B4B),
     onStatus = Color(0xFF14161A),
 )
-
-//!!!! Пример
-//LocalAisDmeColors.current.custom

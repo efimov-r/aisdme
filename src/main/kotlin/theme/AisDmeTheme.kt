@@ -28,8 +28,6 @@ fun aisDmeButtonBorder() = BorderStroke(1.dp, LocalAisDmeColors.current.surfaceB
 private fun AisDmeColors.toMaterial(dark: Boolean) = //Material берёт цвета у нас: текст по умолчанию, поля ввода
     if (dark) darkColors(
         primary = primary,
-        primaryVariant = primaryVariant,
-        secondary = secondary,
         background = background,
         surface = surface,
         onPrimary = onPrimary,
@@ -38,8 +36,6 @@ private fun AisDmeColors.toMaterial(dark: Boolean) = //Material берёт цв�
         error = error,
     ) else lightColors(
         primary = primary,
-        primaryVariant = primaryVariant,
-        secondary = secondary,
         background = background,
         surface = surface,
         onPrimary = onPrimary,
