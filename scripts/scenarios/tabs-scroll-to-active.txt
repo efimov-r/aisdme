@@ -1,0 +1,50 @@
+# Панель вкладок сужается (разделитель дерева, вторая половина): активная вкладка остаётся видна целиком (#36)
+waitfor state 120000 proj/
+node double main.asm
+waitfor state 3000 *main.asm (writable)
+node double notes.txt
+node double a.txt
+node double тест.txt
+node double pic.png
+waitfor state 3000 *pic.png
+expect inside tab:pic.png in tabs:left
+# сужение разделителем: активная последняя вкладка уезжает за край, панель должна догнать её
+dragby tap split:tree-editor 500 0
+waitfor inside 2000 tab:pic.png in tabs:left
+# активная уже видна: ещё небольшое сужение не прокручивает панель
+tap tab:тест.txt
+waitfor state 2000 *тест.txt (writable)
+mark tab:тест.txt
+dragby tap split:tree-editor 10 0
+expect moved tab:тест.txt 10 0 3
+expect inside tab:тест.txt in tabs:left
+# активная первая: после расширения и нового сужения видна первая
+dragby tap split:tree-editor -510 0
+tap tab:main.asm
+waitfor state 2000 *main.asm (writable)
+dragby tap split:tree-editor 500 0
+waitfor inside 2000 tab:main.asm in tabs:left
+# вторая половина: левая панель сужается вдвое, у каждой половины своя активная вкладка
+dragby tap split:tree-editor -500 0
+tap tab:pic.png
+waitfor state 2000 *pic.png
+arrow fold
+waitfor state 3000 folda/
+arrow folda
+waitfor state 3000 Текстовый документ.txt
+arrow fold2
+waitfor state 3000 b.txt
+node right fold2/b.txt
+tap menu:Open in Right
+waitfor state 3000 right: *b.txt
+waitfor inside 2000 tab:pic.png in tabs:left
+node right fold/a.txt
+tap menu:Open in Right
+node right fold/folda/Текстовый документ.txt
+tap menu:Open in Right
+waitfor state 3000 right: b.txt (writable), a.txt (writable), *Текстовый документ.txt (writable)
+expect inside tab:Текстовый in tabs:right
+# сужение окна редактора: обе половины догоняют свою активную
+dragby tap split:tree-editor 300 0
+waitfor inside 2000 tab:pic.png in tabs:left
+waitfor inside 2000 tab:Текстовый in tabs:right

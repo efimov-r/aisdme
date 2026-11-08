@@ -9,11 +9,13 @@ private const val CHECK_POLL_MS = 50L
 private const val MOVE_WAIT_MS = 1000L //раскладка догоняет перетаскивание не сразу
 private const val MOVED_NUMBERS = 3 //dx dy допуск
 private const val SHOWN_CHARS = 400 //сколько показать в сообщении о невыполненном условии
+private const val INSIDE_EPS = 1f //пиксели: округление границ
 
 /**
  * `expect [not] источник подстрока` и `waitfor [not] источник мс подстрока`.
  * Источники: state, text, text-right, log, exists (подстрока — путь от корня проекта; есть ли такой файл).
  * `mark имя` запоминает центр помеченного элемента, `expect moved имя dx dy допуск` проверяет сдвиг от метки.
+ * `expect inside A in B` и `waitfor inside мс A in B` — помеченный элемент A целиком в границах помеченного B.
  */
 class DebugCheck(private val app: AppController) {
     private val marks = mutableMapOf<String, Pair<Int, Int>>()
@@ -24,6 +26,7 @@ class DebugCheck(private val app: AppController) {
 
     suspend fun verify(rest: String, withTimeout: Boolean): String {
         if (rest.startsWith("moved ")) return moved(rest.removePrefix("moved "))
+        if (rest.startsWith("inside ")) return inside(rest.removePrefix("inside "), withTimeout)
         val negate = rest.startsWith("not ")
         val parts = rest.removePrefix("not ").split(' ', limit = if (withTimeout) 3 else 2)
         val source = parts[0]
@@ -55,6 +58,28 @@ class DebugCheck(private val app: AppController) {
             val shift = now.first - before.first to now.second - before.second
             if (abs(shift.first - dx) <= tolerance && abs(shift.second - dy) <= tolerance) return "ok (сдвиг $shift)"
             if (System.currentTimeMillis() - start >= MOVE_WAIT_MS) error("«$name» сдвинут на $shift, ждали ($dx, $dy)")
+            delay(CHECK_POLL_MS)
+        }
+    }
+
+    //`внутреннее in внешнее` (waitfor — `мс внутреннее in внешнее`): внутренний элемент целиком в границах внешнего
+    private suspend fun inside(rest: String, withTimeout: Boolean): String {
+        val timeout = if (withTimeout) rest.substringBefore(' ').toLong() else 0L
+        val names = if (withTimeout) rest.substringAfter(' ') else rest
+        val (inner, outer) = names.split(" in ", limit = 2).also { require(it.size == 2) { "нужно «A in B»" } }
+        val start = System.currentTimeMillis()
+
+        while (true) {
+            //элемента может не быть в композиции (вне экрана): ждём дальше
+            val problem = runCatching {
+                val a = DebugTag.rect(inner)
+                val b = DebugTag.rect(outer)
+                val frame = b.inflate(INSIDE_EPS)
+                if (frame.contains(a.topLeft) && frame.contains(a.bottomRight)) null
+                else "«$inner» $a выходит за «$outer» $b"
+            }.getOrElse { it.message.orEmpty() }
+            if (problem == null) return "ok (${System.currentTimeMillis() - start} мс)"
+            if (System.currentTimeMillis() - start >= timeout) error(problem)
             delay(CHECK_POLL_MS)
         }
     }

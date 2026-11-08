@@ -27,11 +27,14 @@ object DebugTag {
     fun lines(): List<String> = items.values.map { "${it.name} ${center(it)}" }
 
     /** Центр элемента в пикселях окна. Имя — точное или часть имени; не однозначно — ошибка со списком */
-    fun point(query: String): Pair<Int, Int> {
+    fun point(query: String): Pair<Int, Int> = rect(query).center.let { it.x.roundToInt() to it.y.roundToInt() }
+
+    /** Границы элемента в пикселях окна, имя как у `point` */
+    fun rect(query: String): Rect {
         val all = items.values.toList()
         val found = all.filter { it.name == query }.ifEmpty { all.filter { it.name.contains(query) } }
         val entry = found.singleOrNull() ?: error("элементов «$query»: ${found.size}; видимые: ${all.map { it.name }}")
-        return entry.rect.center.x.roundToInt() to entry.rect.center.y.roundToInt()
+        return entry.rect
     }
 
     private fun center(e: Entry) = "@${e.rect.center.x.roundToInt()},${e.rect.center.y.roundToInt()}"
