@@ -6,6 +6,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.loadSvgPainter
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.AisDmeShapes
@@ -64,6 +66,7 @@ fun SvgButton(
     baseName: String,
     tooltip: String? = null,
     modifier: Modifier = Modifier,
+    size: Dp = 24.dp, //иконка — 2/3 кнопки: при 24dp родные 16dp
     onClick: () -> Unit
 ) {
     val app = LocalAppController.current
@@ -72,7 +75,7 @@ fun SvgButton(
     var windowOffset by remember { mutableStateOf(Offset.Zero) }
 
     Box(modifier = modifier
-        .requiredSize(24.dp)) {
+        .requiredSize(size)) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -100,7 +103,7 @@ fun SvgButton(
                },
             contentAlignment = Alignment.Center
         ) {
-            SvgIcon(baseName)
+            SvgIcon(baseName, Modifier.size(size * 2f / 3f))
         }
     }
 }

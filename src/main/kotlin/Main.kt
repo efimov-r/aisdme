@@ -110,8 +110,10 @@ fun AisDmeContent(configProjectStart: ProjectConfig?) {
             {
                 Box(Modifier.fillMaxSize().panel())
             })
-        Box(Modifier.fillMaxHeight().width(60.dp).padding(start = 6.dp).panel().padding(AisDmeSpacing.s)) {
-            SettingsButton(Modifier.align(Alignment.TopCenter))
+        Box(Modifier.fillMaxHeight().width(60.dp).padding(start = 6.dp).panel()) {
+            Box(Modifier.fillMaxWidth().height(44.dp), contentAlignment = Alignment.Center) { //высота панели вкладок
+                SettingsButton()
+            }
         }
     }
     ErrorOverlay()

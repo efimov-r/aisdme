@@ -23,7 +23,7 @@ fun SettingsButton(modifier: Modifier = Modifier) {
     var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     Box(modifier.onGloballyPositioned { coords = it }) {
-        SvgButton("settings", I18n.s.settings, Modifier.debugTag("settings")) {
+        SvgButton("settings", I18n.s.settings, Modifier.debugTag("settings"), size = 32.dp) {
             coords?.boundsInWindow()?.let { menuState.show(Offset(it.right, it.bottom)) } //меню раскрывается влево-вниз
         }
 
