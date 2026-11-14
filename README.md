@@ -6,7 +6,9 @@
 
 <br clear="left">
 
-![Скриншот AisDme](docs/img.png)
+| Светлая тема | Тёмная тема |
+|---|---|
+| ![AisDme, светлая тема](docs/screenshot-light.png) | ![AisDme, тёмная тема](docs/screenshot-dark.png) |
 
 ## Что уже есть
 
@@ -15,7 +17,7 @@
 - Редактор текста с вкладками в двух половинах экрана, номера строк
 - Просмотр изображений
 - Сохранение состояния: открытые вкладки, раскрытые папки, размер и положение окна
-- Своя тема и свои скроллбары
+- Светлая и тёмная тема, русский и английский интерфейс, свои скроллбары
 
 ## Документация
 
@@ -39,4 +41,4 @@ Kotlin 1.9, Compose for Desktop 1.6, kotlinx-coroutines, kotlinx-serialization, 
 
 Код — [MIT](LICENSE).
 
-Иконки в `src/main/resources/icons/` — [IntelliJ Platform Icons](https://intellij-icons.jetbrains.design), © JetBrains s.r.o. and contributors, [Apache 2.0](src/main/resources/icons/LICENSE).
+Иконки в `src/main/resources/icons/` — [IntelliJ Platform Icons](https://intellij-icons.jetbrains.design), © JetBrains s.r.o. and contributors, [Apache 2.0](src/main/resources/icons/LICENSE). Изменения: цвета всех иконок заменены на палитру AisDme (сине-серые вместо серых, бирюзовый акцент вместо синего, цвета статусов темы в иконках сообщений); формы не менялись. Изменённые файлы помечены комментарием `Modified by AisDme contributors` под строкой копирайта. Иконка `settings` — своя, не из набора JetBrains.
