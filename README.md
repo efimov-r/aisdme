@@ -41,4 +41,4 @@ Kotlin 1.9, Compose for Desktop 1.6, kotlinx-coroutines, kotlinx-serialization, 
 
 Код — [MIT](LICENSE).
 
-Иконки в `src/main/resources/icons/` — [IntelliJ Platform Icons](https://intellij-icons.jetbrains.design), © JetBrains s.r.o. and contributors, [Apache 2.0](src/main/resources/icons/LICENSE).
+Иконки в `src/main/resources/icons/` — [IntelliJ Platform Icons](https://intellij-icons.jetbrains.design), © JetBrains s.r.o. and contributors, [Apache 2.0](src/main/resources/icons/LICENSE). Изменения: цвета всех иконок заменены на палитру AisDme (сине-серые вместо серых, бирюзовый акцент вместо синего, цвета статусов темы в иконках сообщений); формы не менялись. Изменённые файлы помечены комментарием `Modified by AisDme contributors` под строкой копирайта. Иконка `settings` — своя, не из набора JetBrains.
