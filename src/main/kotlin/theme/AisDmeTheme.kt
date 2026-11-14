@@ -55,6 +55,8 @@ val LocalAisDmeColors = staticCompositionLocalOf<AisDmeColors> {
     error("AisDmeColors not provided")
 }
 
+val LocalAisDmeDark = staticCompositionLocalOf { false } //тема приложения, а не ОС: по ней выбираются иконки
+
 @Composable
 fun AisDmeTheme(
     darkTheme: Boolean,
@@ -63,7 +65,8 @@ fun AisDmeTheme(
     val colors = if (darkTheme) DarkAisDmeColors else LightAisDmeColors
 
     CompositionLocalProvider(
-        LocalAisDmeColors provides colors
+        LocalAisDmeColors provides colors,
+        LocalAisDmeDark provides darkTheme,
     ) {
         MaterialTheme(
             colors = colors.toMaterial(darkTheme),

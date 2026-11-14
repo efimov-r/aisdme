@@ -2,7 +2,6 @@ package non.era.aisdme.ui.components.over
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.requiredSize
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import non.era.aisdme.di.LocalAppController
 import non.era.aisdme.theme.AisDmeShapes
+import non.era.aisdme.theme.LocalAisDmeDark
 import non.era.aisdme.theme.LocalAisDmeColors
 
 object IconRepository {
@@ -52,7 +52,7 @@ object IconRepository {
 
 @Composable
 fun themedIconPath(base: String): String {
-    val dark = isSystemInDarkTheme()
+    val dark = LocalAisDmeDark.current
     return if (dark) {
         "/icons/${base}/${base}_dark.svg"
     } else {
